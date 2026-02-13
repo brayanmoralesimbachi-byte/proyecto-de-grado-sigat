@@ -1,0 +1,57 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>Gestor de Activos</h1>
+    </div>
+
+    <form (ngSubmit)="onLogin()" class="login-form">
+      <div class="form-group">
+        <label for="username">Usuario</label>
+        <input
+          type="text"
+          id="username"
+          [value]="username()"
+          (input)="username.set($any($event.target).value)"
+          [disabled]="isLoading()"
+          placeholder="Ingrese su usuario"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input
+          type="password"
+          id="password"
+          [value]="password()"
+          (input)="password.set($any($event.target).value)"
+          [disabled]="isLoading()"
+          placeholder="Ingrese su contraseña"
+          required
+        />
+      </div>
+
+      @if (errorMessage()) {
+        <div class="error-message">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <button
+        type="submit"
+        class="login-button"
+        [disabled]="isLoading()"
+      >
+        @if (isLoading()) {
+          <span>Iniciando sesión...</span>
+        } @else {
+          <span>Iniciar Sesión</span>
+        }
+      </button>
+
+      <div class="register-link">
+        <p>¿No tienes cuenta? <a (click)="goToRegister()">Registrarse</a></p>
+      </div>
+    </form>
+  </div>
+</div>

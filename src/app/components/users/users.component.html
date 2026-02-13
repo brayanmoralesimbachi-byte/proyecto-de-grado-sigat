@@ -1,0 +1,197 @@
+<div class="users-container">
+  <div class="header">
+    <button class="btn-back" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+      </svg>
+      Volver
+    </button>
+    <h1>Gestión de Usuarios</h1>
+    <div></div>
+  </div>
+
+  @if (successMessage()) {
+    <div class="alert alert-success">{{ successMessage() }}</div>
+  }
+
+  @if (errorMessage() && !showModal()) {
+    <div class="alert alert-error">{{ errorMessage() }}</div>
+  }
+
+  @if (isLoading() && !showModal()) {
+    <div class="loading">Cargando usuarios...</div>
+  }
+
+  <div class="table-container">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Rol</th>
+          <th>Fecha de Registro</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of users(); track user.id) {
+          <tr [class.current-user]="isCurrentUser(user.id)">
+            <td>
+              <strong>{{ user.username }}</strong>
+              @if (isCurrentUser(user.id)) {
+                <span class="you-badge">Tú</span>
+              }
+            </td>
+            <td>
+              <span [class]="'badge ' + getRoleBadgeClass(user.rol)">
+                {{ user.rol }}
+              </span>
+            </td>
+            <td>{{ formatDate(user.created_at) }}</td>
+            <td class="actions">
+              <button class="btn-icon btn-history" (click)="openUsernameHistoryModal(user)" title="Ver historial de nombres">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+                </svg>
+              </button>
+              <button class="btn-icon btn-edit" (click)="openEditRoleModal(user)" title="Cambiar rol">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+              </button>
+              @if (!isCurrentUser(user.id)) {
+                <button class="btn-icon btn-delete" (click)="deleteUser(user.id)" title="Eliminar usuario">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                  </svg>
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="empty-state">No hay usuarios registrados</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-note">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+    </svg>
+    <div>
+      <strong>Nota:</strong> Solo los administradores pueden gestionar usuarios. 
+      Los nuevos usuarios deben registrarse desde la pantalla de registro.
+    </div>
+  </div>
+
+  <!-- Modal -->
+  @if (showModal() && selectedUser()) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Cambiar Rol de Usuario</h2>
+          <button class="btn-close" (click)="closeModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="alert alert-error">{{ errorMessage() }}</div>
+        }
+
+        <div class="modal-body">
+          <div class="user-info">
+            <strong>Usuario:</strong> {{ selectedUser()!.username }}
+          </div>
+
+          <div class="form-group">
+            <label>Nuevo Rol</label>
+            <select [(ngModel)]="newRole" name="role" class="role-select">
+              @for (role of roles; track role) {
+                <option [value]="role">{{ role }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="role-descriptions">
+            <div class="role-desc">
+              <strong>Administrador:</strong> Acceso completo al sistema
+            </div>
+            <div class="role-desc">
+              <strong>Operador:</strong> Gestión de activos, sin acceso a usuarios
+            </div>
+            <div class="role-desc">
+              <strong>Auditor:</strong> Solo lectura y acceso al log de auditoría
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+          <button type="button" class="btn-primary" (click)="updateRole()" [disabled]="isLoading()">
+            {{ isLoading() ? 'Actualizando...' : 'Actualizar Rol' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- History Modal -->
+  @if (showHistoryModal() && selectedUser()) {
+    <div class="modal-overlay" (click)="closeHistoryModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Historial de Nombres de Usuario</h2>
+          <button class="btn-close" (click)="closeHistoryModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="user-info">
+            <strong>Usuario actual:</strong> {{ selectedUser()!.username }}
+          </div>
+
+          @if (isLoading()) {
+            <div class="loading-small">Cargando historial...</div>
+          } @else if (usernameHistory().length === 0) {
+            <div class="empty-history">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+              </svg>
+              <p>Este usuario no ha cambiado su nombre</p>
+            </div>
+          } @else {
+            <div class="history-timeline">
+              @for (entry of usernameHistory(); track entry.changed_at) {
+                <div class="timeline-item">
+                  <div class="timeline-marker"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-change">
+                      <span class="old-name">{{ entry.old_username }}</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                      </svg>
+                      <span class="new-name">{{ entry.new_username }}</span>
+                    </div>
+                    <div class="timeline-date">{{ formatDate(entry.changed_at) }}</div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeHistoryModal()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

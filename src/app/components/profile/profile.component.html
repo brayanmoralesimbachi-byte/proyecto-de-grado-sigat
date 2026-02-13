@@ -1,0 +1,128 @@
+<div class="profile-container">
+  <div class="header">
+    <button class="btn-back" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+      </svg>
+      Volver
+    </button>
+    <h1>Mi Perfil</h1>
+    <div></div>
+  </div>
+
+  <div class="profile-content">
+    <div class="user-info-card">
+      <div class="user-avatar">{{ getUserInitial() }}</div>
+      <h2>{{ currentUser()?.username }}</h2>
+      <p class="user-role">{{ currentUser()?.rol }}</p>
+    </div>
+
+    <div class="settings-card">
+      <div class="tabs">
+        <button 
+          [class.active]="activeTab() === 'password'"
+          (click)="setActiveTab('password')">
+          Cambiar Contraseña
+        </button>
+        <button 
+          [class.active]="activeTab() === 'username'"
+          (click)="setActiveTab('username')">
+          Cambiar Nombre de Usuario
+        </button>
+      </div>
+
+      @if (successMessage()) {
+        <div class="alert alert-success">{{ successMessage() }}</div>
+      }
+
+      @if (errorMessage()) {
+        <div class="alert alert-error">{{ errorMessage() }}</div>
+      }
+
+      @if (activeTab() === 'password') {
+        <div class="tab-content">
+          <h3>Cambiar Contraseña</h3>
+          <form class="settings-form">
+            <div class="form-group">
+              <label>Contraseña Actual *</label>
+              <input 
+                type="password" 
+                [(ngModel)]="$any(oldPassword)"
+                name="oldPassword"
+                placeholder="Ingresa tu contraseña actual"
+                required>
+            </div>
+
+            <div class="form-group">
+              <label>Nueva Contraseña *</label>
+              <input 
+                type="password" 
+                [(ngModel)]="$any(newPassword)"
+                name="newPassword"
+                placeholder="Mínimo 6 caracteres"
+                required>
+            </div>
+
+            <div class="form-group">
+              <label>Confirmar Nueva Contraseña *</label>
+              <input 
+                type="password" 
+                [(ngModel)]="$any(confirmNewPassword)"
+                name="confirmNewPassword"
+                placeholder="Repite la nueva contraseña"
+                required>
+            </div>
+
+            <button 
+              type="button" 
+              class="btn-primary" 
+              (click)="changePassword()"
+              [disabled]="isLoading()">
+              {{ isLoading() ? 'Guardando...' : 'Actualizar Contraseña' }}
+            </button>
+          </form>
+        </div>
+      }
+
+      @if (activeTab() === 'username') {
+        <div class="tab-content">
+          <h3>Cambiar Nombre de Usuario</h3>
+          <form class="settings-form">
+            <div class="form-group">
+              <label>Nombre de Usuario Actual</label>
+              <input 
+                type="text" 
+                [value]="currentUser()?.username"
+                disabled>
+            </div>
+
+            <div class="form-group">
+              <label>Nuevo Nombre de Usuario *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="$any(newUsername)"
+                name="newUsername"
+                placeholder="Ingresa tu nuevo nombre de usuario"
+                required>
+            </div>
+
+            <div class="info-box">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+              </svg>
+              <span>Los administradores podrán ver tu historial de cambios de nombre.</span>
+            </div>
+
+            <button 
+              type="button" 
+              class="btn-primary" 
+              (click)="changeUsername()"
+              [disabled]="isLoading()">
+              {{ isLoading() ? 'Guardando...' : 'Actualizar Nombre de Usuario' }}
+            </button>
+          </form>
+        </div>
+      }
+    </div>
+  </div>
+</div>

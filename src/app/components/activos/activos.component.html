@@ -1,0 +1,200 @@
+<div class="activos-container">
+  <div class="header">
+    <button class="btn-back" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+      </svg>
+      Volver
+    </button>
+    <h1>Gestión de Activos</h1>
+    <button class="btn-primary" (click)="openCreateModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+      </svg>
+      Nuevo Activo
+    </button>
+  </div>
+
+  @if (successMessage()) {
+    <div class="alert alert-success">{{ successMessage() }}</div>
+  }
+
+  @if (errorMessage() && !showModal()) {
+    <div class="alert alert-error">{{ errorMessage() }}</div>
+  }
+
+  @if (isLoading() && !showModal()) {
+    <div class="loading">Cargando activos...</div>
+  }
+
+  <div class="table-container">
+    <table class="activos-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Categoría</th>
+          <th>Ubicación</th>
+          <th>Estado</th>
+          <th>Valor</th>
+          <th>Imagen</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (activo of activos(); track activo.id) {
+          <tr>
+            <td><strong>{{ activo.codigo }}</strong></td>
+            <td>{{ activo.nombre }}</td>
+            <td>{{ activo.categoria }}</td>
+            <td>{{ activo.ubicacion || '-' }}</td>
+            <td>
+              <span [class]="'badge ' + getEstadoBadgeClass(activo.estado)">
+                {{ activo.estado.replace('_', ' ') }}
+              </span>
+            </td>
+            <td>{{ formatCurrency(activo.valor_adquisicion) }}</td>
+            <td class="image-cell">
+              @if (activo.imagen_base64) {
+                <button class="btn-thumbnail" (click)="openImageModal(activo.imagen_base64)" title="Ver imagen">
+                  <img [src]="activo.imagen_base64" alt="Miniatura">
+                </button>
+              } @else {
+                <span class="no-image">Sin imagen</span>
+              }
+            </td>
+            <td class="actions">
+              <button class="btn-icon btn-edit" (click)="openEditModal(activo)" title="Editar">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                </svg>
+              </button>
+              <button class="btn-icon btn-delete" (click)="deleteActivo(activo.id!)" title="Eliminar">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="empty-state">No hay activos registrados</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal -->
+  @if (showModal()) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>{{ isEditing() ? 'Editar' : 'Crear' }} Activo</h2>
+          <button class="btn-close" (click)="closeModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="alert alert-error">{{ errorMessage() }}</div>
+        }
+
+        <form class="modal-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Código *</label>
+              <input type="text" [(ngModel)]="currentActivo().codigo" name="codigo" required>
+            </div>
+            <div class="form-group">
+              <label>Estado *</label>
+              <select [(ngModel)]="currentActivo().estado" name="estado" required>
+                @for (estado of estados; track estado) {
+                  <option [value]="estado">{{ estado.replace('_', ' ') }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Nombre *</label>
+            <input type="text" [(ngModel)]="currentActivo().nombre" name="nombre" required>
+          </div>
+
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea [(ngModel)]="currentActivo().descripcion" name="descripcion" rows="3"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Categoría *</label>
+              <select [(ngModel)]="currentActivo().categoria" name="categoria" required>
+                @for (cat of categorias; track cat) {
+                  <option [value]="cat">{{ cat }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Ubicación</label>
+              <input type="text" [(ngModel)]="currentActivo().ubicacion" name="ubicacion">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Valor de Adquisición</label>
+              <input type="number" [(ngModel)]="currentActivo().valor_adquisicion" name="valor_adquisicion">
+            </div>
+            <div class="form-group">
+              <label>Fecha de Adquisición</label>
+              <input type="date" [(ngModel)]="currentActivo().fecha_adquisicion" name="fecha_adquisicion">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Imagen del Activo</label>
+            <input 
+              type="file" 
+              accept="image/*" 
+              (change)="onImageSelect($event)"
+              #fileInput>
+            @if (currentActivo().imagen_base64) {
+              <div class="image-preview">
+                <img [src]="currentActivo().imagen_base64" alt="Preview">
+                <button type="button" class="btn-remove-image" (click)="removeImage()">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+            <button type="button" class="btn-primary" (click)="saveActivo()" [disabled]="isLoading()">
+              {{ isLoading() ? 'Guardando...' : 'Guardar' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Image Modal -->
+  @if (showImageModal()) {
+    <div class="modal-overlay" (click)="closeImageModal()">
+      <div class="image-modal-content" (click)="$event.stopPropagation()">
+        <button class="btn-close-image" (click)="closeImageModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+        <img [src]="selectedImage()" alt="Imagen completa" class="full-image">
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,101 @@
+<div class="audit-container">
+  <div class="header">
+    <button class="btn-back" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+      </svg>
+      Volver
+    </button>
+    <h1>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+      </svg>
+      Log de Auditoría
+    </h1>
+    <div class="limit-selector">
+      <label>Mostrar:</label>
+      <select [value]="limit()" (change)="changeLimit(+$any($event.target).value)">
+        <option [value]="50">50 registros</option>
+        <option [value]="100">100 registros</option>
+        <option [value]="200">200 registros</option>
+        <option [value]="500">500 registros</option>
+      </select>
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="alert alert-error">{{ errorMessage() }}</div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading">Cargando registros de auditoría...</div>
+  }
+
+  <div class="info-banner">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+    </svg>
+    <div>
+      <strong>Registro de Cambios</strong><br>
+      Todos los cambios en el sistema quedan registrados de forma permanente e inalterable para garantizar la trazabilidad.
+    </div>
+  </div>
+
+  <div class="timeline-container">
+    @for (log of auditLogs(); track log.id) {
+      <div class="timeline-item">
+        <div class="timeline-marker" [class]="getActionBadgeClass(log.action)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path [attr.d]="getActionIcon(log.action)"/>
+          </svg>
+        </div>
+        
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <div class="action-info">
+              <span [class]="'badge ' + getActionBadgeClass(log.action)">
+                {{ log.action }}
+              </span>
+              <span class="table-name">{{ getTableLabel(log.table_name) }}</span>
+              <span class="record-id">#{{ log.record_id }}</span>
+            </div>
+            <div class="timestamp">{{ formatDate(log.timestamp) }}</div>
+          </div>
+
+          <div class="timeline-body">
+            <div class="user-info">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+              <strong>{{ log.username || 'Usuario #' + log.user_id }}</strong>
+            </div>
+
+            @if (log.old_value || log.new_value) {
+              <div class="changes">
+                @if (log.old_value) {
+                  <div class="change-item old-value">
+                    <strong>Valor anterior:</strong> {{ log.old_value }}
+                  </div>
+                }
+                @if (log.new_value) {
+                  <div class="change-item new-value">
+                    <strong>Valor nuevo:</strong> {{ log.new_value }}
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    } @empty {
+      @if (!isLoading()) {
+        <div class="empty-state">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+          </svg>
+          <p>No hay registros de auditoría</p>
+        </div>
+      }
+    }
+  </div>
+</div>

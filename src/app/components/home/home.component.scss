@@ -1,0 +1,234 @@
+.home-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+.home-hero {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.hero-content {
+  max-width: 900px;
+  width: 100%;
+  text-align: center;
+  color: white;
+}
+
+.logo-section {
+  margin-bottom: 30px;
+
+  .logo-icon {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 15px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    
+    svg {
+      width: 100%;
+      height: 100%;
+      color: white;
+    }
+  }
+
+  h1 {
+    font-size: 48px;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.subtitle {
+  font-size: 20px;
+  line-height: 1.6;
+  margin: 20px 0 50px 0;
+  opacity: 0.95;
+  font-weight: 300;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+  margin: 50px 0;
+
+  .feature {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 30px;
+    transition: transform 0.3s, box-shadow 0.3s;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .feature-icon {
+      width: 60px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+
+      svg {
+        width: 30px;
+        height: 30px;
+        color: white;
+      }
+    }
+
+    h3 {
+      font-size: 22px;
+      margin: 0 0 10px 0;
+      font-weight: 600;
+    }
+
+    p {
+      font-size: 14px;
+      margin: 0;
+      opacity: 0.9;
+    }
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin: 40px 0;
+
+  button {
+    padding: 16px 40px;
+    font-size: 18px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &.btn-primary {
+      background: white;
+      color: #667eea;
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+      }
+    }
+
+    &.btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      backdrop-filter: blur(10px);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-3px);
+      }
+    }
+  }
+}
+
+.info-section {
+  margin-top: 50px;
+  
+  .info-item {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 30px;
+    text-align: left;
+
+    strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: white;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        padding: 10px 0;
+        padding-left: 30px;
+        position: relative;
+        font-size: 15px;
+        opacity: 0.95;
+
+        &:before {
+          content: "✓";
+          position: absolute;
+          left: 0;
+          font-weight: bold;
+          color: #4ade80;
+        }
+      }
+    }
+  }
+}
+
+.home-footer {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  padding: 30px 20px;
+  text-align: center;
+  color: white;
+
+  p {
+    margin: 10px 0;
+    font-size: 14px;
+    opacity: 0.9;
+  }
+
+  .security-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    opacity: 0.8;
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .logo-section h1 {
+    font-size: 32px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+  }
+
+  .features {
+    grid-template-columns: 1fr;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+}
