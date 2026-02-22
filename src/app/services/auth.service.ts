@@ -69,7 +69,18 @@ export class AuthService {
   }
 
   hasRole(rol: string): boolean {
-    return this.currentUserSignal()?.rol === rol;
+    const currentRol = this.currentUserSignal()?.rol;
+    if (!currentRol) return false;
+    
+    // Normalizar roles: "admin" y "administrador" son equivalentes
+    const normalizedCurrentRol = currentRol.toLowerCase();
+    const normalizedCheckRol = rol.toLowerCase();
+    
+    if (normalizedCheckRol === 'admin') {
+      return normalizedCurrentRol === 'admin' || normalizedCurrentRol === 'administrador';
+    }
+    
+    return normalizedCurrentRol === normalizedCheckRol;
   }
 
   updateUserTimezone(timezone: string): void {

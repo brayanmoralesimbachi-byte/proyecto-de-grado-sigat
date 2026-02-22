@@ -577,6 +577,10 @@
   }
 }
 
+.white-text {
+  color: white;
+}
+
 // Estilos para el modal de detalles
 .detalles-modal-content {
   background: white;
@@ -585,10 +589,9 @@
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   
   .modal-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--military-primary) 0%, var(--military-dark) 100%);
     color: white;
     padding: 20px 30px;
     border-radius: 16px 16px 0 0;

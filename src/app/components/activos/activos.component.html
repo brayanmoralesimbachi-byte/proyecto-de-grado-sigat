@@ -389,8 +389,10 @@
   @if (showDetallesModal() && selectedActivoDetalle()) {
     <div class="modal-overlay" (click)="closeDetallesModal()">
       <div class="detalles-modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>Detalles del Activo</h2>
+        <div class="modal-header ">
+          <div class="white-text">
+            <h2><span style="color: #fff">Detalles del Activo</span></h2>
+          </div>
           <button class="btn-close" (click)="closeDetallesModal()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
               <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>

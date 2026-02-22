@@ -89,10 +89,13 @@ export class ActivosComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.loadActivos();
+    console.log('[Activos] Current user:', this.authService.currentUser());
+    console.log('[Activos] isAdmin:', this.isAdmin());
   }
 
   isAdmin(): boolean {
-    return this.authService.hasRole('admin');
+    const result = this.authService.hasRole('admin');
+    return result;
   }
 
   async loadActivos(): Promise<void> {

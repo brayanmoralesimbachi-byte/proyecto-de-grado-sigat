@@ -32,11 +32,14 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
+    console.log('[Dashboard] Current user:', this.authService.currentUser());
+    console.log('[Dashboard] isAdmin:', this.isAdmin());
     await this.loadActivos();
   }
 
   isAdmin(): boolean {
-    return this.authService.hasRole('admin');
+    const result = this.authService.hasRole('admin');
+    return result;
   }
 
   async loadActivos(): Promise<void> {

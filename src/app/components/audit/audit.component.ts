@@ -35,16 +35,21 @@ export class AuditComponent implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
+    console.log('[Audit] Current user:', this.authService.currentUser());
+    console.log('[Audit] hasRole(admin):', this.authService.hasRole('admin'));
     this.initAcciones();
     await this.loadAuditLog();
   }
 
   initAcciones(): void {
-    if (this.authService.hasRole('admin')) {
+    const isAdmin = this.authService.hasRole('admin');
+    console.log('[Audit] initAcciones - isAdmin:', isAdmin);
+    if (isAdmin) {
       this.acciones = ['CREATE', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOUT'];
     } else {
       this.acciones = ['CREATE', 'UPDATE', 'DELETE'];
     }
+    console.log('[Audit] acciones array:', this.acciones);
   }
 
   async loadAuditLog(): Promise<void> {
