@@ -27,6 +27,107 @@
     <div class="loading">Cargando activos...</div>
   }
 
+  <!-- Barra de búsqueda y filtros básicos -->
+  <div class="search-filters-container">
+    <div class="search-bar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+      <input 
+        type="text" 
+        placeholder="Buscar por código, nombre, descripción..." 
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchChange()"
+        class="search-input">
+    </div>
+
+    <div class="basic-filters">
+      <select [(ngModel)]="filtroEstado" (ngModelChange)="aplicarFiltros()" class="filter-select">
+        <option value="">Todos los estados</option>
+        @for (estado of estados; track estado) {
+          <option [value]="estado">{{ estado.replace('_', ' ') }}</option>
+        }
+      </select>
+
+      <select [(ngModel)]="filtroCategoria" (ngModelChange)="aplicarFiltros()" class="filter-select">
+        <option value="">Todas las categorías</option>
+        @for (cat of categorias; track cat) {
+          <option [value]="cat">{{ cat }}</option>
+        }
+      </select>
+
+      <button class="btn-filter" (click)="toggleFiltrosAvanzados()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+        </svg>
+        Filtros Avanzados
+      </button>
+
+      <button class="btn-clear" (click)="limpiarFiltros()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+        Limpiar
+      </button>
+    </div>
+  </div>
+
+  <!-- Panel de filtros avanzados -->
+  @if (showFiltrosAvanzados()) {
+    <div class="advanced-filters-panel">
+      <h3>Filtros Avanzados</h3>
+      <div class="advanced-filters-grid">
+        <div class="filter-group">
+          <label>Ubicación</label>
+          <input 
+            type="text" 
+            [(ngModel)]="filtroUbicacion"
+            (ngModelChange)="aplicarFiltros()"
+            placeholder="Buscar por ubicación">
+        </div>
+
+        <div class="filter-group">
+          <label>Código</label>
+          <input 
+            type="text" 
+            [(ngModel)]="filtroCodigo"
+            (ngModelChange)="aplicarFiltros()"
+            placeholder="Buscar por código">
+        </div>
+
+        <div class="filter-group">
+          <label>Palabras Clave (separadas por coma)</label>
+          <input 
+            type="text" 
+            [(ngModel)]="filtroPalabrasClave"
+            (ngModelChange)="aplicarFiltros()"
+            placeholder="ej: computador, monitor, teclado">
+        </div>
+
+        <div class="filter-group">
+          <label>Rango de Valor</label>
+          <select [(ngModel)]="filtroRangoValor" (ngModelChange)="aplicarFiltros()">
+            <option value="">Todos los valores</option>
+            @for (rango of rangosValor; track rango.label) {
+              <option [value]="JSON.stringify({min: rango.min, max: rango.max})">{{ rango.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Tiempo de Vencimiento</label>
+          <select [(ngModel)]="filtroTiempoVencimiento" (ngModelChange)="aplicarFiltros()">
+            <option value="">Todos los tiempos</option>
+            @for (tiempo of tiemposVencimiento; track tiempo.label) {
+              <option [value]="JSON.stringify({min: tiempo.min, max: tiempo.max})">{{ tiempo.label }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      <!-- <button class="btn-clear-advanced" (click)="limpiarFiltrosAvanzados()">Limpiar Filtros Avanzados</button> -->
+    </div>
+  }
+
   <div class="table-container">
     <table class="activos-table">
       <thead>
@@ -36,13 +137,14 @@
           <th>Categoría</th>
           <th>Ubicación</th>
           <th>Estado</th>
+          <th>Tiempo de Vida</th>
           <th>Valor</th>
           <th>Imagen</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @for (activo of activos(); track activo.id) {
+        @for (activo of activosPaginados(); track activo.id) {
           <tr>
             <td><strong>{{ activo.codigo }}</strong></td>
             <td>{{ activo.nombre }}</td>
@@ -52,6 +154,26 @@
               <span [class]="'badge ' + getEstadoBadgeClass(activo.estado)">
                 {{ activo.estado.replace('_', ' ') }}
               </span>
+            </td>
+            <td class="vencimiento-cell">
+              @if (activo.fecha_vencimiento && activo.fecha_adquisicion) {
+                @let percentage = calculateVencimientoPercentage(activo.fecha_adquisicion, activo.fecha_vencimiento);
+                @let color = getVencimientoColor(percentage);
+                <div class="vencimiento-mini-container">
+                  <div class="vencimiento-mini-bar-bg">
+                    <div 
+                      class="vencimiento-mini-bar-fill"
+                      [style.width.%]="percentage"
+                      [style.background-color]="color">
+                    </div>
+                  </div>
+                  <span class="vencimiento-mini-text" [style.color]="color">
+                    {{ percentage.toFixed(0) }}%
+                  </span>
+                </div>
+              } @else {
+                <span class="no-vencimiento-mini">Sin fecha</span>
+              }
             </td>
             <td>{{ formatCurrency(activo.valor_adquisicion) }}</td>
             <td class="image-cell">
@@ -64,6 +186,11 @@
               }
             </td>
             <td class="actions">
+              <button class="btn-icon btn-view" (click)="openDetallesModal(activo)" title="Ver detalles">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                </svg>
+              </button>
               <button class="btn-icon btn-edit" (click)="openEditModal(activo)" title="Editar">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
@@ -78,12 +205,67 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="8" class="empty-state">No hay activos registrados</td>
+            <td colspan="9" class="empty-state">No hay activos registrados</td>
           </tr>
         }
       </tbody>
     </table>
   </div>
+
+  <!-- Paginación -->
+  @if (totalPages() > 1) {
+    <div class="pagination-container">
+      <button 
+        class="pagination-btn" 
+        (click)="cambiarPagina(currentPage() - 1)"
+        [disabled]="currentPage() === 1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+        </svg>
+        Anterior
+      </button>
+
+      <div class="pagination-numbers">
+        @if (currentPage() > 3) {
+          <button class="pagination-number" (click)="cambiarPagina(1)">1</button>
+          <span class="pagination-ellipsis">...</span>
+        }
+        
+        @for (page of paginasArray; track page) {
+          @if (page >= currentPage() - 2 && page <= currentPage() + 2) {
+            <button 
+              class="pagination-number" 
+              [class.active]="page === currentPage()"
+              (click)="cambiarPagina(page)">
+              {{ page }}
+            </button>
+          }
+        }
+
+        @if (currentPage() < totalPages() - 2) {
+          <span class="pagination-ellipsis">...</span>
+          <button class="pagination-number" (click)="cambiarPagina(totalPages())">{{ totalPages() }}</button>
+        }
+      </div>
+
+      <button 
+        class="pagination-btn" 
+        (click)="cambiarPagina(currentPage() + 1)"
+        [disabled]="currentPage() === totalPages()">
+        Siguiente
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+        </svg>
+      </button>
+
+      <div class="pagination-info">
+        Página {{ currentPage() }} de {{ totalPages() }} | 
+        Mostrando {{ (currentPage() - 1) * itemsPerPage + 1 }} - 
+        {{ Math.min(currentPage() * itemsPerPage, activosFiltrados().length) }} 
+        de {{ activosFiltrados().length }} activos
+      </div>
+    </div>
+  }
 
   <!-- Modal -->
   @if (showModal()) {
@@ -155,6 +337,11 @@
           </div>
 
           <div class="form-group">
+            <label>Fecha de Vencimiento</label>
+            <input type="date" [(ngModel)]="currentActivo().fecha_vencimiento" name="fecha_vencimiento">
+          </div>
+
+          <div class="form-group">
             <label>Imagen del Activo</label>
             <input 
               type="file" 
@@ -194,6 +381,162 @@
           </svg>
         </button>
         <img [src]="selectedImage()" alt="Imagen completa" class="full-image">
+      </div>
+    </div>
+  }
+
+  <!-- Modal de Detalles del Activo -->
+  @if (showDetallesModal() && selectedActivoDetalle()) {
+    <div class="modal-overlay" (click)="closeDetallesModal()">
+      <div class="detalles-modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Detalles del Activo</h2>
+          <button class="btn-close" (click)="closeDetallesModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="detalles-body">
+          <!-- Imagen del activo -->
+          @if (selectedActivoDetalle()!.imagen_base64) {
+            <div class="detalles-image-container">
+              <img [src]="selectedActivoDetalle()!.imagen_base64" alt="Imagen del activo" class="detalles-image">
+            </div>
+          }
+
+          <!-- Información básica -->
+          <div class="detalles-section">
+            <h3>Información General</h3>
+            <div class="detalles-grid">
+              <div class="detalles-item">
+                <label>Código:</label>
+                <span>{{ selectedActivoDetalle()!.codigo }}</span>
+              </div>
+              <div class="detalles-item">
+                <label>Nombre:</label>
+                <span>{{ selectedActivoDetalle()!.nombre }}</span>
+              </div>
+              <div class="detalles-item">
+                <label>Categoría:</label>
+                <span>{{ selectedActivoDetalle()!.categoria }}</span>
+              </div>
+              <div class="detalles-item">
+                <label>Estado:</label>
+                <span [class]="'badge ' + getEstadoBadgeClass(selectedActivoDetalle()!.estado)">
+                  {{ selectedActivoDetalle()!.estado.replace('_', ' ') }}
+                </span>
+              </div>
+              <div class="detalles-item">
+                <label>Ubicación:</label>
+                <span>{{ selectedActivoDetalle()!.ubicacion || '-' }}</span>
+              </div>
+              <div class="detalles-item">
+                <label>Valor de Adquisición:</label>
+                <span>{{ formatCurrency(selectedActivoDetalle()!.valor_adquisicion) }}</span>
+              </div>
+            </div>
+            @if (selectedActivoDetalle()!.descripcion) {
+              <div class="detalles-item detalles-full">
+                <label>Descripción:</label>
+                <p>{{ selectedActivoDetalle()!.descripcion }}</p>
+              </div>
+            }
+          </div>
+
+          <!-- Información de creación -->
+          <div class="detalles-section">
+            <h3>Información de Registro</h3>
+            <div class="detalles-grid">
+              <div class="detalles-item">
+                <label>Creado por:</label>
+                <span>{{ selectedActivoDetalle()!.created_by_username || 'Desconocido' }}</span>
+              </div>
+              <div class="detalles-item">
+                <label>Fecha de creación:</label>
+                <span>{{ formatDateTime(selectedActivoDetalle()!.created_at) }}</span>
+              </div>
+              <div class="detalles-item">
+                <label>Fecha de adquisición:</label>
+                <span>{{ formatDate(selectedActivoDetalle()!.fecha_adquisicion) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fecha de vencimiento y barra de progreso -->
+          <div class="detalles-section">
+            <h3>Fecha de Vencimiento</h3>
+            <div class="vencimiento-container">
+              <div class="form-group">
+                <input 
+                  type="date" 
+                  [value]="selectedActivoDetalle()!.fecha_vencimiento || ''"
+                  (change)="updateFechaVencimiento(selectedActivoDetalle()!.id!, $any($event.target).value)"
+                  class="fecha-vencimiento-input">
+              </div>
+              
+              @if (selectedActivoDetalle()!.fecha_vencimiento) {
+                @let percentage = calculateVencimientoPercentage(selectedActivoDetalle()!.fecha_adquisicion, selectedActivoDetalle()!.fecha_vencimiento);
+                @let color = getVencimientoColor(percentage);
+                <div class="vencimiento-bar-container">
+                  <div class="vencimiento-bar-label">
+                    <span>Estado de vencimiento: {{ percentage.toFixed(1) }}%</span>
+                    @if (percentage === 0) {
+                      <span class="vencimiento-status vencido">VENCIDO</span>
+                    } @else if (percentage <= 1) {
+                      <span class="vencimiento-status hoy">HOY</span>
+                    } @else if (percentage <= 20) {
+                      <span class="vencimiento-status critico">CRÍTICO</span>
+                    } @else if (percentage <= 50) {
+                      <span class="vencimiento-status advertencia">ADVERTENCIA</span>
+                    } @else {
+                      <span class="vencimiento-status normal">NORMAL</span>
+                    }
+                  </div>
+                  <div class="vencimiento-bar-bg">
+                    <div 
+                      class="vencimiento-bar-fill"
+                      [style.width.%]="percentage"
+                      [style.background-color]="color">
+                    </div>
+                  </div>
+                </div>
+              } @else {
+                <p class="no-vencimiento">No se ha establecido fecha de vencimiento</p>
+              }
+            </div>
+          </div>
+
+          <!-- Historial de visualizaciones -->
+          @if (isAdmin()) {
+          <div class="detalles-section">
+            <h3>Historial de Visualizaciones (Últimas 10)</h3>
+            @if (activoVistas().length > 0) {
+              <div class="vistas-list">
+                @for (vista of activoVistas(); track vista.viewed_at) {
+                  <div class="vista-item">
+                    <div class="vista-user">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                      </svg>
+                      <span class="vista-username">{{ vista.username }}</span>
+                    </div>
+                    <div class="vista-date">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                      </svg>
+                      <span>{{ formatDateTime(vista.viewed_at) }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="no-vistas">No hay visualizaciones registradas</p>
+            }
+          </div>
+          }
+        </div>
       </div>
     </div>
   }

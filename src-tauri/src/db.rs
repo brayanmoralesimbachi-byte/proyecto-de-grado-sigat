@@ -63,10 +63,13 @@ impl Database {
                 estado TEXT NOT NULL,
                 valor_adquisicion REAL,
                 fecha_adquisicion DATE,
+                fecha_vencimiento DATE,
                 imagen_base64 TEXT,
+                created_by INTEGER,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (responsable_id) REFERENCES usuarios(id)
+                FOREIGN KEY (responsable_id) REFERENCES usuarios(id),
+                FOREIGN KEY (created_by) REFERENCES usuarios(id)
             )
             "#,
         )
@@ -108,6 +111,22 @@ impl Database {
         .execute(&self.pool)
         .await?;
 
+        // Tabla de vistas de activos (historial de visualizaciones)
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS activo_vistas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                activo_id INTEGER NOT NULL,
+                usuario_id INTEGER NOT NULL,
+                viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (activo_id) REFERENCES activos(id) ON DELETE CASCADE,
+                FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+            )
+            "#,
+        )
+        .execute(&self.pool)
+        .await?;
+
         // Migración: Agregar columna imagen_base64 si no existe
         // Verificar si la columna existe
         let table_info: Vec<(i64, String, String, i64, Option<String>, i64)> = sqlx::query_as(
@@ -117,10 +136,47 @@ impl Database {
         .await?;
 
         let has_imagen_column = table_info.iter().any(|(_, name, _, _, _, _)| name == "imagen_base64");
+        let has_fecha_vencimiento_column = table_info.iter().any(|(_, name, _, _, _, _)| name == "fecha_vencimiento");
+        let has_created_by_column = table_info.iter().any(|(_, name, _, _, _, _)| name == "created_by");
 
         if !has_imagen_column {
             // Agregar la columna imagen_base64 a la tabla existente
             sqlx::query("ALTER TABLE activos ADD COLUMN imagen_base64 TEXT")
+                .execute(&self.pool)
+                .await?;
+        }
+
+        if !has_fecha_vencimiento_column {
+            // Agregar la columna fecha_vencimiento a la tabla existente
+            sqlx::query("ALTER TABLE activos ADD COLUMN fecha_vencimiento DATE")
+                .execute(&self.pool)
+                .await?;
+        }
+
+        if !has_created_by_column {
+            // Agregar la columna created_by a la tabla existente
+            sqlx::query("ALTER TABLE activos ADD COLUMN created_by INTEGER")
+                .execute(&self.pool)
+                .await?;
+        }
+
+        // Migración: Agregar columna timezone a usuarios si no existe
+        let user_table_info: Vec<(i64, String, String, i64, Option<String>, i64)> = sqlx::query_as(
+            "PRAGMA table_info(usuarios)"
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        let has_timezone_column = user_table_info.iter().any(|(_, name, _, _, _, _)| name == "timezone");
+
+        if !has_timezone_column {
+            // Agregar la columna timezone con valor por defecto 'America/Bogota'
+            sqlx::query("ALTER TABLE usuarios ADD COLUMN timezone TEXT DEFAULT 'America/Bogota'")
+                .execute(&self.pool)
+                .await?;
+            
+            // Actualizar usuarios existentes para tener la zona horaria por defecto
+            sqlx::query("UPDATE usuarios SET timezone = 'America/Bogota' WHERE timezone IS NULL")
                 .execute(&self.pool)
                 .await?;
         }

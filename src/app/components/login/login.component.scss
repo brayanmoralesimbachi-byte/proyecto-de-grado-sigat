@@ -3,17 +3,36 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #556B2F 0%, #3C3F2E 100%);
   padding: 20px;
+  position: relative;
+  
+  /* Efecto de camuflaje sutil */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(107, 142, 35, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(74, 93, 35, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 40% 20%, rgba(90, 108, 45, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
 }
 
 .login-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(60, 63, 46, 0.3);
   padding: 40px;
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
+  border: 2px solid var(--military-border);
+  position: relative;
+  z-index: 1;
 }
 
 .login-header {
@@ -21,16 +40,19 @@
   margin-bottom: 30px;
 
   h1 {
-    color: #333;
-    font-size: 28px;
+    font-family: 'Playfair Display', serif;
+    color: var(--military-dark);
+    font-size: 32px;
     margin-bottom: 10px;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 1px;
   }
 
   p {
-    color: #666;
+    color: var(--military-text-light);
     font-size: 14px;
     margin: 0;
+    font-family: 'Lato', sans-serif;
   }
 }
 
@@ -40,63 +62,72 @@
 
     label {
       display: block;
-      color: #333;
-      font-weight: 500;
+      color: var(--military-dark);
+      font-weight: 600;
       margin-bottom: 8px;
       font-size: 14px;
+      font-family: 'Lato', sans-serif;
     }
 
     input {
       width: 100%;
       padding: 12px 16px;
-      border: 2px solid #e0e0e0;
+      border: 2px solid var(--military-border);
       border-radius: 8px;
       font-size: 14px;
       transition: all 0.3s;
       box-sizing: border-box;
+      background-color: white;
+      color: var(--military-text);
+      font-family: 'Lato', sans-serif;
 
       &:focus {
         outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: var(--military-primary);
+        box-shadow: 0 0 0 3px rgba(85, 107, 47, 0.15);
       }
 
       &:disabled {
-        background-color: #f5f5f5;
+        background-color: var(--military-bg-light);
         cursor: not-allowed;
       }
 
       &::placeholder {
-        color: #aaa;
+        color: var(--military-text-light);
       }
     }
   }
 
   .error-message {
-    background-color: #fee;
-    color: #c33;
+    background-color: #f8e8e0;
+    color: var(--military-danger);
     padding: 12px;
     border-radius: 6px;
     font-size: 14px;
     margin-bottom: 20px;
-    border-left: 4px solid #c33;
+    border-left: 4px solid var(--military-danger);
+    font-family: 'Lato', sans-serif;
   }
 
   .login-button {
     width: 100%;
     padding: 14px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--military-primary) 0%, var(--military-secondary) 100%);
     color: white;
     border: none;
     border-radius: 8px;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.3s;
+    font-family: 'Lato', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 
     &:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 6px 20px rgba(85, 107, 47, 0.4);
+      background: linear-gradient(135deg, var(--military-secondary) 0%, var(--military-primary) 100%);
     }
 
     &:active:not(:disabled) {
@@ -114,19 +145,20 @@
     margin-top: 20px;
 
     p {
-      color: #666;
+      color: var(--military-text-light);
       font-size: 14px;
       margin: 0;
+      font-family: 'Lato', sans-serif;
 
       a {
-        color: #667eea;
+        color: var(--military-primary);
         font-weight: 600;
         cursor: pointer;
         text-decoration: none;
         transition: color 0.2s;
 
         &:hover {
-          color: #764ba2;
+          color: var(--military-secondary);
           text-decoration: underline;
         }
       }
@@ -139,8 +171,9 @@
   text-align: center;
 
   p {
-    color: #999;
+    color: var(--military-text-light);
     font-size: 12px;
     margin: 0;
+    font-family: 'Lato', sans-serif;
   }
 }

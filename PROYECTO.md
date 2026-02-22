@@ -17,6 +17,7 @@ Aplicación de escritorio para la gestión segura de activos del Centro de Inves
 - **Base de datos**: SQLite cifrado con SQLCipher
 - **Criptografía**: Argon2id para hash de contraseñas
 
+
 ## 📁 Estructura del Proyecto
 
 ```
@@ -35,6 +36,8 @@ gestor-activos/
 │   └── Cargo.toml          # Dependencias Rust
 └── ...
 ```
+
+
 
 ## 🚀 Comandos de Desarrollo
 
@@ -59,10 +62,6 @@ El instalador MSI se generará en: `src-tauri/target/release/bundle/msi/`
 
 Antes de compilar, configura las variables de entorno:
 
-```bash
-set SQLITE3_LIB_DIR=C:\ruta\a\sqlcipher
-set SQLITE3_INCLUDE_DIR=C:\ruta\a\sqlcipher
-```
 
 ## 📋 Módulos Implementados
 
@@ -99,15 +98,6 @@ import { TauriService } from './services/tauri.service';
 // Inyectar el servicio
 constructor(private tauriService: TauriService) {}
 
-// Crear usuario
-await this.tauriService.createUser('admin', 'password123', 'administrador');
-
-// Login
-const response = await this.tauriService.login({
-  username: 'admin',
-  password: 'password123'
-});
-
 // Obtener activos
 const activos = await this.tauriService.getActivos();
 ```
@@ -118,6 +108,7 @@ const activos = await this.tauriService.getActivos();
 - El ejemplo actual usa una clave temporal solo para desarrollo
 - Se recomienda implementar un sistema de gestión de claves maestras para producción
 - La base de datos se almacena en el directorio de datos de la aplicación
+- DEV: npm run dev
 
 ## 🛡️ Cumplimiento de Requisitos
 
@@ -129,6 +120,3 @@ const activos = await this.tauriService.getActivos();
 ✅ Separación frontend/backend con control estricto de permisos  
 ✅ Instalador y desinstalador nativos (MSI para Windows)  
 
-## 📄 Licencia
-
-Proyecto académico - Escuela de Telecomunicaciones de Facatativá

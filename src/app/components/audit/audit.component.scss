@@ -3,7 +3,7 @@
   max-width: 1000px;
   margin: 0 auto;
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--military-bg-light);
 }
 
 .header {
@@ -15,20 +15,24 @@
   background: white;
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(60, 63, 46, 0.15);
+  border: 2px solid var(--military-border);
 
   h1 {
     margin: 0;
-    color: #2d3748;
-    font-size: 28px;
+    color: var(--military-dark);
+    font-size: 30px;
     display: flex;
     align-items: center;
     gap: 12px;
+    font-family: 'Playfair Display', serif;
+    font-weight: 800;
+    letter-spacing: 1px;
 
     svg {
       width: 32px;
       height: 32px;
-      color: #667eea;
+      color: var(--military-primary);
     }
   }
 }
@@ -38,14 +42,15 @@
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: #e2e8f0;
-  border: none;
+  background: var(--military-bg-light);
+  border: 2px solid var(--military-border);
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
-  color: #4a5568;
+  font-weight: 600;
+  color: var(--military-text);
   transition: all 0.3s;
+  font-family: 'Lato', sans-serif;
 
   svg {
     width: 20px;
@@ -53,7 +58,10 @@
   }
 
   &:hover {
-    background: #cbd5e0;
+    background: var(--military-primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(85, 107, 47, 0.3);
   }
 }
 
@@ -104,7 +112,7 @@
 }
 
 .info-banner {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--military-primary) 0%, var(--military-dark) 100%);
   color: white;
   padding: 20px;
   border-radius: 12px;
@@ -112,7 +120,9 @@
   display: flex;
   gap: 16px;
   align-items: flex-start;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(85, 107, 47, 0.3);
+  border: 2px solid var(--military-accent);
+  font-family: 'Lato', sans-serif;
 
   svg {
     width: 32px;
@@ -124,6 +134,8 @@
     display: block;
     font-size: 16px;
     margin-bottom: 4px;
+    font-weight: 700;
+    font-family: 'Playfair Display', serif;
   }
 }
 
@@ -137,8 +149,8 @@
     left: 20px;
     top: 0;
     bottom: 0;
-    width: 2px;
-    background: linear-gradient(to bottom, #667eea, #764ba2);
+    width: 3px;
+    background: linear-gradient(to bottom, var(--military-primary), var(--military-dark));
   }
 }
 
@@ -158,8 +170,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  border: 3px solid #f5f7fa;
+  box-shadow: 0 2px 8px rgba(60, 63, 46, 0.3);
+  border: 3px solid var(--military-bg-light);
 
   svg {
     width: 20px;
@@ -168,19 +180,19 @@
   }
 
   &.badge-success {
-    background: #48bb78;
+    background: var(--military-success);
   }
 
   &.badge-warning {
-    background: #ed8936;
+    background: var(--military-warning);
   }
 
   &.badge-danger {
-    background: #f56565;
+    background: var(--military-danger);
   }
 
   &.badge-info {
-    background: #4299e1;
+    background: var(--military-info);
   }
 }
 
@@ -189,12 +201,14 @@
   background: white;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(60, 63, 46, 0.15);
   transition: transform 0.2s, box-shadow 0.2s;
+  border: 2px solid var(--military-border);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 16px rgba(85, 107, 47, 0.25);
+    border-color: var(--military-primary);
   }
 }
 
@@ -392,5 +406,148 @@
 
   .action-info {
     width: 100%;
+  }
+}
+
+// Estilos de filtros de auditoría
+.audit-filters {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #4a5568;
+    }
+
+    .filter-select {
+      padding: 10px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      background: white;
+      font-size: 14px;
+      color: #2d3748;
+      cursor: pointer;
+      transition: border-color 0.3s;
+
+      &:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+    }
+  }
+
+  .btn-clear {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: #e2e8f0;
+    color: #4a5568;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    &:hover {
+      background: #cbd5e0;
+    }
+  }
+}
+
+// Estilos de agrupación por fecha
+.fecha-group {
+  margin-bottom: 40px;
+}
+
+.fecha-header,
+.fecha-header-con-pagina {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+background: linear-gradient(135deg, var(--military-primary) 0%, var(--military-dark) 100%);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    &::before {
+      content: '📅';
+      font-size: 24px;
+    }
+  }
+
+  .logs-count {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+.fecha-header-con-pagina {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  
+  h2::before {
+    content: '📑';
+  }
+}
+
+@media (max-width: 768px) {
+  .audit-filters {
+    flex-direction: column;
+    
+    .filter-group {
+      width: 100%;
+      
+      .filter-select {
+        width: 100%;
+      }
+    }
+
+    .btn-clear {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .fecha-header,
+  .fecha-header-con-pagina {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+
+    h2 {
+      font-size: 18px;
+    }
   }
 }

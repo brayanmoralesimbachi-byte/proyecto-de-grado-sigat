@@ -3,10 +3,12 @@ mod db;
 mod crypto;
 mod commands;
 
-use commands::{AppState, create_user, login, get_activos, create_activo, update_activo, 
+use commands::{AppState, create_user, login, logout, can_close_app, force_logout, get_activos, create_activo, update_activo, 
                delete_activo, get_users, update_user_role, delete_user, get_audit_log,
-               change_password, change_username, get_username_history};
+               change_password, change_username, get_username_history, get_activo_detalles,
+               register_activo_vista, get_activo_vistas, update_fecha_vencimiento, update_timezone};
 use tokio::sync::Mutex;
+use std::sync::Mutex as StdMutex;
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -14,6 +16,9 @@ pub fn run() {
   // Inicializar estado de la aplicación
   let app_state = AppState {
     db: Mutex::new(None),
+    can_close_app: StdMutex::new(true), // Inicialmente se puede cerrar
+    active_user_id: StdMutex::new(None),
+    login_timestamp: StdMutex::new(None),
   };
 
   tauri::Builder::default()
@@ -25,6 +30,29 @@ pub fn run() {
             .level(log::LevelFilter::Info)
             .build(),
         )?;
+      }
+
+      // Interceptar eventos de cierre de ventana
+      let app_handle = app.handle().clone();
+      if let Some(window) = app.handle().get_webview_window("main") {
+        window.on_window_event(move |event| {
+          if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+            // Extraer el valor de can_close en un bloque interno para liberar todas las referencias
+            let can_close = {
+              let app_handle_clone = app_handle.clone();
+              let state = app_handle_clone.state::<AppState>();
+              state.can_close_app.try_lock()
+                .map(|guard| *guard)
+                .unwrap_or(true) // Si no podemos obtener el lock, permitimos cerrar por seguridad
+            };
+            
+            if !can_close {
+              // Prevenir cierre si hay sesión activa
+              api.prevent_close();
+              println!("Cierre prevenido: hay una sesión activa");
+            }
+          }
+        });
       }
 
       // Inicializar la base de datos en el setup
@@ -67,6 +95,9 @@ pub fn run() {
     .invoke_handler(tauri::generate_handler![
       create_user,
       login,
+      logout,
+      can_close_app,
+      force_logout,
       get_activos,
       create_activo,
       update_activo,
@@ -77,7 +108,12 @@ pub fn run() {
       get_audit_log,
       change_password,
       change_username,
-      get_username_history
+      get_username_history,
+      get_activo_detalles,
+      register_activo_vista,
+      get_activo_vistas,
+      update_fecha_vencimiento,
+      update_timezone
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

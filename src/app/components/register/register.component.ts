@@ -40,6 +40,18 @@ export class RegisterComponent {
       return;
     }
 
+    // Validar que la contraseña tenga al menos una mayúscula
+    if (!/[A-Z]/.test(this.password())) {
+      this.errorMessage.set('La contraseña debe contener al menos una letra mayúscula');
+      return;
+    }
+
+    // Validar que la contraseña tenga al menos un número
+    if (!/[0-9]/.test(this.password())) {
+      this.errorMessage.set('La contraseña debe contener al menos un número');
+      return;
+    }
+
     if (this.password() !== this.confirmPassword()) {
       this.errorMessage.set('Las contraseñas no coinciden');
       return;
@@ -64,7 +76,13 @@ export class RegisterComponent {
       }, 2000);
 
     } catch (error) {
-      this.errorMessage.set('Error al crear usuario: ' + error);
+      // Mostrar el mensaje de error tal como viene del backend
+      const errorMsg = String(error);
+      if (errorMsg.includes('ya está en uso')) {
+        this.errorMessage.set(errorMsg);
+      } else {
+        this.errorMessage.set('Error al crear usuario: ' + error);
+      }
     } finally {
       this.isLoading.set(false);
     }

@@ -29,6 +29,11 @@
           (click)="setActiveTab('username')">
           Cambiar Nombre de Usuario
         </button>
+        <button 
+          [class.active]="activeTab() === 'timezone'"
+          (click)="setActiveTab('timezone')">
+          Zona Horaria
+        </button>
       </div>
 
       @if (successMessage()) {
@@ -119,6 +124,48 @@
               (click)="changeUsername()"
               [disabled]="isLoading()">
               {{ isLoading() ? 'Guardando...' : 'Actualizar Nombre de Usuario' }}
+            </button>
+          </form>
+        </div>
+      }
+
+      @if (activeTab() === 'timezone') {
+        <div class="tab-content">
+          <h3>Configuración de Zona Horaria</h3>
+          <form class="settings-form">
+            <div class="form-group">
+              <label>Zona Horaria Actual</label>
+              <input 
+                type="text" 
+                [value]="currentUser()?.timezone || 'America/Bogota'"
+                disabled>
+            </div>
+
+            <div class="form-group">
+              <label>Seleccionar País / Zona Horaria *</label>
+              <select 
+                [(ngModel)]="$any(selectedTimezone)"
+                name="timezone"
+                required>
+                @for (tz of timezones; track tz.value) {
+                  <option [value]="tz.value">{{ tz.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="info-box">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+              </svg>
+              <span>La zona horaria afecta cómo se muestran las fechas y horas en todo el sistema.</span>
+            </div>
+
+            <button 
+              type="button" 
+              class="btn-primary" 
+              (click)="changeTimezone()"
+              [disabled]="isLoading()">
+              {{ isLoading() ? 'Guardando...' : 'Actualizar Zona Horaria' }}
             </button>
           </form>
         </div>

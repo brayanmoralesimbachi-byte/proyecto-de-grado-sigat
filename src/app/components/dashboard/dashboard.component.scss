@@ -1,27 +1,36 @@
 .dashboard-container {
   display: flex;
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--military-bg-light);
 }
 
 .sidebar {
   width: 280px;
   background: white;
-  border-right: 1px solid #e2e8f0;
+  border-right: 2px solid var(--military-border);
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   height: 100vh;
+  box-shadow: 2px 0 10px rgba(60, 63, 46, 0.1);
+}
+.white-sidebar{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: white;
+  padding: 16px 24px;
+  animation: slideInDown 0.5s ease-out;
 }
 
 .sidebar-header {
   padding: 24px 20px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 2px solid var(--military-border);
   display: flex;
   align-items: center;
   gap: 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--military-primary) 0%, var(--military-dark) 100%);
   color: white;
 
   svg {
@@ -31,8 +40,10 @@
 
   h2 {
     margin: 0;
-    font-size: 18px;
+    font-size: 19px;
     font-weight: 700;
+    font-family: 'Playfair Display', serif;
+    letter-spacing: 1px;
   }
 }
 
@@ -46,11 +57,12 @@
     align-items: center;
     gap: 12px;
     padding: 14px 20px;
-    color: #4a5568;
+    color: var(--military-text);
     text-decoration: none;
     cursor: pointer;
     transition: all 0.2s;
     font-weight: 500;
+    font-family: 'Lato', sans-serif;
 
     svg {
       width: 22px;
@@ -58,21 +70,22 @@
     }
 
     &:hover {
-      background: #f7fafc;
-      color: #667eea;
+      background: var(--military-bg-light);
+      color: var(--military-primary);
     }
 
     &.active {
-      background: #edf2f7;
-      color: #667eea;
-      border-right: 3px solid #667eea;
+      background: rgba(85, 107, 47, 0.1);
+      color: var(--military-primary);
+      border-right: 4px solid var(--military-primary);
+      font-weight: 700;
     }
   }
 }
 
 .sidebar-footer {
   padding: 20px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 2px solid var(--military-border);
 
   .user-card {
     display: flex;
@@ -80,20 +93,22 @@
     gap: 12px;
     margin-bottom: 16px;
     padding: 12px;
-    background: #f7fafc;
+    background: var(--military-bg-light);
     border-radius: 10px;
+    border: 1px solid var(--military-border);
 
     .user-avatar {
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, var(--military-primary) 0%, var(--military-dark) 100%);
       color: white;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
       font-size: 18px;
+      font-family: 'Playfair Display', serif;
     }
 
     .user-details {
@@ -102,15 +117,17 @@
       .user-name {
         display: block;
         font-weight: 600;
-        color: #2d3748;
+        color: var(--military-dark);
         font-size: 14px;
+        font-family: 'Lato', sans-serif;
       }
 
       .user-role {
         display: block;
         font-size: 12px;
-        color: #718096;
+        color: var(--military-text-light);
         text-transform: capitalize;
+        font-family: 'Lato', sans-serif;
       }
     }
   }
@@ -122,14 +139,17 @@
     justify-content: center;
     gap: 8px;
     padding: 10px;
-    background: #fed7d7;
-    color: #742a2a;
-    border: none;
+    background: rgba(139, 69, 19, 0.15);
+    color: var(--military-danger);
+    border: 2px solid var(--military-danger);
     border-radius: 8px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 14px;
     transition: all 0.2s;
+    font-family: 'Lato', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 
     svg {
       width: 18px;
@@ -137,8 +157,10 @@
     }
 
     &:hover {
-      background: #fc8181;
+      background: var(--military-danger);
       color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
     }
   }
 }
@@ -154,14 +176,63 @@
 
   h1 {
     margin: 0 0 8px 0;
-    color: #2d3748;
-    font-size: 32px;
+    color: var(--military-dark);
+    font-size: 36px;
+    font-family: 'Playfair Display', serif;
+    font-weight: 800;
+    letter-spacing: 1px;
   }
 
   p {
     margin: 0;
-    color: #718096;
+    color: var(--military-text-light);
     font-size: 16px;
+    font-family: 'Lato', sans-serif;
+  }
+}
+
+.security-notice {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, var(--military-primary) 0%, var(--military-dark) 100%);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 12px rgba(85, 107, 47, 0.3);
+  animation: slideInDown 0.5s ease-out;
+  border: 2px solid var(--military-accent);
+
+  svg {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+
+  .notice-content {
+    flex: 1;
+    font-size: 15px;
+    line-height: 1.5;
+    font-family: 'Lato', sans-serif;
+
+    strong {
+      font-weight: 700;
+      display: block;
+      margin-bottom: 4px;
+      font-family: 'Playfair Display', serif;
+    }
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -181,11 +252,13 @@
   gap: 16px;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(60, 63, 46, 0.15);
+  border: 2px solid var(--military-border);
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 24px rgba(85, 107, 47, 0.25);
+    border-color: var(--military-primary);
   }
 
   .stats-icon {
@@ -203,15 +276,15 @@
     }
 
     &.activos {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, var(--military-primary) 0%, var(--military-secondary) 100%);
     }
 
     &.users {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      background: linear-gradient(135deg, var(--military-accent) 0%, var(--military-primary) 100%);
     }
 
     &.audit {
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      background: linear-gradient(135deg, var(--military-secondary) 0%, var(--military-light) 100%);
     }
   }
 
@@ -221,13 +294,15 @@
     h3 {
       margin: 0 0 4px 0;
       font-size: 28px;
-      color: #2d3748;
+      color: var(--military-dark);
+      font-family: 'Playfair Display', serif;
     }
 
     p {
       margin: 0;
-      color: #718096;
+      color: var(--military-text-light);
       font-size: 14px;
+      font-family: 'Lato', sans-serif;
     }
   }
 }
@@ -237,8 +312,11 @@
 
   h2 {
     margin: 0 0 20px 0;
-    color: #2d3748;
-    font-size: 24px;
+    color: var(--military-dark);
+    font-size: 26px;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    letter-spacing: 1px;
   }
 }
 
@@ -253,12 +331,14 @@
   background: white;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(60, 63, 46, 0.15);
   transition: all 0.3s;
+  border: 2px solid var(--military-border);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 16px rgba(85, 107, 47, 0.25);
+    border-color: var(--military-primary);
   }
 
   .activo-header {
@@ -268,57 +348,69 @@
     margin-bottom: 12px;
 
     strong {
-      color: #667eea;
+      color: var(--military-primary);
       font-size: 14px;
+      font-weight: 700;
+      font-family: 'Lato', sans-serif;
     }
   }
 
   h4 {
     margin: 0 0 8px 0;
-    color: #2d3748;
+    color: var(--military-dark);
     font-size: 18px;
+    font-family: 'Playfair Display', serif;
   }
 
   p {
     margin: 0 0 12px 0;
-    color: #718096;
+    color: var(--military-text-light);
     font-size: 14px;
+    font-family: 'Lato', sans-serif;
   }
 
   .activo-footer {
     padding-top: 12px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 2px solid var(--military-border);
     font-size: 13px;
-    color: #a0aec0;
+    color: var(--military-text-light);
+    font-family: 'Lato', sans-serif;
   }
 }
 
 .badge {
   display: inline-block;
-  padding: 4px 10px;
-  border-radius: 12px;
+  padding: 5px 12px;
+  border-radius: 14px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
+  font-family: 'Lato', sans-serif;
+  letter-spacing: 0.5px;
+  border: 1px solid;
 
   &.badge-operativo {
-    background: #c6f6d5;
-    color: #22543d;
+    background: rgba(107, 142, 35, 0.2);
+    color: var(--military-success);
+    border-color: var(--military-success);
   }
 
   &.badge-en_mantenimiento {
-    background: #feebc8;
-    color: #744210;
+    background: rgba(212, 160, 23, 0.2);
+    color: var(--military-warning);
+    border-color: var(--military-warning);
   }
 
   &.badge-fuera_de_servicio {
-    background: #fed7d7;
-    color: #742a2a;
+    background: rgba(139, 69, 19, 0.2);
+    color: var(--military-danger);
+    border-color: var(--military-danger);
   }
 
   &.badge-en_reparacion {
-    background: #bee3f8;
-    color: #2c5282;
+    background: rgba(112, 128, 144, 0.2);
+    color: var(--military-info);
+    border-color: var(--military-info);
   }
 }
 
@@ -327,16 +419,22 @@
   margin: 0 auto;
   padding: 12px 32px;
   background: white;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--military-border);
   border-radius: 8px;
-  color: #4a5568;
-  font-weight: 600;
+  color: var(--military-text);
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
+  font-family: 'Lato', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 
   &:hover {
-    border-color: #667eea;
-    color: #667eea;
+    border-color: var(--military-primary);
+    color: var(--military-primary);
+    background: rgba(85, 107, 47, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(85, 107, 47, 0.2);
   }
 }
 
@@ -345,36 +443,42 @@
   padding: 80px 20px;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(60, 63, 46, 0.15);
+  border: 2px solid var(--military-border);
 
   svg {
     width: 80px;
     height: 80px;
-    color: #cbd5e0;
+    color: var(--military-light);
     margin-bottom: 20px;
   }
 
   h3 {
     margin: 0 0 12px 0;
-    color: #2d3748;
-    font-size: 24px;
+    color: var(--military-dark);
+    font-size: 26px;
+    font-family: 'Playfair Display', serif;
   }
 
   p {
     margin: 0 0 24px 0;
-    color: #718096;
+    color: var(--military-text-light);
     font-size: 16px;
+    font-family: 'Lato', sans-serif;
   }
 
   .btn-primary {
     padding: 12px 32px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--military-primary) 0%, var(--military-dark) 100%);
     color: white;
     border: none;
     border-radius: 8px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: transform 0.2s;
+    font-family: 'Lato', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 
     &:hover {
       transform: translateY(-2px);
@@ -608,4 +712,385 @@
     }
   }
 }
+}
+
+// Estilos del modal de detalles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(60, 63, 46, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(6px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.detalles-modal-content {
+  background: white;
+  border-radius: 16px;
+  max-width: 900px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(60, 63, 46, 0.4);
+  animation: slideUp 0.3s ease-out;
+  border: 3px solid var(--military-border);
+  
+  .modal-header {
+    background: linear-gradient(135deg, var(--military-primary) 0%, var(--military-dark) 100%);
+    color: white;
+    padding: 20px 30px;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+
+    h2 {
+      margin: 0;
+      font-size: 26px;
+      font-family: 'Playfair Display', serif;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .btn-close {
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+
+      svg {
+        width: 24px;
+        height: 24px;
+        fill: white;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: rotate(90deg);
+      }
+    }
+  }
+
+  .detalles-body {
+    padding: 30px;
+  }
+
+  .detalles-image-container {
+    text-align: center;
+    margin-bottom: 30px;
+
+    .detalles-image {
+      max-width: 100%;
+      max-height: 400px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .detalles-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: var(--military-bg-light);
+    border-radius: 12px;
+    border: 2px solid var(--military-border);
+
+    h3 {
+      margin: 0 0 20px 0;
+      color: var(--military-dark);
+      font-size: 19px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--military-primary);
+      font-family: 'Playfair Display', serif;
+      letter-spacing: 1px;
+    }
+
+    .detalles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+    }
+
+    .detalles-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+
+      label {
+        font-weight: 700;
+        color: var(--military-text);
+        font-size: 14px;
+        font-family: 'Lato', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      span, p {
+        color: var(--military-text-light);
+        font-size: 15px;
+        font-family: 'Lato', sans-serif;
+      }
+
+      p {
+        margin: 5px 0 0 0;
+        line-height: 1.6;
+      }
+    }
+
+    .detalles-full {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Estilos para la sección de vencimiento
+.vencimiento-container {
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .fecha-vencimiento-input {
+    width: 100%;
+    max-width: 300px;
+    padding: 10px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s;
+
+    &:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+  }
+
+  .no-vencimiento {
+    color: #718096;
+    font-style: italic;
+    margin-top: 10px;
+  }
+}
+
+.vencimiento-bar-container {
+  margin-top: 20px;
+
+  .vencimiento-bar-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #4a5568;
+
+    .vencimiento-status {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+
+      &.vencido {
+        background: #000000;
+        color: white;
+      }
+
+      &.hoy {
+        background: #ff0000;
+        color: white;
+      }
+
+      &.critico {
+        background: #ff4500;
+        color: white;
+      }
+
+      &.advertencia {
+        background: #ffa500;
+        color: white;
+      }
+
+      &.normal {
+        background: #32cd32;
+        color: white;
+      }
+    }
+  }
+
+  .vencimiento-bar-bg {
+    width: 100%;
+    height: 30px;
+    background: #e2e8f0;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    .vencimiento-bar-fill {
+      height: 100%;
+      transition: width 0.5s ease, background-color 0.5s ease;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      color: white;
+      font-weight: 600;
+      font-size: 12px;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+// Estilos para el historial de vistas
+.vistas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .vista-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #f7fafc;
+      border-color: #cbd5e0;
+      transform: translateX(4px);
+    }
+
+    .vista-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #2d3748;
+
+      svg {
+        width: 20px;
+        height: 20px;
+        fill: #667eea;
+      }
+
+      .vista-username {
+        font-size: 15px;
+      }
+    }
+
+    .vista-date {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #718096;
+      font-size: 14px;
+
+      svg {
+        width: 16px;
+        height: 16px;
+        fill: #a0aec0;
+      }
+    }
+  }
+}
+
+.no-vistas {
+  color: #718096;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+// Estilos adicionales para badges dentro del modal
+.badge-success {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.badge-warning {
+  background: #feebc8;
+  color: #744210;
+}
+
+.badge-danger {
+  background: #fed7d7;
+  color: #742a2a;
+}
+
+.badge-info {
+  background: #bee3f8;
+  color: #2c5282;
+}
+
+.badge-secondary {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+// Responsive para el modal de detalles
+@media (max-width: 768px) {
+  .detalles-modal-content {
+    width: 95%;
+    max-height: 95vh;
+
+    .detalles-body {
+      padding: 20px;
+    }
+
+    .detalles-section {
+      padding: 15px;
+
+      .detalles-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .vista-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+  }
 }

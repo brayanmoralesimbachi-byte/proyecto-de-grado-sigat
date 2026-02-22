@@ -5,6 +5,8 @@ export interface User {
   id: number;
   username: string;
   rol: string;
+  timezone?: string;
+  loginTimestamp?: string;
 }
 
 @Injectable({
@@ -35,10 +37,13 @@ export class AuthService {
     const response = await this.tauriService.login(request);
 
     if (response.success && response.user_id && response.username && response.rol) {
+      const loginTimestamp = new Date().toISOString();
       const user: User = {
         id: response.user_id,
         username: response.username,
-        rol: response.rol
+        rol: response.rol,
+        timezone: response.timezone || 'America/Bogota',
+        loginTimestamp
       };
       this.currentUserSignal.set(user);
       this.isAuthenticatedSignal.set(true);
@@ -48,7 +53,16 @@ export class AuthService {
     return response;
   }
 
-  logout(): void {
+  async logout(): Promise<void> {
+    const user = this.currentUserSignal();
+    if (user && user.loginTimestamp) {
+      try {
+        await this.tauriService.logout(user.id, user.loginTimestamp);
+      } catch (error) {
+        console.error('Error al cerrar sesión:', error);
+      }
+    }
+    
     this.currentUserSignal.set(null);
     this.isAuthenticatedSignal.set(false);
     sessionStorage.removeItem('currentUser');
@@ -56,5 +70,14 @@ export class AuthService {
 
   hasRole(rol: string): boolean {
     return this.currentUserSignal()?.rol === rol;
+  }
+
+  updateUserTimezone(timezone: string): void {
+    const user = this.currentUserSignal();
+    if (user) {
+      const updatedUser = { ...user, timezone };
+      this.currentUserSignal.set(updatedUser);
+      sessionStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    }
   }
 }

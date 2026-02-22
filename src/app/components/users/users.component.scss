@@ -3,7 +3,7 @@
   max-width: 1200px;
   margin: 0 auto;
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--military-bg-light);
 }
 
 .header {
@@ -14,12 +14,15 @@
   background: white;
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(60, 63, 46, 0.15);
+  border: 2px solid var(--military-border);
 
   h1 {
     margin: 0;
-    color: #2d3748;
-    font-size: 28px;
+    color: var(--military-dark);
+    font-size: 30px;
+    font-family: 'Playfair Display', serif;
+    font-weight: 800;
   }
 }
 
@@ -76,9 +79,10 @@
 .table-container {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(60, 63, 46, 0.15);
   overflow: hidden;
   margin-bottom: 20px;
+  border: 2px solid var(--military-border);
 }
 
 .users-table {
@@ -86,14 +90,16 @@
   border-collapse: collapse;
 
   thead {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--military-primary) 0%, var(--military-dark) 100%);
     color: white;
 
     th {
       padding: 16px;
       text-align: left;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 14px;
+      font-family: 'Lato', sans-serif;
+      text-transform: uppercase;
     }
   }
 

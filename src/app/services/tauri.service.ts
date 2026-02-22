@@ -12,6 +12,7 @@ export interface LoginResponse {
   user_id?: number;
   username?: string;
   rol?: string;
+  timezone?: string;
 }
 
 export interface Activo {
@@ -25,7 +26,20 @@ export interface Activo {
   estado: string;
   valor_adquisicion?: number;
   fecha_adquisicion?: string;
+  fecha_vencimiento?: string;
   imagen_base64?: string;
+  created_by?: number;
+  created_at?: string;
+}
+
+export interface ActivoDetalle extends Activo {
+  created_by_username?: string;
+}
+
+export interface ActivoVista {
+  user_id: number;
+  username: string;
+  viewed_at: string;
 }
 
 export interface Usuario {
@@ -230,6 +244,114 @@ export class TauriService {
     } catch (error) {
       console.error('Error en getUsernameHistory:', error);
       throw new Error(`Error al obtener historial de nombres: ${error}`);
+    }
+  }
+
+  /**
+   * Obtener detalles completos de un activo
+   */
+  async getActivoDetalles(activoId: number): Promise<ActivoDetalle> {
+    try {
+      const result = await invoke<ActivoDetalle>('get_activo_detalles', { activoId });
+      return result;
+    } catch (error) {
+      console.error('Error en getActivoDetalles:', error);
+      throw new Error(`Error al obtener detalles del activo: ${error}`);
+    }
+  }
+
+  /**
+   * Registrar que un usuario vio un activo
+   */
+  async registerActivoVista(activoId: number, userId: number): Promise<string> {
+    try {
+      const result = await invoke<string>('register_activo_vista', { activoId, userId });
+      return result;
+    } catch (error) {
+      console.error('Error en registerActivoVista:', error);
+      throw new Error(`Error al registrar vista del activo: ${error}`);
+    }
+  }
+
+  /**
+   * Obtener historial de vistas de un activo
+   */
+  async getActivoVistas(activoId: number): Promise<ActivoVista[]> {
+    try {
+      const result = await invoke<ActivoVista[]>('get_activo_vistas', { activoId });
+      return result;
+    } catch (error) {
+      console.error('Error en getActivoVistas:', error);
+      throw new Error(`Error al obtener vistas del activo: ${error}`);
+    }
+  }
+
+  /**
+   * Actualizar fecha de vencimiento de un activo
+   */
+  async updateFechaVencimiento(activoId: number, fechaVencimiento: string | null, userId: number): Promise<string> {
+    try {
+      const result = await invoke<string>('update_fecha_vencimiento', { 
+        activoId, 
+        fechaVencimiento, 
+        userId 
+      });
+      return result;
+    } catch (error) {
+      console.error('Error en updateFechaVencimiento:', error);
+      throw new Error(`Error al actualizar fecha de vencimiento: ${error}`);
+    }
+  }
+
+  /**
+   * Actualizar zona horaria de un usuario
+   */
+  async updateTimezone(userId: number, timezone: string): Promise<string> {
+    try {
+      const result = await invoke<string>('update_timezone', { userId, timezone });
+      return result;
+    } catch (error) {
+      console.error('Error en updateTimezone:', error);
+      throw new Error(`Error al actualizar zona horaria: ${error}`);
+    }
+  }
+
+  /**
+   * Cerrar sesión y registrar en auditoría
+   */
+  async logout(userId: number, loginTimestamp: string): Promise<string> {
+    try {
+      const result = await invoke<string>('logout', { userId, loginTimestamp });
+      return result;
+    } catch (error) {
+      console.error('Error en logout:', error);
+      throw new Error(`Error al cerrar sesión: ${error}`);
+    }
+  }
+
+  /**
+   * Verificar si se puede cerrar la aplicación
+   */
+  async canCloseApp(): Promise<boolean> {
+    try {
+      const result = await invoke<boolean>('can_close_app');
+      return result;
+    } catch (error) {
+      console.error('Error en canCloseApp:', error);
+      return true; // Por defecto permitir cierre en caso de error
+    }
+  }
+
+  /**
+   * Forzar logout en caso de cierre forzoso
+   */
+  async forceLogout(): Promise<string> {
+    try {
+      const result = await invoke<string>('force_logout');
+      return result;
+    } catch (error) {
+      console.error('Error en forceLogout:', error);
+      throw new Error(`Error al forzar logout: ${error}`);
     }
   }
 }

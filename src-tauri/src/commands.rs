@@ -2,11 +2,15 @@ use crate::crypto::{hash_password, verify_password};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 use tokio::sync::Mutex;
+use std::sync::Mutex as StdMutex;
 use sqlx::Row;
 
 /// Estado compartido de la aplicación
 pub struct AppState {
     pub db: Mutex<Option<crate::db::Database>>,
+    pub can_close_app: StdMutex<bool>,
+    pub active_user_id: StdMutex<Option<i64>>,
+    pub login_timestamp: StdMutex<Option<String>>,
 }
 
 /// Estructura para el login de usuario
@@ -24,6 +28,7 @@ pub struct LoginResponse {
     pub user_id: Option<i64>,
     pub username: Option<String>,
     pub rol: Option<String>,
+    pub timezone: Option<String>,
 }
 
 /// Comando Tauri para crear un nuevo usuario
@@ -36,12 +41,23 @@ pub async fn create_user(
     rol: String,
     state: State<'_, AppState>,
 ) -> Result<String, String> {
-    // Hashear contraseña
-    let (password_hash, salt) = hash_password(&password)?;
-
     // Obtener conexión a la base de datos
     let db_lock = state.db.lock().await;
     let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    // Verificar si el usuario ya existe
+    let exists: bool = sqlx::query_scalar("SELECT COUNT(*) > 0 FROM usuarios WHERE username = ?")
+        .bind(&username)
+        .fetch_one(db.pool())
+        .await
+        .map_err(|e| format!("Error al verificar usuario: {}", e))?;
+
+    if exists {
+        return Err("El nombre de usuario ya está en uso. Por favor, intente con otro nombre de usuario.".to_string());
+    }
+
+    // Hashear contraseña
+    let (password_hash, salt) = hash_password(&password)?;
 
     // Insertar usuario
     sqlx::query(
@@ -71,9 +87,9 @@ pub async fn login(
     let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
 
     // Buscar usuario por username
-    let user: Option<(i64, String, String, String)> = sqlx::query_as(
+    let user: Option<(i64, String, String, String, Option<String>)> = sqlx::query_as(
         r#"
-        SELECT id, username, password_hash, rol
+        SELECT id, username, password_hash, rol, timezone
         FROM usuarios
         WHERE username = ?
         "#,
@@ -83,7 +99,7 @@ pub async fn login(
     .await
     .map_err(|e| format!("Error al buscar usuario: {}", e))?;
 
-    if let Some((user_id, username, password_hash, rol)) = user {
+    if let Some((user_id, username, password_hash, rol, timezone)) = user {
         // Verificar contraseña
         if verify_password(&request.password, &password_hash)? {
             // Registrar auditoría de login exitoso
@@ -91,12 +107,19 @@ pub async fn login(
                 .await
                 .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
 
+            // Registrar sesión activa y prevenir cierre de app
+            let login_time = chrono::Utc::now().to_rfc3339();
+            *state.can_close_app.lock().unwrap() = false;
+            *state.active_user_id.lock().unwrap() = Some(user_id);
+            *state.login_timestamp.lock().unwrap() = Some(login_time.clone());
+
             Ok(LoginResponse {
                 success: true,
                 message: "Login exitoso".to_string(),
                 user_id: Some(user_id),
                 username: Some(username),
                 rol: Some(rol),
+                timezone,
             })
         } else {
             Ok(LoginResponse {
@@ -105,6 +128,7 @@ pub async fn login(
                 user_id: None,
                 username: None,
                 rol: None,
+                timezone: None,
             })
         }
     } else {
@@ -114,8 +138,88 @@ pub async fn login(
             user_id: None,
             username: None,
             rol: None,
+            timezone: None,
         })
     }
+}
+
+/// Comando Tauri para cerrar sesión
+#[tauri::command]
+pub async fn logout(
+    user_id: i64,
+    login_timestamp: String,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    // Calcular duración de sesión
+    let login_time = chrono::DateTime::parse_from_rfc3339(&login_timestamp)
+        .map_err(|e| format!("Error al parsear timestamp: {}", e))?;
+    let logout_time = chrono::Utc::now();
+    let duration = logout_time.signed_duration_since(login_time);
+    
+    let hours = duration.num_hours();
+    let minutes = duration.num_minutes() % 60;
+    let seconds = duration.num_seconds() % 60;
+    
+    let session_duration = format!("{}h {}m {}s", hours, minutes, seconds);
+    let logout_message = format!("Sesión finalizada. Duración: {}", session_duration);
+
+    // Registrar auditoría de logout
+    db.log_audit(user_id, "LOGOUT", "usuarios", user_id, None, Some(&logout_message))
+        .await
+        .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
+
+    // Permitir cierre de app y limpiar sesión
+    *state.can_close_app.lock().unwrap() = true;
+    *state.active_user_id.lock().unwrap() = None;
+    *state.login_timestamp.lock().unwrap() = None;
+
+    Ok(logout_message)
+}
+
+/// Comando para obtener el estado de cierre de la aplicación
+#[tauri::command]
+pub async fn can_close_app(state: State<'_, AppState>) -> Result<bool, String> {
+    Ok(*state.can_close_app.lock().unwrap())
+}
+
+/// Comando para forzar logout en caso de cierre forzoso
+#[tauri::command]
+pub async fn force_logout(state: State<'_, AppState>) -> Result<String, String> {
+    let user_id_opt = *state.active_user_id.lock().unwrap();
+    let login_timestamp_opt = state.login_timestamp.lock().unwrap().clone();
+
+    if let (Some(user_id), Some(login_timestamp)) = (user_id_opt, login_timestamp_opt) {
+        let db_lock = state.db.lock().await;
+        if let Some(db) = db_lock.as_ref() {
+            // Calcular duración de sesión
+            if let Ok(login_time) = chrono::DateTime::parse_from_rfc3339(&login_timestamp) {
+                let logout_time = chrono::Utc::now();
+                let duration = logout_time.signed_duration_since(login_time);
+                
+                let hours = duration.num_hours();
+                let minutes = duration.num_minutes() % 60;
+                let seconds = duration.num_seconds() % 60;
+                
+                let session_duration = format!("{}h {}m {}s", hours, minutes, seconds);
+                let logout_message = format!("Sesión finalizada forzosamente (cierre de aplicación). Duración: {}", session_duration);
+
+                // Registrar auditoría de logout forzoso
+                let _ = db.log_audit(user_id, "LOGOUT", "usuarios", user_id, None, Some(&logout_message)).await;
+            }
+        }
+
+        // Permitir cierre de app
+        *state.can_close_app.lock().unwrap() = true;
+        *state.active_user_id.lock().unwrap() = None;
+        *state.login_timestamp.lock().unwrap() = None;
+
+        return Ok("Logout forzoso registrado".to_string());
+    }
+
+    Ok("No hay sesión activa".to_string())
 }
 
 /// Comando Tauri para obtener la lista de activos
@@ -127,7 +231,8 @@ pub async fn get_activos(state: State<'_, AppState>) -> Result<Vec<serde_json::V
     let activos = sqlx::query(
         r#"
         SELECT id, codigo, nombre, descripcion, categoria, ubicacion, 
-               responsable_id, estado, valor_adquisicion, fecha_adquisicion, imagen_base64
+               responsable_id, estado, valor_adquisicion, fecha_adquisicion, 
+               fecha_vencimiento, imagen_base64, created_by, created_at
         FROM activos
         ORDER BY codigo
         "#,
@@ -150,7 +255,10 @@ pub async fn get_activos(state: State<'_, AppState>) -> Result<Vec<serde_json::V
             "estado": row.try_get::<String, _>("estado").ok(),
             "valor_adquisicion": row.try_get::<Option<f64>, _>("valor_adquisicion").ok().flatten(),
             "fecha_adquisicion": row.try_get::<Option<String>, _>("fecha_adquisicion").ok().flatten(),
+            "fecha_vencimiento": row.try_get::<Option<String>, _>("fecha_vencimiento").ok().flatten(),
             "imagen_base64": row.try_get::<Option<String>, _>("imagen_base64").ok().flatten(),
+            "created_by": row.try_get::<Option<i64>, _>("created_by").ok().flatten(),
+            "created_at": row.try_get::<Option<String>, _>("created_at").ok().flatten(),
         });
         result.push(json);
     }
@@ -170,6 +278,7 @@ pub struct ActivoInput {
     pub estado: String,
     pub valor_adquisicion: Option<f64>,
     pub fecha_adquisicion: Option<String>,
+    pub fecha_vencimiento: Option<String>,
     pub imagen_base64: Option<String>,
 }
 
@@ -186,8 +295,9 @@ pub async fn create_activo(
     let result = sqlx::query(
         r#"
         INSERT INTO activos (codigo, nombre, descripcion, categoria, ubicacion, 
-                            responsable_id, estado, valor_adquisicion, fecha_adquisicion, imagen_base64)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            responsable_id, estado, valor_adquisicion, fecha_adquisicion, 
+                            fecha_vencimiento, imagen_base64, created_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         "#,
     )
     .bind(&activo.codigo)
@@ -199,7 +309,9 @@ pub async fn create_activo(
     .bind(&activo.estado)
     .bind(&activo.valor_adquisicion)
     .bind(&activo.fecha_adquisicion)
+    .bind(&activo.fecha_vencimiento)
     .bind(&activo.imagen_base64)
+    .bind(user_id)
     .execute(db.pool())
     .await
     .map_err(|e| format!("Error al crear activo: {}", e))?;
@@ -238,7 +350,8 @@ pub async fn update_activo(
         r#"
         UPDATE activos 
         SET codigo = ?, nombre = ?, descripcion = ?, categoria = ?, ubicacion = ?,
-            responsable_id = ?, estado = ?, valor_adquisicion = ?, fecha_adquisicion = ?, imagen_base64 = ?
+            responsable_id = ?, estado = ?, valor_adquisicion = ?, fecha_adquisicion = ?, 
+            fecha_vencimiento = ?, imagen_base64 = ?
         WHERE id = ?
         "#,
     )
@@ -251,6 +364,7 @@ pub async fn update_activo(
     .bind(&activo.estado)
     .bind(&activo.valor_adquisicion)
     .bind(&activo.fecha_adquisicion)
+    .bind(&activo.fecha_vencimiento)
     .bind(&activo.imagen_base64)
     .bind(id)
     .execute(db.pool())
@@ -568,3 +682,166 @@ pub async fn get_username_history(
 
     Ok(result)
 }
+
+/// Comando para obtener detalles completos de un activo incluyendo el creador
+#[tauri::command]
+pub async fn get_activo_detalles(
+    activo_id: i64,
+    state: State<'_, AppState>,
+) -> Result<serde_json::Value, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    let activo = sqlx::query(
+        r#"
+        SELECT a.*, u.username as created_by_username
+        FROM activos a
+        LEFT JOIN usuarios u ON a.created_by = u.id
+        WHERE a.id = ?
+        "#,
+    )
+    .bind(activo_id)
+    .fetch_optional(db.pool())
+    .await
+    .map_err(|e| format!("Error al obtener activo: {}", e))?;
+
+    if let Some(row) = activo {
+        let json = serde_json::json!({
+            "id": row.try_get::<i64, _>("id").ok(),
+            "codigo": row.try_get::<String, _>("codigo").ok(),
+            "nombre": row.try_get::<String, _>("nombre").ok(),
+            "descripcion": row.try_get::<Option<String>, _>("descripcion").ok().flatten(),
+            "categoria": row.try_get::<String, _>("categoria").ok(),
+            "ubicacion": row.try_get::<Option<String>, _>("ubicacion").ok().flatten(),
+            "responsable_id": row.try_get::<Option<i64>, _>("responsable_id").ok().flatten(),
+            "estado": row.try_get::<String, _>("estado").ok(),
+            "valor_adquisicion": row.try_get::<Option<f64>, _>("valor_adquisicion").ok().flatten(),
+            "fecha_adquisicion": row.try_get::<Option<String>, _>("fecha_adquisicion").ok().flatten(),
+            "fecha_vencimiento": row.try_get::<Option<String>, _>("fecha_vencimiento").ok().flatten(),
+            "imagen_base64": row.try_get::<Option<String>, _>("imagen_base64").ok().flatten(),
+            "created_by": row.try_get::<Option<i64>, _>("created_by").ok().flatten(),
+            "created_by_username": row.try_get::<Option<String>, _>("created_by_username").ok().flatten(),
+            "created_at": row.try_get::<String, _>("created_at").ok(),
+        });
+        Ok(json)
+    } else {
+        Err("Activo no encontrado".to_string())
+    }
+}
+
+/// Comando para registrar que un usuario vio un activo
+#[tauri::command]
+pub async fn register_activo_vista(
+    activo_id: i64,
+    user_id: i64,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    sqlx::query(
+        r#"
+        INSERT INTO activo_vistas (activo_id, usuario_id)
+        VALUES (?, ?)
+        "#,
+    )
+    .bind(activo_id)
+    .bind(user_id)
+    .execute(db.pool())
+    .await
+    .map_err(|e| format!("Error al registrar vista: {}", e))?;
+
+    Ok("Vista registrada".to_string())
+}
+
+/// Comando para obtener el historial de vistas de un activo (últimas 10)
+#[tauri::command]
+pub async fn get_activo_vistas(
+    activo_id: i64,
+    state: State<'_, AppState>,
+) -> Result<Vec<serde_json::Value>, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    let vistas = sqlx::query(
+        r#"
+        SELECT v.viewed_at, u.username, u.id as user_id
+        FROM activo_vistas v
+        INNER JOIN usuarios u ON v.usuario_id = u.id
+        WHERE v.activo_id = ?
+        ORDER BY v.viewed_at DESC
+        LIMIT 10
+        "#,
+    )
+    .bind(activo_id)
+    .fetch_all(db.pool())
+    .await
+    .map_err(|e| format!("Error al obtener vistas: {}", e))?;
+
+    let mut result = Vec::new();
+    for row in vistas {
+        let json = serde_json::json!({
+            "user_id": row.try_get::<i64, _>("user_id").ok(),
+            "username": row.try_get::<String, _>("username").ok(),
+            "viewed_at": row.try_get::<String, _>("viewed_at").ok(),
+        });
+        result.push(json);
+    }
+
+    Ok(result)
+}
+
+/// Comando para actualizar solo la fecha de vencimiento de un activo
+#[tauri::command]
+pub async fn update_fecha_vencimiento(
+    activo_id: i64,
+    fecha_vencimiento: Option<String>,
+    user_id: i64,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    sqlx::query(
+        "UPDATE activos SET fecha_vencimiento = ? WHERE id = ?"
+    )
+    .bind(&fecha_vencimiento)
+    .bind(activo_id)
+    .execute(db.pool())
+    .await
+    .map_err(|e| format!("Error al actualizar fecha de vencimiento: {}", e))?;
+
+    // Registrar auditoría
+    db.log_audit(user_id, "UPDATE", "activos", activo_id, None, Some("Actualizada fecha de vencimiento"))
+        .await
+        .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
+
+    Ok("Fecha de vencimiento actualizada".to_string())
+}
+
+/// Comando para actualizar la zona horaria de un usuario
+#[tauri::command]
+pub async fn update_timezone(
+    user_id: i64,
+    timezone: String,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    // Actualizar timezone
+    sqlx::query("UPDATE usuarios SET timezone = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+        .bind(&timezone)
+        .bind(user_id)
+        .execute(db.pool())
+        .await
+        .map_err(|e| format!("Error al actualizar zona horaria: {}", e))?;
+
+    // Registrar auditoría
+    db.log_audit(user_id, "UPDATE", "usuarios", user_id, None, Some(&format!("Zona horaria actualizada a: {}", timezone)))
+        .await
+        .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
+
+    Ok("Zona horaria actualizada exitosamente".to_string())
+}
+

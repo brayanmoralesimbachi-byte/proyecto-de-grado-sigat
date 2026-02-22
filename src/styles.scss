@@ -1,3 +1,29 @@
+/* Importar fuentes elegantes de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Lato:wght@300;400;600;700&display=swap');
+
+/* Variables de colores militares */
+:root {
+  --military-primary: #556B2F;        /* Verde oliva oscuro */
+  --military-secondary: #6B8E23;      /* Verde oliva */
+  --military-accent: #8B7355;         /* Caqui/marrón */
+  --military-dark: #3C3F2E;           /* Verde militar oscuro */
+  --military-light: #8A9A5B;          /* Verde musgo */
+  --military-bg-light: #E8E4D9;       /* Arena claro */
+  --military-bg-dark: #2A2D1E;        /* Negro verdoso */
+  --military-text: #2A2D1E;           /* Texto principal */
+  --military-text-light: #5A5F4A;     /* Texto secundario */
+  --military-border: #8A9A5B;         /* Bordes */
+  --military-camo-1: #4a5d23;         /* Camuflaje 1 */
+  --military-camo-2: #5a6c2d;         /* Camuflaje 2 */
+  --military-camo-3: #6d7c3f;         /* Camuflaje 3 */
+  
+  /* Estados */
+  --military-success: #6B8E23;
+  --military-warning: #D4A017;
+  --military-danger: #8B4513;
+  --military-info: #708090;
+}
+
 /* Estilos globales para la aplicación */
 
 * {
@@ -7,13 +33,44 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f7fa;
+  background-color: var(--military-bg-light);
+  color: var(--military-text);
 }
 
 html, body {
   height: 100%;
   margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  color: var(--military-dark);
+}
+
+/* Scrollbar personalizado con tema militar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--military-bg-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--military-primary);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--military-secondary);
+}
+
+.white-text {
+  color: white;
+  font-family: 'Playfair Display', serif;
 }
