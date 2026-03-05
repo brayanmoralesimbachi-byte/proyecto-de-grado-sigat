@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Activos - Centro de Investigación | Documentación</title>
+    <style>
+        /* ===== Variables y Reset ===== */
+        :root {
+            --primary: #556B2F;
+            --secondary: #6B8E23;
+            --background: #E8E4D9;
+            --text: #2A2D1E;
+            --border: #8B7355;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --danger: #F44336;
+            --info: #2196F3;
+            --card-bg: #F5F2E8;
+            --code-bg: #2A2D1E;
+            --code-text: #E8E4D9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ===== Tipografía ===== */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Lato:wght@300;400;700&display=swap');
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5 {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        /* ===== Layout Principal ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* ===== Header ===== */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-bottom: 4px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+
+        header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        header .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        header .version-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== Navegación ===== */
+        nav {
+            background: var(--card-bg);
+            border-bottom: 2px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        nav a {
+            color: var(--primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        nav a:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* ===== Secciones ===== */
+        section {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        section h2 {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        section h2 .icon {
+            font-size: 1.5rem;
+        }
+
+        /* ===== Cards Grid ===== */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+
+        .card h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .card p {
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        /* ===== Badges ===== */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 0.2rem;
+        }
+
+        .badge-success { background: #E8F5E9; color: #2E7D32; }
+        .badge-warning { background: #FFF3E0; color: #E65100; }
+        .badge-danger { background: #FFEBEE; color: #C62828; }
+        .badge-info { background: #E3F2FD; color: #1565C0; }
+        .badge-primary { background: #E8E4D9; color: var(--primary); border: 1px solid var(--primary); }
+
+        /* ===== Código ===== */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary);
+        }
+
+        code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+        }
+
+        :not(pre) > code {
+            background: rgba(85, 107, 47, 0.1);
+            color: var(--primary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        /* ===== Comandos ===== */
+        .command-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .command-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .command-header h4 {
+            color: white;
+            margin: 0;
+            font-family: 'Consolas', monospace;
+            font-weight: 600;
+        }
+
+        .command-body {
+            padding: 1.5rem;
+        }
+
+        .command-body p {
+            margin-bottom: 1rem;
+        }
+
+        .command-body pre {
+            margin: 0;
+        }
+
+        /* ===== Tabla ===== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            font-family: 'Playfair Display', serif;
+        }
+
+        tr:hover {
+            background: rgba(85, 107, 47, 0.05);
+        }
+
+        /* ===== Lista de Features ===== */
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: 0.75rem 0;
+            padding-left: 2rem;
+            position: relative;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* ===== Timeline ===== */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2rem;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            background: var(--secondary);
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            transform: translateX(-50%);
+        }
+
+        .timeline-item h4 {
+            margin-bottom: 0.5rem;
+        }
+
+        /* ===== Arquitectura Diagrama ===== */
+        .architecture-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+        }
+
+        .arch-box {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 150px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .arch-box h4 {
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .arch-arrow {
+            font-size: 2rem;
+            color: var(--border);
+        }
+
+        /* ===== Colores Preview ===== */
+        .color-palette {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .color-swatch {
+            width: 100px;
+            text-align: center;
+        }
+
+        .color-swatch .swatch {
+            height: 60px;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 2px solid var(--border);
+        }
+
+        .color-swatch span {
+            font-size: 0.75rem;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* ===== Estructura de Archivos ===== */
+        .file-tree {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .file-tree .folder { color: #FFD54F; }
+        .file-tree .file { color: #81D4FA; }
+        .file-tree .comment { color: #78909C; }
+
+        /* ===== Roles Section ===== */
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .role-card {
+            background: white;
+            border: 3px solid var(--primary);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .role-card .role-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 1.5rem;
+            text-align: center;
+        }
+
+        .role-card .role-header h4 {
+            color: white;
+            margin: 0;
+        }
+
+        .role-card ul {
+            list-style: none;
+            padding: 1.5rem;
+        }
+
+        .role-card li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .role-card li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        /* ===== Footer ===== */
+        footer {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        footer p {
+            opacity: 0.9;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            nav ul {
+                justify-content: flex-start;
+            }
+
+            .architecture-diagram {
+                flex-direction: column;
+            }
+
+            .arch-arrow {
+                transform: rotate(90deg);
+            }
+
+            section {
+                padding: 1.5rem;
+            }
+
+            .roles-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== Scrollbar Personalizado ===== */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+
+        /* ===== Utilidades ===== */
+        .text-center { text-align: center; }
+        .mt-1 { margin-top: 1rem; }
+        .mt-2 { margin-top: 2rem; }
+        .mb-1 { margin-bottom: 1rem; }
+        .mb-2 { margin-bottom: 2rem; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <h1>🛡️ Gestor de Activos</h1>
+        <p class="subtitle">Centro de Investigación - Escuela de Telecomunicaciones de Facatativá</p>
+        <span class="version-badge">Versión 1.0.0 | Última actualización: 03 de Marzo 2026</span>
+    </header>
+
+    <!-- Navegación -->
+    <nav>
+        <ul>
+            <li><a href="#seguridad">🔐 Seguridad</a></li>
+            <li><a href="#arquitectura">🏗️ Arquitectura</a></li>
+            <li><a href="#estructura">📁 Estructura</a></li>
+            <li><a href="#comandos">🚀 Comandos</a></li>
+            <li><a href="#modulos">📋 Módulos</a></li>
+            <li><a href="#roles">🔒 Roles</a></li>
+            <li><a href="#diseno">🎨 Diseño</a></li>
+            <li><a href="#changelog">📝 Changelog</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+
+        <!-- ===== CARACTERÍSTICAS DE SEGURIDAD ===== -->
+        <section id="seguridad">
+            <h2><span class="icon">🔐</span> Características de Seguridad</h2>
+            <p>Aplicación de escritorio para la gestión segura de activos con múltiples capas de protección:</p>
+            
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>🗄️ Base de Datos Cifrada</h4>
+                    <p>SQLite + SQLCipher con cifrado <strong>AES-256</strong> para proteger todos los datos en reposo.</p>
+                </div>
+                <div class="card">
+                    <h4>🔑 Hash Seguro de Contraseñas</h4>
+                    <p><strong>Argon2id</strong> - ganador del Password Hashing Competition. Las contraseñas nunca se almacenan en texto plano.</p>
+                </div>
+                <div class="card">
+                    <h4>🌐 Sin Exposición de Red</h4>
+                    <p>Aplicación 100% local, sin servidores HTTP ni APIs expuestas. No abre puertos ni expone servicios.</p>
+                </div>
+                <div class="card">
+                    <h4>📜 Auditoría Inmutable</h4>
+                    <p>Registro completo e inalterable de todas las operaciones del sistema para trazabilidad total.</p>
+                </div>
+                <div class="card">
+                    <h4>🔗 Comunicación Interna Segura</h4>
+                    <p>Angular ↔ Rust mediante invocación controlada de Tauri con separación estricta de responsabilidades.</p>
+                </div>
+                <div class="card">
+                    <h4>👥 Control de Acceso RBAC</h4>
+                    <p>Sistema de roles (Admin/Usuario) con permisos granulares para cada funcionalidad.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== ARQUITECTURA ===== -->
+        <section id="arquitectura">
+            <h2><span class="icon">🏗️</span> Arquitectura del Sistema</h2>
+            <p>Stack tecnológico moderno con separación clara de responsabilidades:</p>
+
+            <div class="architecture-diagram mt-2">
+                <div class="arch-box">
+                    <h4>Frontend</h4>
+                    <p>Angular 21</p>
+                    <small>Interfaz Gráfica</small>
+                </div>
+                <span class="arch-arrow">⟷</span>
+                <div class="arch-box">
+                    <h4>Backend</h4>
+                    <p>Rust + Tauri 2</p>
+                    <small>Lógica & Seguridad</small>
+                </div>
+                <span class="arch-arrow">⟷</span>
+                <div class="arch-box">
+                    <h4>Base de Datos</h4>
+                    <p>SQLite + SQLCipher</p>
+                    <small>Datos Cifrados</small>
+                </div>
+            </div>
+
+            <table class="mt-2">
+                <thead>
+                    <tr>
+                        <th>Capa</th>
+                        <th>Tecnología</th>
+                        <th>Responsabilidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Frontend</strong></td>
+                        <td>Angular 21</td>
+                        <td>Interfaz gráfica de usuario, UX/UI</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Backend</strong></td>
+                        <td>Rust + Tauri 2</td>
+                        <td>Lógica crítica, seguridad, acceso a recursos del sistema</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Base de Datos</strong></td>
+                        <td>SQLite + SQLCipher</td>
+                        <td>Almacenamiento cifrado con AES-256</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Criptografía</strong></td>
+                        <td>Argon2id</td>
+                        <td>Hash seguro de contraseñas</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ===== ESTRUCTURA DEL PROYECTO ===== -->
+        <section id="estructura">
+            <h2><span class="icon">📁</span> Estructura del Proyecto</h2>
+            <p>Organización del código fuente con separación clara entre frontend y backend:</p>
+
+            <div class="file-tree mt-2">
+<span class="folder">gestor-activos/</span>
+├── <span class="folder">src/</span>                    <span class="comment"># Código Angular (frontend)</span>
+│   ├── <span class="folder">app/</span>
+│   │   ├── <span class="folder">components/</span>
+│   │   │   ├── <span class="folder">activos/</span>       <span class="comment"># CRUD de activos</span>
+│   │   │   ├── <span class="folder">audit/</span>         <span class="comment"># Timeline de auditoría</span>
+│   │   │   ├── <span class="folder">dashboard/</span>     <span class="comment"># Vista principal</span>
+│   │   │   ├── <span class="folder">home/</span>          <span class="comment"># Página inicial</span>
+│   │   │   ├── <span class="folder">login/</span>         <span class="comment"># Autenticación</span>
+│   │   │   ├── <span class="folder">profile/</span>       <span class="comment"># Perfil de usuario</span>
+│   │   │   ├── <span class="folder">register/</span>      <span class="comment"># Registro</span>
+│   │   │   └── <span class="folder">users/</span>         <span class="comment"># Gestión usuarios (admin)</span>
+│   │   ├── <span class="folder">guards/</span>
+│   │   │   └── <span class="file">auth.guard.ts</span>   <span class="comment"># Protección de rutas</span>
+│   │   └── <span class="folder">services/</span>
+│   │       ├── <span class="file">auth.service.ts</span>  <span class="comment"># Servicio de autenticación</span>
+│   │       └── <span class="file">tauri.service.ts</span> <span class="comment"># Comunicación con Rust</span>
+│   └── <span class="file">styles.scss</span>             <span class="comment"># Estilos globales</span>
+│
+├── <span class="folder">src-tauri/</span>              <span class="comment"># Código Rust (backend)</span>
+│   ├── <span class="folder">src/</span>
+│   │   ├── <span class="file">lib.rs</span>           <span class="comment"># Punto de entrada principal</span>
+│   │   ├── <span class="file">db.rs</span>            <span class="comment"># Módulo de base de datos</span>
+│   │   ├── <span class="file">crypto.rs</span>        <span class="comment"># Módulo de criptografía</span>
+│   │   └── <span class="file">commands.rs</span>      <span class="comment"># Comandos Tauri (API interna)</span>
+│   └── <span class="file">Cargo.toml</span>          <span class="comment"># Dependencias Rust</span>
+│
+├── <span class="file">angular.json</span>            <span class="comment"># Configuración Angular</span>
+├── <span class="file">package.json</span>            <span class="comment"># Dependencias Node.js</span>
+└── <span class="file">PROYECTO.md</span>             <span class="comment"># Documentación</span>
+            </div>
+        </section>
+
+        <!-- ===== COMANDOS DE DESARROLLO ===== -->
+        <section id="comandos">
+            <h2><span class="icon">🚀</span> Comandos de Desarrollo</h2>
+            <p>Guía completa de comandos disponibles para el desarrollo y despliegue de la aplicación:</p>
+
+            <!-- Comando: npm install -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>📦</span>
+                    <h4>npm install</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Instalar todas las dependencias del proyecto.</p>
+                    <p><strong>¿Qué hace?</strong> Lee el archivo <code>package.json</code> y descarga todas las librerías necesarias (Angular, TypeScript, herramientas de desarrollo, etc.) al directorio <code>node_modules/</code>. Debe ejecutarse al clonar el proyecto por primera vez o cuando se actualice el <code>package.json</code>.</p>
+                    <p><strong>Cuándo usarlo:</strong> Primera vez que configuras el proyecto o después de un <code>git pull</code> que incluya cambios en dependencias.</p>
+                    <pre><code>npm install</code></pre>
+                </div>
+            </div>
+
+            <!-- Comando: npm run dev -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>🔧</span>
+                    <h4>npm run dev</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Ejecutar la aplicación en modo desarrollo.</p>
+                    <p><strong>¿Qué hace?</strong> Inicia el servidor de desarrollo de Angular con recarga automática (hot-reload). Cualquier cambio que hagas en el código se reflejará instantáneamente sin necesidad de reiniciar. El frontend se conecta al backend Rust para desarrollo.</p>
+                    <p><strong>Características:</strong></p>
+                    <ul>
+                        <li>Hot-reload automático para cambios en frontend</li>
+                        <li>Mapas de código fuente para debugging</li>
+                        <li>Mensajes de error detallados en consola</li>
+                        <li>No optimizado (más rápido de compilar)</li>
+                    </ul>
+                    <pre><code>npm run dev</code></pre>
+                </div>
+            </div>
+
+            <!-- Comando: npm start -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>▶️</span>
+                    <h4>npm start</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Iniciar la aplicación Angular.</p>
+                    <p><strong>¿Qué hace?</strong> Ejecuta el servidor de desarrollo de Angular. Similar a <code>npm run dev</code> pero con la configuración estándar de Angular CLI.</p>
+                    <p><strong>Puerto por defecto:</strong> <code>http://localhost:4200</code></p>
+                    <pre><code>npm start</code></pre>
+                </div>
+            </div>
+
+            <!-- Comando: npm run tauri dev -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>🦀</span>
+                    <h4>npm run tauri dev</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Ejecutar la aplicación completa en modo desarrollo (Frontend + Backend).</p>
+                    <p><strong>¿Qué hace?</strong> Inicia simultáneamente:</p>
+                    <ol>
+                        <li>El servidor de desarrollo de Angular (frontend)</li>
+                        <li>Compila y ejecuta el backend Rust con Tauri</li>
+                        <li>Abre la ventana de la aplicación de escritorio</li>
+                    </ol>
+                    <p><strong>Características:</strong></p>
+                    <ul>
+                        <li>Hot-reload completo (frontend y backend)</li>
+                        <li>DevTools disponibles en la ventana</li>
+                        <li>Logs de Rust visibles en terminal</li>
+                        <li>Comunicación en tiempo real Angular ↔ Rust</li>
+                    </ul>
+                    <p><strong>Nota:</strong> Requiere Rust instalado y configurado correctamente.</p>
+                    <pre><code>npm run tauri dev</code></pre>
+                </div>
+            </div>
+
+            <!-- Comando: npm run tauri build -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>📦</span>
+                    <h4>npm run tauri build</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Compilar la aplicación para producción.</p>
+                    <p><strong>¿Qué hace?</strong> Realiza una compilación completa optimizada:</p>
+                    <ol>
+                        <li>Compila Angular en modo producción (minificado, tree-shaking)</li>
+                        <li>Compila Rust en modo release (optimizaciones máximas)</li>
+                        <li>Empaqueta todo en un ejecutable nativo</li>
+                        <li>Genera instaladores para el sistema operativo</li>
+                    </ol>
+                    <p><strong>Salida (Windows):</strong></p>
+                    <ul>
+                        <li>Ejecutable: <code>src-tauri/target/release/gestor-activos.exe</code></li>
+                        <li>Instalador MSI: <code>src-tauri/target/release/bundle/msi/</code></li>
+                    </ul>
+                    <p><strong>Tiempo aproximado:</strong> 3-10 minutos dependiendo del hardware.</p>
+                    <pre><code>npm run tauri build</code></pre>
+                </div>
+            </div>
+
+            <!-- Comando: npm test -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>🧪</span>
+                    <h4>npm test</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Ejecutar las pruebas unitarias del proyecto.</p>
+                    <p><strong>¿Qué hace?</strong> Ejecuta el framework de testing (Karma/Jasmine por defecto en Angular) para correr todos los archivos <code>*.spec.ts</code>. Valida que los componentes y servicios funcionen correctamente.</p>
+                    <p><strong>Archivos de test:</strong> <code>src/app/**/*.spec.ts</code></p>
+                    <pre><code>npm test</code></pre>
+                </div>
+            </div>
+
+            <!-- Resumen de comandos -->
+            <h3 class="mt-2">📋 Resumen Rápido</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Comando</th>
+                        <th>Uso</th>
+                        <th>Entorno</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>npm install</code></td>
+                        <td>Instalar dependencias</td>
+                        <td>Inicial</td>
+                    </tr>
+                    <tr>
+                        <td><code>npm run dev</code></td>
+                        <td>Desarrollo frontend</td>
+                        <td>Desarrollo</td>
+                    </tr>
+                    <tr>
+                        <td><code>npm start</code></td>
+                        <td>Iniciar Angular</td>
+                        <td>Desarrollo</td>
+                    </tr>
+                    <tr>
+                        <td><code>npm run tauri dev</code></td>
+                        <td>App completa (Angular + Rust)</td>
+                        <td>Desarrollo</td>
+                    </tr>
+                    <tr>
+                        <td><code>npm run tauri build</code></td>
+                        <td>Compilar para distribución</td>
+                        <td>Producción</td>
+                    </tr>
+                    <tr>
+                        <td><code>npm test</code></td>
+                        <td>Ejecutar pruebas</td>
+                        <td>Testing</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ===== MÓDULOS IMPLEMENTADOS ===== -->
+        <section id="modulos">
+            <h2><span class="icon">📋</span> Módulos Implementados</h2>
+
+            <h3 class="mt-2">Backend (Rust)</h3>
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>🗄️ db.rs - Base de Datos</h4>
+                    <ul>
+                        <li>Conexión segura a SQLite cifrado</li>
+                        <li>Inicialización de tablas (usuarios, activos, auditoría)</li>
+                        <li>Sistema de auditoría inmutable</li>
+                        <li>Historial de visualizaciones de activos</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🔐 crypto.rs - Criptografía</h4>
+                    <ul>
+                        <li>Hash de contraseñas con Argon2id</li>
+                        <li>Verificación de contraseñas</li>
+                        <li>Derivación de claves de cifrado</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>⚡ commands.rs - Comandos Tauri</h4>
+                    <ul>
+                        <li><code>create_user</code>: Crear usuarios con contraseñas hasheadas</li>
+                        <li><code>login</code>/<code>logout</code>: Autenticación segura</li>
+                        <li><code>get_activos</code>: Consultar activos</li>
+                        <li><code>get_activo_detalles</code>: Detalles completos</li>
+                        <li><code>register_activo_vista</code>: Registrar visualización</li>
+                        <li><code>get_audit_log</code>: Obtener logs de auditoría</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="mt-2">Frontend (Angular)</h3>
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>📊 Dashboard</h4>
+                    <ul>
+                        <li>Vista principal con estadísticas</li>
+                        <li>Listado de activos recientes (últimos 5)</li>
+                        <li>Modal interactivo de detalles</li>
+                        <li>Sidebar de navegación</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>📦 Activos</h4>
+                    <ul>
+                        <li>CRUD completo de activos</li>
+                        <li>Búsqueda y filtros avanzados</li>
+                        <li>Paginación (40 items/página)</li>
+                        <li>Modal con imagen e historial</li>
+                        <li>Filtros por múltiples criterios</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>📜 Auditoría</h4>
+                    <ul>
+                        <li>Timeline visual de eventos</li>
+                        <li>Filtros por acción (CREATE, UPDATE, DELETE)</li>
+                        <li>Logs LOGIN/LOGOUT (solo admin)</li>
+                        <li>Agrupación por fecha</li>
+                        <li>Iconos diferenciados por tipo</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>👥 Usuarios (Admin)</h4>
+                    <ul>
+                        <li>Gestión de usuarios del sistema</li>
+                        <li>Asignación de roles (admin/user)</li>
+                        <li>Configuración de zonas horarias</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>👤 Perfil</h4>
+                    <ul>
+                        <li>Visualización y edición de datos</li>
+                        <li>Cambio de contraseña seguro</li>
+                        <li>Configuración de zona horaria</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🔐 Login</h4>
+                    <ul>
+                        <li>Autenticación segura</li>
+                        <li>Diseño con efecto camuflaje</li>
+                        <li>Validación de credenciales</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CONTROL DE ACCESO ===== -->
+        <section id="roles">
+            <h2><span class="icon">🔒</span> Control de Acceso Basado en Roles (RBAC)</h2>
+            <p>Sistema de permisos granular que define qué puede hacer cada tipo de usuario:</p>
+
+            <div class="roles-grid mt-2">
+                <div class="role-card">
+                    <div class="role-header">
+                        <h4>👑 Administradores</h4>
+                    </div>
+                    <ul>
+                        <li><strong>Ver historial de visualizaciones</strong> - Quién y cuándo vio cada activo</li>
+                        <li><strong>Ver logs de LOGIN/LOGOUT</strong> - Eventos de autenticación completos</li>
+                        <li><strong>Filtrar por LOGIN/LOGOUT</strong> - Filtros especiales en auditoría</li>
+                        <li><strong>Gestionar usuarios</strong> - Crear, modificar y eliminar</li>
+                        <li><strong>Asignar roles</strong> - Promover o degradar usuarios</li>
+                        <li><strong>Acceso completo</strong> - Todas las funcionalidades</li>
+                    </ul>
+                </div>
+                <div class="role-card">
+                    <div class="role-header">
+                        <h4>👤 Usuarios Regulares</h4>
+                    </div>
+                    <ul>
+                        <li><strong>CRUD de activos</strong> - Crear, leer, actualizar, eliminar</li>
+                        <li><strong>Ver auditoría limitada</strong> - Solo CREATE, UPDATE, DELETE</li>
+                        <li><strong>Gestionar su perfil</strong> - Cambiar contraseña, zona horaria</li>
+                        <li><strong>Búsqueda y filtros</strong> - Acceso completo a búsquedas</li>
+                        <li><strong>Dashboard</strong> - Estadísticas y vista de activos</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="mt-2">🔧 Implementación Técnica</h3>
+            <pre><code>// En componentes con restricciones
+isAdmin(): boolean {
+  return this.authService.hasRole('admin');
+}
+
+// En templates Angular
+@if (isAdmin()) {
+  &lt;!-- Contenido exclusivo para admin --&gt;
+}
+
+// Filtrado automático de logs
+if (!this.authService.hasRole('admin')) {
+  logsParaAgrupar = logsParaAgrupar.filter(log => 
+    log.action !== 'LOGIN' && log.action !== 'LOGOUT'
+  );
+}</code></pre>
+        </section>
+
+        <!-- ===== DISEÑO DE INTERFAZ ===== -->
+        <section id="diseno">
+            <h2><span class="icon">🎨</span> Diseño de Interfaz</h2>
+
+            <h3>Tema Militar Elegante</h3>
+            <p>Paleta de colores inspirada en estética militar con toques elegantes:</p>
+
+            <div class="color-palette">
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #556B2F;"></div>
+                    <span>Primario<br>#556B2F</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #6B8E23;"></div>
+                    <span>Secundario<br>#6B8E23</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #E8E4D9;"></div>
+                    <span>Fondo<br>#E8E4D9</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #2A2D1E;"></div>
+                    <span>Texto<br>#2A2D1E</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #8B7355;"></div>
+                    <span>Bordes<br>#8B7355</span>
+                </div>
+            </div>
+
+            <h3 class="mt-2">Tipografía</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Uso</th>
+                        <th>Fuente</th>
+                        <th>Característica</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Títulos</td>
+                        <td>Playfair Display</td>
+                        <td>Serif elegante, peso 400-800</td>
+                    </tr>
+                    <tr>
+                        <td>Cuerpo</td>
+                        <td>Lato</td>
+                        <td>Sans-serif moderna, peso 300-700</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 class="mt-2">Características Visuales</h3>
+            <ul class="feature-list">
+                <li>Gradientes militares sutiles en tarjetas y banners</li>
+                <li>Efecto de camuflaje sutil en pantalla de login</li>
+                <li>Bordes sólidos de 2-3px con colores militares</li>
+                <li>Badges diferenciados por tipo de acción</li>
+                <li>Hover effects con translateY(-2px) para interactividad</li>
+                <li>Scrollbar personalizado con tema militar</li>
+                <li>Cards con sombras y bordes militares</li>
+                <li>Modales overlay con backdrop difuminado</li>
+            </ul>
+
+            <h3 class="mt-2">Sistema de Badges</h3>
+            <p>
+                <span class="badge badge-success">CREATE (Éxito)</span>
+                <span class="badge badge-warning">UPDATE (Advertencia)</span>
+                <span class="badge badge-danger">DELETE (Peligro)</span>
+                <span class="badge badge-info">LOGIN/LOGOUT (Info)</span>
+            </p>
+        </section>
+
+        <!-- ===== CUMPLIMIENTO DE REQUISITOS ===== -->
+        <section id="cumplimiento">
+            <h2><span class="icon">🛡️</span> Cumplimiento de Requisitos</h2>
+            <ul class="feature-list">
+                <li>Aplicación de escritorio sin dependencia de internet</li>
+                <li>Sin exposición de puertos ni servicios de red</li>
+                <li>Base de datos SQLite cifrada con SQLCipher (AES-256)</li>
+                <li>Hash seguro de contraseñas con Argon2id</li>
+                <li>Sistema de auditoría inmutable</li>
+                <li>Separación frontend/backend con control estricto de permisos</li>
+                <li>Instalador y desinstalador nativos (MSI para Windows)</li>
+                <li>Control de acceso basado en roles (RBAC)</li>
+                <li>Interfaz de usuario con diseño militar elegante</li>
+            </ul>
+        </section>
+
+        <!-- ===== HISTORIAL DE CAMBIOS ===== -->
+        <section id="changelog">
+            <h2><span class="icon">📝</span> Historial de Cambios</h2>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>Versión 1.0.0 - Febrero 2026</h4>
+
+                    <h5 class="mt-1">✨ Características Nuevas</h5>
+                    <ul>
+                        <li>Rediseño completo de UI con tema militar elegante</li>
+                        <li>Modal de detalles de activos en dashboard</li>
+                        <li>Sistema de visualizaciones de activos con historial</li>
+                        <li>Control de acceso basado en roles (RBAC)</li>
+                        <li>Filtros avanzados en componente de activos</li>
+                        <li>Timeline visual de auditoría con agrupación por fechas</li>
+                    </ul>
+
+                    <h5 class="mt-1">🔒 Mejoras de Seguridad</h5>
+                    <ul>
+                        <li>Historial de visualizaciones solo visible para administradores</li>
+                        <li>Logs de LOGIN/LOGOUT restringidos a administradores</li>
+                        <li>Filtrado automático de eventos de autenticación para usuarios regulares</li>
+                        <li>Validación de permisos en frontend y backend</li>
+                    </ul>
+
+                    <h5 class="mt-1">🎨 Mejoras de UI/UX</h5>
+                    <ul>
+                        <li>Paleta de colores militar (verde oliva, khaki, arena)</li>
+                        <li>Tipografía elegante: Playfair Display + Lato</li>
+                        <li>Gradientes militares sutiles en componentes</li>
+                        <li>Efecto de camuflaje en pantalla de login</li>
+                        <li>Scrollbar personalizado con tema militar</li>
+                        <li>Badges diferenciados por tipo de acción</li>
+                        <li>Hover effects mejorados en cards y botones</li>
+                    </ul>
+
+                    <h5 class="mt-1">🐛 Correcciones</h5>
+                    <ul>
+                        <li>Arreglado error de sintaxis SCSS en login.component.scss</li>
+                        <li>Corregidos errores de lifetime en Rust</li>
+                        <li>Conversión de tokio::sync::Mutex a std::sync::Mutex</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="mt-2">📊 Estado del Proyecto</h3>
+            <div class="cards-grid">
+                <div class="card">
+                    <span class="badge badge-success">✓ Completado</span>
+                    <p class="mt-1">Backend Rust completamente funcional</p>
+                </div>
+                <div class="card">
+                    <span class="badge badge-success">✓ Completado</span>
+                    <p class="mt-1">Frontend Angular con todos los componentes</p>
+                </div>
+                <div class="card">
+                    <span class="badge badge-success">✓ Completado</span>
+                    <p class="mt-1">Sistema de autenticación y autorización</p>
+                </div>
+                <div class="card">
+                    <span class="badge badge-success">✓ Completado</span>
+                    <p class="mt-1">Base de datos cifrada con auditoría</p>
+                </div>
+                <div class="card">
+                    <span class="badge badge-success">✓ Completado</span>
+                    <p class="mt-1">Diseño UI consistente en toda la app</p>
+                </div>
+                <div class="card">
+                    <span class="badge badge-success">✓ Completado</span>
+                    <p class="mt-1">Sin errores de compilación - Listo para deploy</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== USO BÁSICO ===== -->
+        <section id="uso">
+            <h2><span class="icon">💻</span> Uso Básico desde Angular</h2>
+            <p>Ejemplo de cómo interactuar con el backend Rust desde el frontend Angular:</p>
+
+            <pre><code>import { TauriService } from './services/tauri.service';
+
+// Inyectar el servicio
+constructor(private tauriService: TauriService) {}
+
+// Obtener activos
+const activos = await this.tauriService.getActivos();
+
+// Login de usuario
+await this.tauriService.login(username, password);
+
+// Obtener detalles de un activo
+const detalles = await this.tauriService.getActivoDetalles(activoId);
+
+// Registrar visualización
+await this.tauriService.registerActivoVista(activoId, userId);</code></pre>
+        </section>
+
+        <!-- ===== NOTAS IMPORTANTES ===== -->
+        <section id="notas">
+            <h2><span class="icon">⚠️</span> Notas Importantes</h2>
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>🔑 Clave de Cifrado</h4>
+                    <p>La clave de cifrado de la base de datos debe derivarse de credenciales válidas del usuario en producción. El ejemplo actual usa una clave temporal solo para desarrollo.</p>
+                </div>
+                <div class="card">
+                    <h4>🔐 Gestión de Claves</h4>
+                    <p>Se recomienda implementar un sistema de gestión de claves maestras para el entorno de producción.</p>
+                </div>
+                <div class="card">
+                    <h4>📂 Almacenamiento</h4>
+                    <p>La base de datos se almacena en el directorio de datos de la aplicación, protegida a nivel del sistema operativo.</p>
+                </div>
+                <div class="card">
+                    <h4>🦀 Requisitos Rust</h4>
+                    <p>Para compilar el backend, se requiere tener Rust instalado con las herramientas de compilación de Windows (MSVC).</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p><strong>Gestor de Activos v1.0.0</strong></p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: Febrero 2026</p>
+    </footer>
+
+</body>
+</html>
