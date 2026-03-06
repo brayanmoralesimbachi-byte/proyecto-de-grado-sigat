@@ -3,11 +3,12 @@ import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { Activo, ActivoDetalle, ActivoVista, TauriService } from '../../services/tauri.service';
+import { Activo, ActivoDetalle, ActivoVista, Categoria, TauriService } from '../../services/tauri.service';
+import { ChatbotComponent } from '../chatbot/chatbot.component';
 
 @Component({
   selector: 'app-activos',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ChatbotComponent],
   templateUrl: './activos.component.html',
   styleUrls: ['./activos.component.scss']
 })
@@ -34,7 +35,8 @@ export class ActivosComponent implements OnInit {
     responsable_id: undefined,
     estado: 'operativo',
     valor_adquisicion: undefined,
-    fecha_adquisicion: ''
+    fecha_adquisicion: '',
+    palabras_clave: ''
   });
   
   errorMessage = signal('');
@@ -58,8 +60,10 @@ export class ActivosComponent implements OnInit {
   itemsPerPage = 40;
   totalPages = signal(1);
 
-  categorias = ['Equipos de Cómputo', 'Equipos de Telecomunicaciones', 'Mobiliario', 
-                'Herramientas', 'Software', 'Otro'];
+  // Categorías dinámicas desde DB
+  categoriasDB = signal<Categoria[]>([]);
+  categorias = signal<string[]>([]);
+  
   estados = ['operativo', 'en_mantenimiento', 'fuera_de_servicio', 'en_reparacion'];
   
   rangosValor = [
@@ -88,9 +92,22 @@ export class ActivosComponent implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
+    await this.loadCategorias();
     await this.loadActivos();
     console.log('[Activos] Current user:', this.authService.currentUser());
     console.log('[Activos] isAdmin:', this.isAdmin());
+  }
+
+  async loadCategorias(): Promise<void> {
+    try {
+      const data = await this.tauriService.getCategorias();
+      this.categoriasDB.set(data);
+      this.categorias.set(data.map(c => c.nombre));
+    } catch (error) {
+      console.error('Error al cargar categorías:', error);
+      // Fallback a categorías vacías
+      this.categorias.set([]);
+    }
   }
 
   isAdmin(): boolean {
@@ -154,7 +171,11 @@ export class ActivosComponent implements OnInit {
     if (this.filtroPalabrasClave()) {
       const palabras = this.filtroPalabrasClave().toLowerCase().split(',').map(p => p.trim());
       resultado = resultado.filter(a => 
-        palabras.some(palabra => a.descripcion?.toLowerCase().includes(palabra))
+        palabras.some(palabra => 
+          a.descripcion?.toLowerCase().includes(palabra) ||
+          a.palabras_clave?.toLowerCase().includes(palabra) ||
+          a.nombre.toLowerCase().includes(palabra)
+        )
       );
     }
 
@@ -228,14 +249,15 @@ export class ActivosComponent implements OnInit {
       codigo: '',
       nombre: '',
       descripcion: '',
-      categoria: this.categorias[0],
+      categoria: this.categorias()[0] || '',
       ubicacion: '',
       responsable_id: undefined,
       estado: 'operativo',
       valor_adquisicion: undefined,
       fecha_adquisicion: '',
       fecha_vencimiento: undefined,
-      imagen_base64: undefined
+      imagen_base64: undefined,
+      palabras_clave: ''
     });
     this.showModal.set(true);
     this.errorMessage.set('');
@@ -263,7 +285,8 @@ export class ActivosComponent implements OnInit {
       valor_adquisicion: undefined,
       fecha_adquisicion: '',
       fecha_vencimiento: undefined,
-      imagen_base64: undefined
+      imagen_base64: undefined,
+      palabras_clave: ''
     });
   }
 

@@ -1,0 +1,345 @@
+<!-- Botón flotante del chatbot -->
+<div class="chatbot-fab" (click)="toggleChat()" [class.active]="isOpen()">
+  <svg *ngIf="!isOpen()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/>
+    <path d="M7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
+  </svg>
+  <svg *ngIf="isOpen()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+  </svg>
+</div>
+
+<!-- Ventana del chatbot -->
+<div class="chatbot-window" [class.open]="isOpen()">
+  <!-- Header -->
+  <div class="chatbot-header">
+    <div class="header-info">
+      <div class="bot-avatar">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+      </div>
+      <div class="header-text">
+        <h3>Asistente de Búsqueda</h3>
+        <span class="status">En línea</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="action-btn" (click)="clearChat()" title="Limpiar chat">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+        </svg>
+      </button>
+      <button class="action-btn close-btn" (click)="closeChat()" title="Cerrar">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick actions -->
+  <div class="quick-actions">
+    <button class="quick-btn" (click)="quickSearch('Mostrar todos los activos')">
+      📦 Ver activos
+    </button>
+    <button class="quick-btn" (click)="quickSearch('Equipos operativos')">
+      ✅ Operativos
+    </button>
+    @if (authService.hasRole('admin')) {
+      <button class="quick-btn" (click)="quickSearch('Último login')">
+        📋 Último login
+      </button>
+    }
+  </div>
+
+  <!-- Mensajes -->
+  <div class="chatbot-messages" #messagesContainer>
+    @for (message of chatbotService.messages(); track message.id) {
+      <div class="message" [class.user]="message.type === 'user'" [class.bot]="message.type === 'bot'">
+        @if (message.type === 'bot') {
+          <div class="message-avatar">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+          </div>
+        }
+        <div class="message-content">
+          <div class="message-text" [innerHTML]="message.content | formatMarkdown"></div>
+          
+          <!-- Resultados de activos -->
+          @if (message.results?.activos && message.results!.activos!.length > 0) {
+            <div class="results-container">
+              <div class="results-grid">
+                @for (activo of getDisplayedActivos(message.results, message.showAllResults || false); track activo.id) {
+                  <div class="result-card">
+                    <div class="result-header">
+                      <span class="result-code">{{ activo.codigo }}</span>
+                      <span class="result-estado" [class]="getEstadoClass(activo.estado)">
+                        {{ getEstadoLabel(activo.estado) }}
+                      </span>
+                    </div>
+                    <h4 class="result-name">{{ activo.nombre }}</h4>
+                    <p class="result-category">{{ activo.categoria }}</p>
+                    @if (activo.descripcion) {
+                      <p class="result-description">{{ activo.descripcion | slice:0:80 }}{{ activo.descripcion.length > 80 ? '...' : '' }}</p>
+                    }
+                    <div class="result-footer">
+                      <span class="result-price">{{ formatCurrency(activo.valor_adquisicion) }}</span>
+                      <div class="result-actions">
+                        @if (activo.imagen_base64) {
+                          <button class="btn-image" (click)="openImageModal(activo)">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                            </svg>
+                            Ver imagen
+                          </button>
+                        }
+                        <button class="btn-goto" (click)="navigateToActivo(activo.id!)" title="Ir a la página del activo">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                          </svg>
+                          Ir al activo
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <!-- Ver más / Ver todos -->
+              @if (message.results!.totalCount > 5) {
+                <div class="results-actions">
+                  @if (!message.showAllResults) {
+                    <button class="btn-show-all" (click)="toggleViewAll(message.id)">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                      </svg>
+                      Ver todos ({{ message.results!.totalCount }})
+                    </button>
+                  } @else {
+                    <!-- Paginación -->
+                    <div class="pagination">
+                      <button 
+                        class="btn-page" 
+                        (click)="prevResultPage()" 
+                        [disabled]="currentResultPage() === 1">
+                        ← Anterior
+                      </button>
+                      
+                      @for (page of getResultPageNumbers(message.results); track page) {
+                        <button 
+                          class="btn-page-num" 
+                          [class.active]="page === currentResultPage()"
+                          (click)="goToResultPage(page)">
+                          {{ page }}
+                        </button>
+                      }
+                      
+                      <button 
+                        class="btn-page" 
+                        (click)="nextResultPage(message.results)" 
+                        [disabled]="currentResultPage() >= getTotalResultPages(message.results)">
+                        Siguiente →
+                      </button>
+                    </div>
+                    <button class="btn-collapse" (click)="toggleViewAll(message.id)">
+                      Mostrar menos
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Resultados de auditorías -->
+          @if (message.results?.audits && message.results!.audits!.length > 0) {
+            <div class="results-container audits">
+              <div class="audit-list">
+                @for (audit of getDisplayedAudits(message.results); track audit.id) {
+                  <div class="audit-item">
+                    <div class="audit-header">
+                      <span class="audit-action" [class]="getActionBadgeClass(audit.action)">
+                        {{ audit.action }}
+                      </span>
+                      <span class="audit-date">{{ formatDate(audit.timestamp) }}</span>
+                    </div>
+                    <div class="audit-body">
+                      <span class="audit-user">👤 {{ audit.username || 'Usuario #' + audit.user_id }}</span>
+                      <span class="audit-table">{{ audit.table_name }} #{{ audit.record_id }}</span>
+                    </div>
+                    @if (audit.new_value || audit.old_value) {
+                      <div class="audit-details">
+                        {{ audit.new_value || audit.old_value }}
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- Botón exportar -->
+              @if (authService.hasRole('admin')) {
+                <div class="export-actions">
+                  <button class="btn-export" (click)="openExportModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                    </svg>
+                    Exportar Registros
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+          <span class="message-time">{{ message.timestamp | date:'HH:mm' }}</span>
+        </div>
+      </div>
+    }
+
+    @if (chatbotService.isProcessing()) {
+      <div class="message bot">
+        <div class="message-avatar">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+        </div>
+        <div class="message-content">
+          <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Input -->
+  <div class="chatbot-input">
+    <input 
+      type="text" 
+      [(ngModel)]="inputMessage"
+      (keypress)="onKeyPress($event)"
+      placeholder="Escribe tu búsqueda..."
+      [disabled]="chatbotService.isProcessing()"
+      #messageInput
+    />
+    <button 
+      class="send-btn" 
+      (click)="sendMessage()" 
+      [disabled]="!inputMessage.trim() || chatbotService.isProcessing()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- Modal de imagen -->
+@if (showImageModal()) {
+  <div class="image-modal-overlay" (click)="closeImageModal()">
+    <div class="image-modal" (click)="$event.stopPropagation()">
+      <div class="image-modal-header">
+        <h3>{{ selectedImageName() }}</h3>
+        <button class="close-modal" (click)="closeImageModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="image-modal-body">
+        <img [src]="selectedImage()" [alt]="selectedImageName()" />
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal de exportación -->
+@if (showExportModal()) {
+  <div class="export-modal-overlay" (click)="closeExportModal()">
+    <div class="export-modal" (click)="$event.stopPropagation()">
+      <div class="export-modal-header">
+        <h3>📤 Exportar Auditorías</h3>
+        <button class="close-modal" (click)="closeExportModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="export-modal-body">
+        <!-- Rango de fechas -->
+        <div class="export-section">
+          <h4>Rango de datos</h4>
+          <label class="checkbox-label">
+            <input type="checkbox" [checked]="exportConfig().allData" (change)="toggleAllData()" />
+            <span>Exportar toda la información</span>
+          </label>
+          
+          @if (!exportConfig().allData) {
+            <div class="date-range">
+              <div class="date-field">
+                <label>Desde:</label>
+                <input 
+                  type="date" 
+                  [value]="exportConfig().fechaDesde"
+                  (change)="updateFechaDesde($event)"
+                />
+              </div>
+              <div class="date-field">
+                <label>Hasta:</label>
+                <input 
+                  type="date" 
+                  [value]="exportConfig().fechaHasta"
+                  (change)="updateFechaHasta($event)"
+                />
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Categorías -->
+        <div class="export-section">
+          <h4>Categorías a exportar</h4>
+          <div class="categories-grid">
+            <label class="checkbox-label">
+              <input type="checkbox" [checked]="exportConfig().categorias.LOGIN" (change)="toggleCategoria('LOGIN')" />
+              <span class="badge badge-login">LOGIN</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" [checked]="exportConfig().categorias.LOGOUT" (change)="toggleCategoria('LOGOUT')" />
+              <span class="badge badge-logout">LOGOUT</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" [checked]="exportConfig().categorias.CREATE" (change)="toggleCategoria('CREATE')" />
+              <span class="badge badge-create">CREATE</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" [checked]="exportConfig().categorias.UPDATE" (change)="toggleCategoria('UPDATE')" />
+              <span class="badge badge-update">UPDATE</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" [checked]="exportConfig().categorias.DELETE" (change)="toggleCategoria('DELETE')" />
+              <span class="badge badge-delete">DELETE</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="export-modal-footer">
+        <button class="btn-cancel" (click)="closeExportModal()">Cancelar</button>
+        <button class="btn-export-pdf" (click)="exportToPDF()" [disabled]="isExporting()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+          </svg>
+          {{ isExporting() ? 'Exportando...' : 'Exportar PDF' }}
+        </button>
+        <button class="btn-export-xml" (click)="exportToXML()" [disabled]="isExporting()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2z"/>
+          </svg>
+          {{ isExporting() ? 'Exportando...' : 'Exportar XML' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

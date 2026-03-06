@@ -28,6 +28,7 @@ export interface Activo {
   fecha_adquisicion?: string;
   fecha_vencimiento?: string;
   imagen_base64?: string;
+  palabras_clave?: string;
   created_by?: number;
   created_at?: string;
 }
@@ -65,6 +66,26 @@ export interface AuditLog {
   old_value?: string;
   new_value?: string;
   timestamp: string;
+}
+
+export interface Categoria {
+  id?: number;
+  nombre: string;
+  descripcion?: string;
+  color?: string;
+  created_at?: string;
+}
+
+export interface Keyword {
+  id?: number;
+  palabra: string;
+  palabra_normalizada?: string;
+  tipo: string;
+  categoria_asociada?: string;
+  idioma?: string;
+  es_sinonimo_de?: string;
+  activo?: boolean;
+  created_at?: string;
 }
 
 @Injectable({
@@ -352,6 +373,88 @@ export class TauriService {
     } catch (error) {
       console.error('Error en forceLogout:', error);
       throw new Error(`Error al forzar logout: ${error}`);
+    }
+  }
+
+  // ==================== MÉTODOS DE CATEGORÍAS ====================
+
+  /**
+   * Obtener todas las categorías
+   */
+  async getCategorias(): Promise<Categoria[]> {
+    try {
+      const result = await invoke<Categoria[]>('get_categorias');
+      return result;
+    } catch (error) {
+      console.error('Error en getCategorias:', error);
+      throw new Error(`Error al obtener categorías: ${error}`);
+    }
+  }
+
+  /**
+   * Crear una nueva categoría
+   */
+  async createCategoria(categoria: Categoria, userId: number): Promise<number> {
+    try {
+      const result = await invoke<number>('create_categoria', { categoria, userId });
+      return result;
+    } catch (error) {
+      console.error('Error en createCategoria:', error);
+      throw new Error(`Error al crear categoría: ${error}`);
+    }
+  }
+
+  /**
+   * Eliminar una categoría
+   */
+  async deleteCategoria(id: number, userId: number): Promise<string> {
+    try {
+      const result = await invoke<string>('delete_categoria', { id, userId });
+      return result;
+    } catch (error) {
+      console.error('Error en deleteCategoria:', error);
+      throw new Error(`Error al eliminar categoría: ${error}`);
+    }
+  }
+
+  // ==================== MÉTODOS DE KEYWORDS ====================
+
+  /**
+   * Obtener todas las keywords activas
+   */
+  async getKeywords(): Promise<Keyword[]> {
+    try {
+      const result = await invoke<Keyword[]>('get_keywords');
+      return result;
+    } catch (error) {
+      console.error('Error en getKeywords:', error);
+      throw new Error(`Error al obtener keywords: ${error}`);
+    }
+  }
+
+  /**
+   * Crear una nueva keyword
+   */
+  async createKeyword(keyword: Keyword, userId: number): Promise<number> {
+    try {
+      const result = await invoke<number>('create_keyword', { keyword, userId });
+      return result;
+    } catch (error) {
+      console.error('Error en createKeyword:', error);
+      throw new Error(`Error al crear keyword: ${error}`);
+    }
+  }
+
+  /**
+   * Eliminar una keyword (soft delete)
+   */
+  async deleteKeyword(id: number, userId: number): Promise<string> {
+    try {
+      const result = await invoke<string>('delete_keyword', { id, userId });
+      return result;
+    } catch (error) {
+      console.error('Error en deleteKeyword:', error);
+      throw new Error(`Error al eliminar keyword: ${error}`);
     }
   }
 }

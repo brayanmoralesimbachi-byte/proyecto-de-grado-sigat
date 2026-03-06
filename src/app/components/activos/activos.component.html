@@ -51,7 +51,7 @@
 
       <select [(ngModel)]="filtroCategoria" (ngModelChange)="aplicarFiltros()" class="filter-select">
         <option value="">Todas las categorías</option>
-        @for (cat of categorias; track cat) {
+        @for (cat of categorias(); track cat) {
           <option [value]="cat">{{ cat }}</option>
         }
       </select>
@@ -314,7 +314,7 @@
             <div class="form-group">
               <label>Categoría *</label>
               <select [(ngModel)]="currentActivo().categoria" name="categoria" required>
-                @for (cat of categorias; track cat) {
+                @for (cat of categorias(); track cat) {
                   <option [value]="cat">{{ cat }}</option>
                 }
               </select>
@@ -339,6 +339,16 @@
           <div class="form-group">
             <label>Fecha de Vencimiento</label>
             <input type="date" [(ngModel)]="currentActivo().fecha_vencimiento" name="fecha_vencimiento">
+          </div>
+
+          <div class="form-group">
+            <label>Palabras Clave</label>
+            <input 
+              type="text" 
+              [(ngModel)]="currentActivo().palabras_clave" 
+              name="palabras_clave"
+              placeholder="Ej: rifle, ak47, 7.62mm (separadas por coma)">
+            <small class="hint">Palabras clave para búsqueda del chatbot, separadas por coma</small>
           </div>
 
           <div class="form-group">
@@ -542,4 +552,7 @@
       </div>
     </div>
   }
+
+  <!-- Chatbot flotante -->
+  <app-chatbot></app-chatbot>
 </div>

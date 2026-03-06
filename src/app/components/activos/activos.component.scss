@@ -460,6 +460,14 @@
   textarea {
     resize: vertical;
   }
+
+  .hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #718096;
+    font-style: italic;
+  }
 }
 
 .modal-actions {

@@ -114,6 +114,42 @@ Antes de compilar, configura las variables de entorno:
 - **Logs de autenticación ocultos para usuarios no-admin**
 - Agrupación por fecha con paginación automática
 - Iconos y badges diferenciados por tipo de acción
+- **Exportación de auditorías a PDF/XML** con filtros personalizados:
+  - Exportar todos los datos o solo resultados visibles
+  - Filtrar por rango de fechas
+  - Filtrar por categorías (LOGIN, LOGOUT, CREATE, UPDATE, DELETE)
+  - Respeta los filtros de búsqueda (usuario, acción)
+
+#### Chatbot NLP
+- **Asistente virtual inteligente** para búsqueda de activos y auditorías mediante lenguaje natural
+- **Búsqueda de activos** con múltiples filtros:
+  - **Código**: Búsqueda exacta por código de activo (ej: "busco código 123456")
+  - **Marca**: LG, Samsung, Dell, HP, etc. con detección de palabras completas
+  - **Categoría**: Equipos de cómputo, telecomunicaciones, mobiliario, herramientas, software
+  - **Estado**: Operativo, en mantenimiento, fuera de servicio, en reparación
+  - **Ubicación**: Facatativá, Bogotá, Medellín, Cali, etc.
+  - **Precio**: Rango mínimo/máximo (ej: "más de 50000", "menos de 100000", "entre 20000 y 50000")
+  - **Medidas específicas por categoría**:
+    - **Pulgadas**: Para monitores y TV (ej: "monitor de 24 pulgadas")
+    - **Calibre**: Para armas (ej: "arma de 9mm", ".45")
+    - **Litros**: Para líquidos (ej: "leche de 2 litros", "500ml")
+    - **Peso**: Para alimentos (ej: "arroz de 5 kg", "carne de 2 libras", "500 gramos")
+- **Búsqueda de auditorías** (solo admin):
+  - **Usuario**: Filtrar por nombre de usuario (ej: "registros de admin", "actividades de jose")
+  - **Acción**: LOGIN, LOGOUT, CREATE, UPDATE, DELETE (ej: "muestra los logins de admin")
+  - **Fecha**: Último registro, más reciente, hoy, ayer
+- **Inteligencia de filtrado**:
+  - Los filtros se aplican **siempre**, incluso cuando retornan 0 resultados
+  - Detección de búsquedas vagas (menos de 4 caracteres)
+  - Palabras ignoradas (stopwords): el, la, un, una, de, en, con, sin, para, por, etc.
+  - Prioridad de búsqueda: código > marca/categoría/estado > keywords
+  - Manejo especial cuando el código no existe: "No tenemos el código X"
+- **Navegación directa**: Botón "Ir al activo" para abrir detalles completos desde el chatbot
+- **Respuestas contextuales**:
+  - Muestra cantidad de resultados encontrados
+  - Informa los filtros aplicados
+  - Sugiere refinar búsqueda cuando hay muchos resultados
+  - Opción de exportar registros de auditoría directamente desde el chat
 
 #### Usuarios (Admin)
 - Gestión de usuarios del sistema
@@ -240,6 +276,51 @@ if (!this.authService.hasRole('admin')) {
 
 ## 📊 Características Avanzadas
 
+### Chatbot NLP (Procesamiento de Lenguaje Natural)
+- Motor de búsqueda inteligente con análisis sintáctico de consultas en español
+- **Extracción automática de filtros**:
+  - Código de activo con prioridad máxima
+  - Marcas comunes (LG, Samsung, Dell, HP, Lenovo, Apple, Canon, Epson, etc.)
+  - Categorías del sistema (equipos, telecomunicaciones, mobiliario, etc.)
+  - Estados operacionales
+  - Ubicaciones geográficas
+  - Rangos de precio con palabras clave: "más de", "menos de", "entre", "cueste", "cuesta"
+  - Medidas específicas:
+    - Pulgadas: `(\d+)\s*(?:pulgadas|"|\"|pulg|pulgada)`
+    - Calibre: `(\d+(?:\.\d+)?)\s*mm|\.(\d+)`
+    - Litros: `(\d+(?:\.\d+)?)\s*(?:litros|lts|l)\b|(\d+)\s*(?:ml|mililitros)`
+    - Peso: `(\d+(?:\.\d+)?)\s*(?:kg|kilos|kilogramos)|(\d+(?:\.\d+)?)\s*(?:lb|libras)|(\d+(?:\.\d+)?)\s*(?:gramos|gr)\b|(?<![k])\b(\d+)\s*g\b`
+- **Lógica de aplicación de filtros**:
+  - Todos los filtros se aplican **siempre**, incluso si retornan 0 resultados
+  - No hay rollback automático de filtros (excepto en búsqueda vaga)
+  - Los filtros vacíos mantienen el resultado como está
+  - Prevención de falsos positivos con `\b` (word boundaries) para marca/categoría/estado
+- **Manejo de casos especiales**:
+  - Búsqueda por código inexistente: Responde "No tenemos el código X en nuestro inventario"
+  - Búsqueda vaga: Detecta keywords < 4 caracteres o solo stopwords
+  - Sin coincidencias: Sugiere ampliar criterios o verificar ortografía
+  - Usuario solicita "ver más": Muestra lista completa sin límite de 10
+- **Integración con auditorías (admin)**:
+  - Búsqueda por usuario: "registros de admin", "actividades de jose"
+  - Búsqueda por acción: "muestra los logins", "actualizaciones de hoy"
+  - Filtro de fecha: "último registro", "más reciente"
+  - Exportación directa desde el chat con filtros aplicados
+
+### Sistema de Exportación de Auditorías
+- Exportación a PDF y XML con formato estructurado
+- **Modos de exportación**:
+  - **Todos los datos**: Exporta TODAS las auditorías de la base de datos respetando filtros de búsqueda
+  - **Resultados visibles**: Exporta solo los 10 resultados mostrados en el chat
+- **Filtros de exportación**:
+  - **Rango de fechas**: Desde/hasta con selección de calendario
+  - **Categorías**: LOGIN, LOGOUT, CREATE, UPDATE, DELETE (selección múltiple)
+  - **Usuario**: Respeta el filtro de usuario aplicado en la búsqueda del chatbot
+  - **Acción**: Respeta el filtro de acción aplicado en la búsqueda del chatbot
+- **Generación de archivos**:
+  - PDF con tabla estructurada y encabezados
+  - XML con formato estándar para interoperabilidad
+  - Guardado automático en directorio de descargas del sistema
+
 ### Sistema de Visualizaciones
 - Registro automático cuando un usuario ve los detalles de un activo
 - Historial completo con username y timestamp
@@ -265,6 +346,41 @@ if (!this.authService.hasRole('admin')) {
 - Alertas visuales para activos próximos a vencer
 
 ## 📝 Historial de Cambios
+
+### Versión 1.1.0 (Marzo 2026)
+
+#### Características Nuevas
+- ✨ **Chatbot NLP**: Asistente virtual inteligente para búsqueda de activos y auditorías mediante lenguaje natural
+- ✨ **Búsqueda multi-filtro**: Código, marca, categoría, estado, ubicación, precio, pulgadas, calibre, litros, peso
+- ✨ **Sistema de exportación de auditorías**: PDF y XML con filtros personalizados
+- ✨ **Botón "Ir al activo"**: Navegación directa desde resultados del chatbot
+- ✨ **Búsqueda de auditorías por usuario**: Filtrar registros por nombre de usuario (admin)
+- ✨ **Medidas específicas por categoría**:
+  - Armas: calibre (9mm, .45, 7.62mm)
+  - Líquidos: litros y mililitros
+  - Alimentos: peso en kg, libras, gramos
+
+#### Mejoras de Funcionalidad
+- 🔧 **Filtros siempre aplicados**: Los filtros se aplican incluso cuando retornan 0 resultados
+- 🔧 **Detección de búsquedas vagas**: Mínimo 4 caracteres, ignora stopwords comunes
+- 🔧 **Prioridad de código**: Búsqueda por código tiene prioridad sobre otros filtros
+- 🔧 **Manejo de código inexistente**: Mensaje específico cuando el código no existe
+- 🔧 **Prevención de falsos positivos**: Word boundaries para detección de marca/categoría/estado
+- 🔧 **Exportación con filtros**: Respeta filtros de usuario y acción en exportaciones completas
+
+#### Correcciones
+- 🐛 Arreglado: "alguno" detectado como marca "LG" (word boundary fix)
+- 🐛 Arreglado: "2 kg" detectado como "2 g" (orden de extracción de peso)
+- 🐛 Arreglado: "menos de 10000" no detectaba precio_max (agregada keyword "menos")
+- 🐛 Arreglado: Filtros de ubicación y precio no aplicados cuando retornaban 0 resultados
+- 🐛 Arreglado: Exportación de auditorías solo exportaba 1 registro en lugar de todos
+
+#### Archivos Modificados
+- `src/app/services/chatbot.service.ts`: Motor NLP, extracción de filtros, lógica de búsqueda
+- `src/app/components/chatbot/chatbot.component.*`: UI del chatbot, exportación, navegación
+- `src/app/services/tauri.service.ts`: Métodos de conexión con backend Rust
+- `PROYECTO.md`: Documentación actualizada con características del chatbot
+- `PROYECTO.html`: Documentación HTML con sección de chatbot NLP
 
 ### Versión 1.0.0 (Febrero 2026)
 

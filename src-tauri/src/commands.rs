@@ -232,7 +232,7 @@ pub async fn get_activos(state: State<'_, AppState>) -> Result<Vec<serde_json::V
         r#"
         SELECT id, codigo, nombre, descripcion, categoria, ubicacion, 
                responsable_id, estado, valor_adquisicion, fecha_adquisicion, 
-               fecha_vencimiento, imagen_base64, created_by, created_at
+               fecha_vencimiento, imagen_base64, palabras_clave, created_by, created_at
         FROM activos
         ORDER BY codigo
         "#,
@@ -257,6 +257,7 @@ pub async fn get_activos(state: State<'_, AppState>) -> Result<Vec<serde_json::V
             "fecha_adquisicion": row.try_get::<Option<String>, _>("fecha_adquisicion").ok().flatten(),
             "fecha_vencimiento": row.try_get::<Option<String>, _>("fecha_vencimiento").ok().flatten(),
             "imagen_base64": row.try_get::<Option<String>, _>("imagen_base64").ok().flatten(),
+            "palabras_clave": row.try_get::<Option<String>, _>("palabras_clave").ok().flatten(),
             "created_by": row.try_get::<Option<i64>, _>("created_by").ok().flatten(),
             "created_at": row.try_get::<Option<String>, _>("created_at").ok().flatten(),
         });
@@ -280,6 +281,7 @@ pub struct ActivoInput {
     pub fecha_adquisicion: Option<String>,
     pub fecha_vencimiento: Option<String>,
     pub imagen_base64: Option<String>,
+    pub palabras_clave: Option<String>,
 }
 
 /// Comando para crear un nuevo activo
@@ -296,8 +298,8 @@ pub async fn create_activo(
         r#"
         INSERT INTO activos (codigo, nombre, descripcion, categoria, ubicacion, 
                             responsable_id, estado, valor_adquisicion, fecha_adquisicion, 
-                            fecha_vencimiento, imagen_base64, created_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            fecha_vencimiento, imagen_base64, palabras_clave, created_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         "#,
     )
     .bind(&activo.codigo)
@@ -311,6 +313,7 @@ pub async fn create_activo(
     .bind(&activo.fecha_adquisicion)
     .bind(&activo.fecha_vencimiento)
     .bind(&activo.imagen_base64)
+    .bind(&activo.palabras_clave)
     .bind(user_id)
     .execute(db.pool())
     .await
@@ -351,7 +354,7 @@ pub async fn update_activo(
         UPDATE activos 
         SET codigo = ?, nombre = ?, descripcion = ?, categoria = ?, ubicacion = ?,
             responsable_id = ?, estado = ?, valor_adquisicion = ?, fecha_adquisicion = ?, 
-            fecha_vencimiento = ?, imagen_base64 = ?
+            fecha_vencimiento = ?, imagen_base64 = ?, palabras_clave = ?
         WHERE id = ?
         "#,
     )
@@ -366,6 +369,7 @@ pub async fn update_activo(
     .bind(&activo.fecha_adquisicion)
     .bind(&activo.fecha_vencimiento)
     .bind(&activo.imagen_base64)
+    .bind(&activo.palabras_clave)
     .bind(id)
     .execute(db.pool())
     .await
@@ -843,5 +847,241 @@ pub async fn update_timezone(
         .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
 
     Ok("Zona horaria actualizada exitosamente".to_string())
+}
+
+// ==================== COMANDOS DE CATEGORÍAS ====================
+
+/// Comando para obtener todas las categorías
+#[tauri::command]
+pub async fn get_categorias(state: State<'_, AppState>) -> Result<Vec<serde_json::Value>, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    let categorias = sqlx::query(
+        "SELECT id, nombre, descripcion, color, created_at FROM categorias ORDER BY nombre"
+    )
+    .fetch_all(db.pool())
+    .await
+    .map_err(|e| format!("Error al obtener categorías: {}", e))?;
+
+    let mut result = Vec::new();
+    for row in categorias {
+        let json = serde_json::json!({
+            "id": row.try_get::<i64, _>("id").ok(),
+            "nombre": row.try_get::<String, _>("nombre").ok(),
+            "descripcion": row.try_get::<Option<String>, _>("descripcion").ok().flatten(),
+            "color": row.try_get::<Option<String>, _>("color").ok().flatten(),
+            "created_at": row.try_get::<Option<String>, _>("created_at").ok().flatten(),
+        });
+        result.push(json);
+    }
+
+    Ok(result)
+}
+
+/// Estructura para crear categoría
+#[derive(Debug, Deserialize)]
+pub struct CategoriaInput {
+    pub nombre: String,
+    pub descripcion: Option<String>,
+    pub color: Option<String>,
+}
+
+/// Comando para crear una categoría personalizada
+#[tauri::command]
+pub async fn create_categoria(
+    categoria: CategoriaInput,
+    user_id: i64,
+    state: State<'_, AppState>,
+) -> Result<i64, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    let result = sqlx::query(
+        "INSERT INTO categorias (nombre, descripcion, color) VALUES (?, ?, ?)"
+    )
+    .bind(&categoria.nombre)
+    .bind(&categoria.descripcion)
+    .bind(&categoria.color.unwrap_or_else(|| "#667eea".to_string()))
+    .execute(db.pool())
+    .await
+    .map_err(|e| format!("Error al crear categoría: {}", e))?;
+
+    let categoria_id = result.last_insert_rowid();
+
+    // Registrar auditoría
+    db.log_audit(user_id, "CREATE", "categorias", categoria_id, None, Some(&format!("Creada categoría: {}", categoria.nombre)))
+        .await
+        .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
+
+    Ok(categoria_id)
+}
+
+/// Comando para eliminar una categoría
+#[tauri::command]
+pub async fn delete_categoria(
+    id: i64,
+    user_id: i64,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    // Obtener nombre para auditoría
+    let nombre: Option<String> = sqlx::query_scalar("SELECT nombre FROM categorias WHERE id = ?")
+        .bind(id)
+        .fetch_optional(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener categoría: {}", e))?;
+
+    sqlx::query("DELETE FROM categorias WHERE id = ?")
+        .bind(id)
+        .execute(db.pool())
+        .await
+        .map_err(|e| format!("Error al eliminar categoría: {}", e))?;
+
+    if let Some(cat_nombre) = nombre {
+        db.log_audit(user_id, "DELETE", "categorias", id, Some(&cat_nombre), None)
+            .await
+            .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
+    }
+
+    Ok("Categoría eliminada exitosamente".to_string())
+}
+
+// ==================== COMANDOS DE KEYWORDS ====================
+
+/// Comando para obtener todas las keywords
+#[tauri::command]
+pub async fn get_keywords(state: State<'_, AppState>) -> Result<Vec<serde_json::Value>, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    let keywords = sqlx::query(
+        r#"
+        SELECT id, palabra, palabra_normalizada, tipo, categoria_asociada, 
+               idioma, es_sinonimo_de, activo, created_at 
+        FROM keywords 
+        WHERE activo = 1
+        ORDER BY palabra
+        "#
+    )
+    .fetch_all(db.pool())
+    .await
+    .map_err(|e| format!("Error al obtener keywords: {}", e))?;
+
+    let mut result = Vec::new();
+    for row in keywords {
+        let json = serde_json::json!({
+            "id": row.try_get::<i64, _>("id").ok(),
+            "palabra": row.try_get::<String, _>("palabra").ok(),
+            "palabra_normalizada": row.try_get::<String, _>("palabra_normalizada").ok(),
+            "tipo": row.try_get::<String, _>("tipo").ok(),
+            "categoria_asociada": row.try_get::<Option<String>, _>("categoria_asociada").ok().flatten(),
+            "idioma": row.try_get::<Option<String>, _>("idioma").ok().flatten(),
+            "es_sinonimo_de": row.try_get::<Option<String>, _>("es_sinonimo_de").ok().flatten(),
+            "activo": row.try_get::<bool, _>("activo").ok(),
+            "created_at": row.try_get::<Option<String>, _>("created_at").ok().flatten(),
+        });
+        result.push(json);
+    }
+
+    Ok(result)
+}
+
+/// Estructura para crear keyword
+#[derive(Debug, Deserialize)]
+pub struct KeywordInput {
+    pub palabra: String,
+    pub tipo: String,
+    pub categoria_asociada: Option<String>,
+    pub idioma: Option<String>,
+    pub es_sinonimo_de: Option<String>,
+}
+
+/// Comando para crear una keyword
+#[tauri::command]
+pub async fn create_keyword(
+    keyword: KeywordInput,
+    user_id: i64,
+    state: State<'_, AppState>,
+) -> Result<i64, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    // Normalizar: quitar acentos y convertir a minúsculas
+    let palabra_normalizada = normalize_keyword(&keyword.palabra);
+
+    let result = sqlx::query(
+        r#"
+        INSERT INTO keywords (palabra, palabra_normalizada, tipo, categoria_asociada, idioma, es_sinonimo_de) 
+        VALUES (?, ?, ?, ?, ?, ?)
+        "#
+    )
+    .bind(&keyword.palabra)
+    .bind(&palabra_normalizada)
+    .bind(&keyword.tipo)
+    .bind(&keyword.categoria_asociada)
+    .bind(&keyword.idioma.unwrap_or_else(|| "es".to_string()))
+    .bind(&keyword.es_sinonimo_de)
+    .execute(db.pool())
+    .await
+    .map_err(|e| format!("Error al crear keyword: {}", e))?;
+
+    let keyword_id = result.last_insert_rowid();
+
+    db.log_audit(user_id, "CREATE", "keywords", keyword_id, None, Some(&format!("Creada keyword: {}", keyword.palabra)))
+        .await
+        .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
+
+    Ok(keyword_id)
+}
+
+/// Comando para eliminar una keyword
+#[tauri::command]
+pub async fn delete_keyword(
+    id: i64,
+    user_id: i64,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    let palabra: Option<String> = sqlx::query_scalar("SELECT palabra FROM keywords WHERE id = ?")
+        .bind(id)
+        .fetch_optional(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener keyword: {}", e))?;
+
+    // Soft delete - marcar como inactivo
+    sqlx::query("UPDATE keywords SET activo = 0 WHERE id = ?")
+        .bind(id)
+        .execute(db.pool())
+        .await
+        .map_err(|e| format!("Error al eliminar keyword: {}", e))?;
+
+    if let Some(kw) = palabra {
+        db.log_audit(user_id, "DELETE", "keywords", id, Some(&kw), None)
+            .await
+            .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
+    }
+
+    Ok("Keyword eliminada exitosamente".to_string())
+}
+
+/// Función auxiliar para normalizar keywords (quitar acentos, minúsculas)
+fn normalize_keyword(s: &str) -> String {
+    s.to_lowercase()
+        .chars()
+        .map(|c| match c {
+            'á' | 'à' | 'ä' | 'â' => 'a',
+            'é' | 'è' | 'ë' | 'ê' => 'e',
+            'í' | 'ì' | 'ï' | 'î' => 'i',
+            'ó' | 'ò' | 'ö' | 'ô' => 'o',
+            'ú' | 'ù' | 'ü' | 'û' => 'u',
+            'ñ' => 'n',
+            _ => c,
+        })
+        .collect()
 }
 

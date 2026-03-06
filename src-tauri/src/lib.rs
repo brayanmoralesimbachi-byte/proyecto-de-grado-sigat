@@ -6,7 +6,9 @@ mod commands;
 use commands::{AppState, create_user, login, logout, can_close_app, force_logout, get_activos, create_activo, update_activo, 
                delete_activo, get_users, update_user_role, delete_user, get_audit_log,
                change_password, change_username, get_username_history, get_activo_detalles,
-               register_activo_vista, get_activo_vistas, update_fecha_vencimiento, update_timezone};
+               register_activo_vista, get_activo_vistas, update_fecha_vencimiento, update_timezone,
+               get_categorias, create_categoria, delete_categoria,
+               get_keywords, create_keyword, delete_keyword};
 use tokio::sync::Mutex;
 use std::sync::Mutex as StdMutex;
 use tauri::Manager;
@@ -113,7 +115,13 @@ pub fn run() {
       register_activo_vista,
       get_activo_vistas,
       update_fecha_vencimiento,
-      update_timezone
+      update_timezone,
+      get_categorias,
+      create_categoria,
+      delete_categoria,
+      get_keywords,
+      create_keyword,
+      delete_keyword
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

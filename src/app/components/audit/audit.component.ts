@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AuditLog, TauriService } from '../../services/tauri.service';
+import { ChatbotComponent } from '../chatbot/chatbot.component';
 
 interface LogsPorFecha {
   fecha: string;
@@ -13,7 +14,7 @@ interface LogsPorFecha {
 
 @Component({
   selector: 'app-audit',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ChatbotComponent],
   templateUrl: './audit.component.html',
   styleUrls: ['./audit.component.scss']
 })

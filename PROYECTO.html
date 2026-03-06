@@ -545,7 +545,7 @@
     <header>
         <h1>🛡️ Gestor de Activos</h1>
         <p class="subtitle">Centro de Investigación - Escuela de Telecomunicaciones de Facatativá</p>
-        <span class="version-badge">Versión 1.0.0 | Última actualización: 03 de Marzo 2026</span>
+        <span class="version-badge">Versión 1.1.0 | Última actualización: 05 de Marzo 2026</span>
     </header>
 
     <!-- Navegación -->
@@ -922,6 +922,14 @@
                         <li>Logs LOGIN/LOGOUT (solo admin)</li>
                         <li>Agrupación por fecha</li>
                         <li>Iconos diferenciados por tipo</li>
+                        <li><strong>Exportación a PDF/XML</strong> con filtros:
+                            <ul>
+                                <li>Todos los datos o solo resultados visibles</li>
+                                <li>Filtrar por rango de fechas</li>
+                                <li>Filtrar por categorías</li>
+                                <li>Respeta filtros de usuario y acción</li>
+                            </ul>
+                        </li>
                     </ul>
                 </div>
                 <div class="card">
@@ -948,6 +956,131 @@
                         <li>Validación de credenciales</li>
                     </ul>
                 </div>
+                <div class="card">
+                    <h4>🤖 Chatbot NLP</h4>
+                    <ul>
+                        <li>Asistente virtual con procesamiento de lenguaje natural</li>
+                        <li>Búsqueda de activos por múltiples filtros</li>
+                        <li>Búsqueda de auditorías (admin)</li>
+                        <li>Exportación de registros a PDF/XML</li>
+                        <li>Navegación directa con "Ir al activo"</li>
+                        <li>Respuestas contextuales inteligentes</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CHATBOT NLP ===== -->
+        <section id="chatbot">
+            <h2><span class="icon">🤖</span> Chatbot NLP - Asistente Virtual Inteligente</h2>
+            <p>Sistema de búsqueda inteligente mediante lenguaje natural en español, con extracción automática de filtros y respuestas contextuales.</p>
+
+            <h3 class="mt-2">Búsqueda de Activos</h3>
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>🔍 Filtros Soportados</h4>
+                    <ul>
+                        <li><strong>Código</strong>: Búsqueda exacta con prioridad máxima</li>
+                        <li><strong>Marca</strong>: LG, Samsung, Dell, HP, Lenovo, Apple, etc.</li>
+                        <li><strong>Categoría</strong>: Equipos, telecomunicaciones, mobiliario, herramientas, software</li>
+                        <li><strong>Estado</strong>: Operativo, en mantenimiento, fuera de servicio, en reparación</li>
+                        <li><strong>Ubicación</strong>: Facatativá, Bogotá, Medellín, Cali, etc.</li>
+                        <li><strong>Precio</strong>: Más de, menos de, entre (ej: "menos de 50000")</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>📏 Medidas Específicas por Categoría</h4>
+                    <ul>
+                        <li><strong>Pulgadas</strong>: Para monitores y TV (ej: "monitor de 24 pulgadas")</li>
+                        <li><strong>Calibre</strong>: Para armas (ej: "arma de 9mm", ".45")</li>
+                        <li><strong>Litros</strong>: Para líquidos (ej: "leche de 2 litros", "500ml")</li>
+                        <li><strong>Peso</strong>: Para alimentos (ej: "arroz de 5 kg", "2 libras", "500 gramos")</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🧠 Inteligencia de Filtrado</h4>
+                    <ul>
+                        <li>Filtros se aplican <strong>siempre</strong>, incluso con 0 resultados</li>
+                        <li>Detección de búsquedas vagas (< 4 caracteres)</li>
+                        <li>Stopwords ignoradas: el, la, un, de, en, con, etc.</li>
+                        <li>Prioridad: código > marca/categoría/estado > keywords</li>
+                        <li>Prevención de falsos positivos con word boundaries</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="mt-2">Búsqueda de Auditorías (Admin)</h3>
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>👤 Por Usuario</h4>
+                    <p>Filtrar registros por nombre de usuario:</p>
+                    <ul>
+                        <li>"registros de admin"</li>
+                        <li>"actividades de jose"</li>
+                        <li>"dame todos los registros del usuario admin"</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>⚡ Por Acción</h4>
+                    <p>Filtrar por tipo de evento:</p>
+                    <ul>
+                        <li>LOGIN / LOGOUT</li>
+                        <li>CREATE / UPDATE / DELETE</li>
+                        <li>"muestra los logins de admin"</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>📤 Exportación Inteligente</h4>
+                    <p>Exportar registros con filtros aplicados:</p>
+                    <ul>
+                        <li>Todos los datos o solo resultados visibles</li>
+                        <li>Filtrar por rango de fechas</li>
+                        <li>Filtrar por categorías (LOGIN, LOGOUT, etc.)</li>
+                        <li>Respeta filtros de usuario y acción de la búsqueda</li>
+                        <li>Formatos: PDF y XML</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="mt-2">Ejemplos de Consultas</h3>
+            <div class="code-example">
+                <pre><code>
+✅ "busco un monitor LG de 24 pulgadas en Facatativá"
+   Filtros aplicados: marca=LG, pulgadas=24, ubicacion=Facatativá
+
+✅ "femb de menos de 50000 en operativo"
+   Filtros aplicados: keywords=femb, precio_max=50000, estado=operativo
+
+✅ "arma de 9mm en Bogotá"
+   Filtros aplicados: calibre=9mm, ubicacion=Bogotá
+
+✅ "arroz de 5 kg"
+   Filtros aplicados: keywords=arroz, peso=5, unidad_peso=kg
+
+✅ "código 123456"
+   Búsqueda exacta por código (prioridad máxima)
+
+✅ "registros de admin" (admin only)
+   Filtros aplicados: usuario=admin
+
+❌ "lg" (búsqueda vaga, < 4 caracteres)
+   Respuesta: "Tu búsqueda es muy vaga..."
+
+❌ "código 999999" (no existe)
+   Respuesta: "No tenemos el código 999999 en nuestro inventario"
+                </code></pre>
+            </div>
+
+            <h3 class="mt-2">Casos Especiales</h3>
+            <div class="warning-box">
+                <h4>⚠️ Manejo de Excepciones</h4>
+                <ul>
+                    <li><strong>Código inexistente</strong>: Mensaje específico indicando que no existe</li>
+                    <li><strong>Búsqueda vaga</strong>: Solicita keywords más específicos (min 4 caracteres)</li>
+                    <li><strong>Sin coincidencias</strong>: Sugiere ampliar criterios o verificar ortografía</li>
+                    <li><strong>Prevención de falsos positivos</strong>: "alguno" NO detecta marca "LG" (word boundaries)</li>
+                    <li><strong>Orden de extracción</strong>: "2 kg" NO se detecta como "2 g" (kg antes de g)</li>
+                </ul>
             </div>
         </section>
 
@@ -1099,6 +1232,47 @@ if (!this.authService.hasRole('admin')) {
 
             <div class="timeline">
                 <div class="timeline-item">
+                    <h4>Versión 1.1.0 - Marzo 2026</h4>
+
+                    <h5 class="mt-1">✨ Características Nuevas</h5>
+                    <ul>
+                        <li><strong>Chatbot NLP</strong>: Asistente virtual inteligente para búsqueda de activos y auditorías mediante lenguaje natural</li>
+                        <li><strong>Búsqueda multi-filtro</strong>: Código, marca, categoría, estado, ubicación, precio, pulgadas, calibre, litros, peso</li>
+                        <li><strong>Sistema de exportación de auditorías</strong>: PDF y XML con filtros personalizados</li>
+                        <li><strong>Botón "Ir al activo"</strong>: Navegación directa desde resultados del chatbot</li>
+                        <li><strong>Búsqueda de auditorías por usuario</strong>: Filtrar registros por nombre de usuario (admin)</li>
+                        <li><strong>Medidas específicas por categoría</strong>: Armas (calibre), líquidos (litros/ml), alimentos (peso)</li>
+                    </ul>
+
+                    <h5 class="mt-1">🔧 Mejoras de Funcionalidad</h5>
+                    <ul>
+                        <li><strong>Filtros siempre aplicados</strong>: Los filtros se aplican incluso cuando retornan 0 resultados</li>
+                        <li><strong>Detección de búsquedas vagas</strong>: Mínimo 4 caracteres, ignora stopwords comunes</li>
+                        <li><strong>Prioridad de código</strong>: Búsqueda por código tiene prioridad sobre otros filtros</li>
+                        <li><strong>Manejo de código inexistente</strong>: Mensaje específico cuando el código no existe</li>
+                        <li><strong>Prevención de falsos positivos</strong>: Word boundaries para detección de marca/categoría/estado</li>
+                        <li><strong>Exportación con filtros</strong>: Respeta filtros de usuario y acción en exportaciones completas</li>
+                    </ul>
+
+                    <h5 class="mt-1">🐛 Correcciones</h5>
+                    <ul>
+                        <li>Arreglado: "alguno" detectado como marca "LG" (word boundary fix)</li>
+                        <li>Arreglado: "2 kg" detectado como "2 g" (orden de extracción de peso)</li>
+                        <li>Arreglado: "menos de 10000" no detectaba precio_max (agregada keyword "menos")</li>
+                        <li>Arreglado: Filtros de ubicación y precio no aplicados cuando retornaban 0 resultados</li>
+                        <li>Arreglado: Exportación de auditorías solo exportaba 1 registro en lugar de todos</li>
+                    </ul>
+
+                    <h5 class="mt-1">📝 Archivos Modificados</h5>
+                    <ul>
+                        <li><code>src/app/services/chatbot.service.ts</code>: Motor NLP, extracción de filtros, lógica de búsqueda</li>
+                        <li><code>src/app/components/chatbot/chatbot.component.*</code>: UI del chatbot, exportación, navegación</li>
+                        <li><code>src/app/services/tauri.service.ts</code>: Métodos de conexión con backend Rust</li>
+                        <li><code>PROYECTO.md</code> y <code>PROYECTO.html</code>: Documentación actualizada con características del chatbot</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
                     <h4>Versión 1.0.0 - Febrero 2026</h4>
 
                     <h5 class="mt-1">✨ Características Nuevas</h5>
@@ -1219,7 +1393,7 @@ await this.tauriService.registerActivoVista(activoId, userId);</code></pre>
     <!-- Footer -->
     <footer>
         <p><strong>Gestor de Activos v1.0.0</strong></p>
-        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: Febrero 2026</p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 5 de Marzo 2026</p>
     </footer>
 
 </body>
