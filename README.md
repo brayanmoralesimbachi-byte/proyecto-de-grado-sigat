@@ -1,59 +1,69 @@
-# GestorActivos
+# Gestor de Activos
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.3.
+Aplicación de escritorio para gestión segura de activos con Angular + Tauri + Rust + SQLite.
 
-## Development server
+- Versión actual: `1.2.0`
+- Última actualización: `22 de Abril 2026`
 
-To start a local development server, run:
+## Stack
 
-```bash
-ng serve
-```
+- Frontend: Angular 21
+- Backend: Rust + Tauri 2
+- Base de datos: SQLite cifrada
+- Hash de contraseñas: Argon2id
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Comandos principales
 
 ```bash
-ng generate component component-name
+# Instalar dependencias
+npm install
+
+# Desarrollo (frontend + backend Tauri)
+npm run dev
+
+# Build frontend
+npm run build
+
+# Build app de escritorio
+npm run tauri build
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Comandos de testing de seguridad
 
 ```bash
-ng generate --help
+# Suite de seguridad frontend
+npm run test:security:frontend
+
+# Suite de seguridad backend
+npm run test:security:backend
+
+# Frontend + backend + resumen para CI
+npm run test:security:ci
 ```
 
-## Building
+## Qué se valida en pruebas
 
-To build the project run:
+- Login/sesión: persistencia segura, rechazo de credenciales inválidas, limpieza en logout.
+- Guard de rutas: bloqueo de acceso anónimo.
+- Chatbot: control por rol para auditorías y respuesta funcional.
+- Subida de archivos: límite de tamaño, validación de tipo y conversión base64.
+- Performance frontend: umbrales de respuesta en login/chatbot/upload.
+- Backend: criptografía, clave local, auditoría en DB y pruebas de rendimiento.
 
-```bash
-ng build
-```
+## Resultados validados
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+- Frontend Security Suite: `14/14 PASS`
+- Backend Security Suite: `5/5 PASS`
+- Security CI Summary: `PASS frontend + PASS backend`
 
-## Running unit tests
+## Nota de configuración TypeScript
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+`tsconfig.app.json` sí se utiliza en el build de Angular y no debe eliminarse.
+Se ajustó `rootDir` para compatibilidad con TypeScript 6 y eliminación de error de compilación.
 
-```bash
-ng test
-```
+## Documentación extendida
 
-## Running end-to-end tests
+Consulta el detalle funcional, técnico y changelog en:
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- `PROYECTO.html`
+- `PROYECTO.md`

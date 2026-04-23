@@ -17,7 +17,7 @@ impl Database {
         // Configurar opciones de conexión para SQLite
         let options = SqliteConnectOptions::from_str(&format!("sqlite:{}", db_path.display()))?
             .create_if_missing(true)
-            .pragma("key", encryption_key.to_string()) // Clave de cifrado para SQLCipher
+            .pragma("key", format!("'{}'", encryption_key)) // Clave de cifrado para SQLCipher
             .pragma("cipher_page_size", "4096")
             .pragma("kdf_iter", "256000"); // Iteraciones PBKDF2 para derivación de clave
 

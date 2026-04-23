@@ -7,6 +7,10 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:security:frontend": "vitest run --config vitest.config.ts",
+    "test:security:backend": "cd src-tauri && cargo test --test security",
+    "test:security": "vitest run --config vitest.config.ts",
+    "test:security:ci": "node scripts/security-ci.mjs",
     "tauri": "tauri",
     "dev": "tauri dev"
   },

@@ -545,7 +545,7 @@
     <header>
         <h1>🛡️ Gestor de Activos</h1>
         <p class="subtitle">Centro de Investigación - Escuela de Telecomunicaciones de Facatativá</p>
-        <span class="version-badge">Versión 1.1.0 | Última actualización: 05 de Marzo 2026</span>
+        <span class="version-badge">Versión 1.2.0 | Última actualización: 22 de Abril 2026</span>
     </header>
 
     <!-- Navegación -->
@@ -555,6 +555,7 @@
             <li><a href="#arquitectura">🏗️ Arquitectura</a></li>
             <li><a href="#estructura">📁 Estructura</a></li>
             <li><a href="#comandos">🚀 Comandos</a></li>
+            <li><a href="#testing">🧪 Testing</a></li>
             <li><a href="#modulos">📋 Módulos</a></li>
             <li><a href="#roles">🔒 Roles</a></li>
             <li><a href="#diseno">🎨 Diseño</a></li>
@@ -568,6 +569,15 @@
         <section id="seguridad">
             <h2><span class="icon">🔐</span> Características de Seguridad</h2>
             <p>Aplicación de escritorio para la gestión segura de activos con múltiples capas de protección:</p>
+            <div class="card mt-1" style="border-left: 4px solid var(--secondary); background: #fffef7;">
+                <h4>✅ Estado validado en esta versión</h4>
+                <ul>
+                    <li><strong>Frontend Security Suite:</strong> 14/14 PASS</li>
+                    <li><strong>Backend Security Suite:</strong> 5/5 PASS</li>
+                    <li><strong>Security CI:</strong> PASS frontend + PASS backend</li>
+                    <li><strong>Versión documentada:</strong> 1.2.0</li>
+                </ul>
+            </div>
             
             <div class="cards-grid">
                 <div class="card">
@@ -812,6 +822,48 @@
                 </div>
             </div>
 
+            <!-- Comando: npm run test:security:frontend -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>🛡️</span>
+                    <h4>npm run test:security:frontend</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Ejecutar la suite de seguridad del frontend (Angular + Vitest).</p>
+                    <p><strong>¿Qué hace?</strong> Corre pruebas de autenticación, control de acceso por guard, chatbot, validaciones de subida de archivos y umbrales de rendimiento en frontend.</p>
+                    <p><strong>Archivos de test:</strong> <code>tests/frontend/**/*.spec.ts</code></p>
+                    <pre><code>npm run test:security:frontend</code></pre>
+                </div>
+            </div>
+
+            <!-- Comando: npm run test:security:backend -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>🦀</span>
+                    <h4>npm run test:security:backend</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Ejecutar la suite de seguridad del backend Rust.</p>
+                    <p><strong>¿Qué hace?</strong> Ejecuta pruebas de criptografía, gestión de clave local, inicialización segura de base de datos/auditoría y límites de rendimiento en operaciones críticas.</p>
+                    <p><strong>Comando interno:</strong> <code>cargo test --test security</code> dentro de <code>src-tauri/</code>.</p>
+                    <pre><code>npm run test:security:backend</code></pre>
+                </div>
+            </div>
+
+            <!-- Comando: npm run test:security:ci -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>📊</span>
+                    <h4>npm run test:security:ci</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Ejecutar frontend + backend de seguridad en cadena con resumen final para CI/CD.</p>
+                    <p><strong>¿Qué hace?</strong> Lanza ambas suites, mide tiempo por bloque y muestra estado <code>PASS/FAIL</code> de cada una en un resumen consolidado.</p>
+                    <p><strong>Script:</strong> <code>scripts/security-ci.mjs</code></p>
+                    <pre><code>npm run test:security:ci</code></pre>
+                </div>
+            </div>
+
             <!-- Resumen de comandos -->
             <h3 class="mt-2">📋 Resumen Rápido</h3>
             <table>
@@ -853,8 +905,126 @@
                         <td>Ejecutar pruebas</td>
                         <td>Testing</td>
                     </tr>
+                    <tr>
+                        <td><code>npm run test:security:frontend</code></td>
+                        <td>Suite de seguridad frontend</td>
+                        <td>Testing Seguridad</td>
+                    </tr>
+                    <tr>
+                        <td><code>npm run test:security:backend</code></td>
+                        <td>Suite de seguridad backend</td>
+                        <td>Testing Seguridad</td>
+                    </tr>
+                    <tr>
+                        <td><code>npm run test:security:ci</code></td>
+                        <td>Resumen consolidado (frontend + backend)</td>
+                        <td>CI/CD</td>
+                    </tr>
                 </tbody>
             </table>
+        </section>
+
+        <!-- ===== ZONA DE TESTING ===== -->
+        <section id="testing">
+            <h2><span class="icon">🧪</span> Zona de Testing de Seguridad</h2>
+            <p>Esta sección documenta de forma detallada qué se mide en cada suite, dónde están las pruebas y el resultado validado más reciente.</p>
+
+            <h3 class="mt-2">🎯 Qué se está midiendo</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bloque</th>
+                        <th>Qué valida</th>
+                        <th>Archivo(s)</th>
+                        <th>Métrica / Criterio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Login y sesión (Frontend)</strong></td>
+                        <td>Persistencia de sesión solo en login exitoso, limpieza en logout, rechazo de credenciales inválidas.</td>
+                        <td><code>tests/frontend/auth.service.security.spec.ts</code></td>
+                        <td>Sin fuga de contraseña en sessionStorage y flujo consistente de autenticación.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Control de acceso (Frontend)</strong></td>
+                        <td>El guard bloquea usuarios no autenticados y redirige a login.</td>
+                        <td><code>tests/frontend/auth.guard.security.spec.ts</code></td>
+                        <td>Acceso permitido solo con usuario activo en contexto.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Chatbot (Frontend)</strong></td>
+                        <td>Restricción de auditorías para no-admin y respuesta válida del bot a búsquedas.</td>
+                        <td><code>tests/frontend/chatbot.service.security.spec.ts</code></td>
+                        <td>Sin acceso a auditoría por rol no autorizado + respuesta funcional.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Subida de archivos (Frontend)</strong></td>
+                        <td>Bloqueo de archivos &gt;5MB, bloqueo de tipos no imagen y conversión segura a base64.</td>
+                        <td><code>tests/frontend/activos.upload.security.spec.ts</code></td>
+                        <td>Validación previa estricta antes de guardar contenido en estado.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rendimiento Frontend</strong></td>
+                        <td>Tiempos de respuesta de login, chatbot y transformación de imagen.</td>
+                        <td><code>tests/frontend/performance.security.spec.ts</code></td>
+                        <td>Umbrales: login &lt; 80ms, chatbot &lt; 250ms, upload base64 &lt; 80ms.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Criptografía y DB (Backend)</strong></td>
+                        <td>Hash/verify de contraseña, generación/reutilización de clave local, inicialización DB y auditoría.</td>
+                        <td><code>src-tauri/tests/security/*.rs</code></td>
+                        <td>Integridad de seguridad y funcionamiento de rutas críticas.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rendimiento Backend</strong></td>
+                        <td>Tiempo de generación de clave y tiempo de hash/verify.</td>
+                        <td><code>src-tauri/tests/security/performance.rs</code></td>
+                        <td>Umbrales: clave &lt; 300ms, hash/verify &lt; 1500ms.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 class="mt-2">✅ Resultados de la última ejecución validada</h3>
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>Frontend Security Suite</h4>
+                    <p><span class="badge badge-success">PASS</span></p>
+                    <ul>
+                        <li><strong>14/14 tests</strong> aprobados</li>
+                        <li>Cobertura de login, guard, chatbot, subida y performance</li>
+                        <li>Ejecución estable en Vitest</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Backend Security Suite</h4>
+                    <p><span class="badge badge-success">PASS</span></p>
+                    <ul>
+                        <li><strong>5/5 tests</strong> aprobados</li>
+                        <li>Cripto, clave local, DB/auditoría y performance</li>
+                        <li>Sin errores de integración</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Resumen CI de Seguridad</h4>
+                    <p><span class="badge badge-success">PASS</span></p>
+                    <ul>
+                        <li>Frontend: PASS</li>
+                        <li>Backend: PASS</li>
+                        <li>Script consolidado: <code>scripts/security-ci.mjs</code></li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="mt-2">▶️ Cómo correr cada suite</h3>
+            <pre><code># Frontend (seguridad + performance)
+npm run test:security:frontend
+
+# Backend (seguridad + performance)
+npm run test:security:backend
+
+# Ambas suites + resumen para CI
+npm run test:security:ci</code></pre>
         </section>
 
         <!-- ===== MÓDULOS IMPLEMENTADOS ===== -->
@@ -877,7 +1047,15 @@
                     <ul>
                         <li>Hash de contraseñas con Argon2id</li>
                         <li>Verificación de contraseñas</li>
-                        <li>Derivación de claves de cifrado</li>
+                        <li>Parámetros seguros y validación de credenciales</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🔑 security.rs - Gestión de Clave</h4>
+                    <ul>
+                        <li>Generación de clave local por instalación</li>
+                        <li>Persistencia de <code>db.key</code> en directorio de app</li>
+                        <li>Reutilización de clave para acceso consistente a datos cifrados</li>
                     </ul>
                 </div>
                 <div class="card">
@@ -1232,6 +1410,39 @@ if (!this.authService.hasRole('admin')) {
 
             <div class="timeline">
                 <div class="timeline-item">
+                    <h4>Versión 1.2.0 - Abril 2026</h4>
+
+                    <h5 class="mt-1">🔐 Seguridad y endurecimiento</h5>
+                    <ul>
+                        <li><strong>Eliminación de secretos en .env</strong>: se retiró la clave de cifrado de la configuración de entorno.</li>
+                        <li><strong>Nueva gestión de clave local</strong>: generación y reutilización de <code>db.key</code> por instalación desde <code>security.rs</code>.</li>
+                        <li><strong>Corrección de conexión SQLite cifrada</strong>: la clave se pasa correctamente citada en pragma <code>key</code>.</li>
+                        <li><strong>Limpieza de código muerto</strong>: se removió lógica no usada de derivación de clave en <code>crypto.rs</code>.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🧪 Testing y calidad</h5>
+                    <ul>
+                        <li>Nueva carpeta de pruebas frontend: <code>tests/frontend/</code>.</li>
+                        <li>Nueva suite backend de seguridad: <code>src-tauri/tests/security/</code>.</li>
+                        <li>Pruebas agregadas para login, control de acceso, chatbot, subida de archivos y performance.</li>
+                        <li>Script de resumen para CI: <code>scripts/security-ci.mjs</code>.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🛠️ Configuración y mantenimiento</h5>
+                    <ul>
+                        <li><strong>Fix TypeScript 6</strong>: agregado <code>rootDir</code> en <code>tsconfig.app.json</code> para eliminar error de compilador.</li>
+                        <li>Nuevos scripts npm para ejecución separada y consolidada de pruebas de seguridad.</li>
+                    </ul>
+
+                    <h5 class="mt-1">📈 Resultado validado</h5>
+                    <ul>
+                        <li>Frontend Security Suite: <strong>14/14 PASS</strong>.</li>
+                        <li>Backend Security Suite: <strong>5/5 PASS</strong>.</li>
+                        <li>Security CI Summary: <strong>PASS frontend + PASS backend</strong>.</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
                     <h4>Versión 1.1.0 - Marzo 2026</h4>
 
                     <h5 class="mt-1">✨ Características Nuevas</h5>
@@ -1392,8 +1603,8 @@ await this.tauriService.registerActivoVista(activoId, userId);</code></pre>
 
     <!-- Footer -->
     <footer>
-        <p><strong>Gestor de Activos v1.0.0</strong></p>
-        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 5 de Marzo 2026</p>
+        <p><strong>Gestor de Activos v1.2.0</strong></p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 22 de Abril 2026</p>
     </footer>
 
 </body>

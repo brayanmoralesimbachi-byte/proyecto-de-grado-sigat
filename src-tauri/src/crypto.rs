@@ -53,34 +53,6 @@ pub fn verify_password(password: &str, password_hash: &str) -> Result<bool, Stri
     }
 }
 
-/// Deriva una clave de cifrado para SQLCipher a partir de una contraseña maestra
-/// 
-/// Esta función no debe usarse directamente para hashear contraseñas de usuarios,
-/// sino para derivar la clave de cifrado de la base de datos.
-/// 
-/// # Arguments
-/// * `master_password` - Contraseña maestra del sistema
-/// * `salt` - Sal única para el sistema (debe generarse una vez y almacenarse de forma segura)
-/// 
-/// # Returns
-/// Clave de cifrado en formato hexadecimal
-pub fn derive_encryption_key(master_password: &str, salt: &str) -> Result<String, String> {
-    let salt_string = SaltString::from_b64(salt)
-        .map_err(|e| format!("Error al procesar sal: {}", e))?;
-
-    let argon2 = Argon2::default();
-    let binding = argon2
-        .hash_password(master_password.as_bytes(), &salt_string)
-        .map_err(|e| format!("Error al derivar clave: {}", e))?
-        .to_string();
-    let hash_parts: Vec<&str> = binding.split('$').collect();
-    if hash_parts.len() >= 5 {
-        Ok(hash_parts[4].to_string())
-    } else {
-        Err("Error al extraer clave de cifrado".to_string())
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -94,15 +66,4 @@ mod tests {
         assert!(!verify_password("ContraseñaIncorrecta", &hash).unwrap());
     }
 
-    #[test]
-    fn test_derive_encryption_key() {
-        let master_password = "MasterPassword123!";
-        let salt = SaltString::generate(&mut OsRng);
-        
-        let key1 = derive_encryption_key(master_password, salt.as_str()).unwrap();
-        let key2 = derive_encryption_key(master_password, salt.as_str()).unwrap();
-        
-        // La misma contraseña y sal deben producir la misma clave
-        assert_eq!(key1, key2);
-    }
 }

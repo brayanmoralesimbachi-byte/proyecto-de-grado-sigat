@@ -1,6 +1,7 @@
 // Módulos del sistema
-mod db;
-mod crypto;
+pub mod db;
+pub mod crypto;
+pub mod security;
 mod commands;
 
 use commands::{AppState, create_user, login, logout, can_close_app, force_logout, get_activos, create_activo, update_activo, 
@@ -8,13 +9,17 @@ use commands::{AppState, create_user, login, logout, can_close_app, force_logout
                change_password, change_username, get_username_history, get_activo_detalles,
                register_activo_vista, get_activo_vistas, update_fecha_vencimiento, update_timezone,
                get_categorias, create_categoria, delete_categoria,
-               get_keywords, create_keyword, delete_keyword};
+                get_keywords, create_keyword, delete_keyword};
 use tokio::sync::Mutex;
 use std::sync::Mutex as StdMutex;
+use std::env;
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+  // Cargar variables de entorno desde .env cuando existe.
+  let _ = dotenvy::dotenv();
+
   // Inicializar estado de la aplicación
   let app_state = AppState {
     db: Mutex::new(None),
@@ -68,12 +73,21 @@ pub fn run() {
         std::fs::create_dir_all(&app_data_dir)
           .expect("No se pudo crear directorio de datos");
 
-        let db_path = app_data_dir.join("gestor_activos.db");
+        let db_filename = env::var("APP_DB_FILENAME")
+          .ok()
+          .filter(|value| !value.trim().is_empty())
+          .unwrap_or_else(|| "gestor_activos.db".to_string());
+        let db_path = app_data_dir.join(db_filename);
+
+        let encryption_key = match security::load_or_create_db_key(&app_data_dir) {
+          Ok(key) => key,
+          Err(e) => {
+            eprintln!("Error al preparar la clave de cifrado: {}", e);
+            return;
+          }
+        };
         
-        // TODO: Derivar clave de cifrado desde credenciales de usuario
-        let encryption_key = "clave_temporal_desarrollo"; 
-        
-        match db::Database::new(db_path, encryption_key).await {
+        match db::Database::new(db_path, &encryption_key).await {
           Ok(database) => {
             if let Err(e) = database.initialize().await {
               eprintln!("Error al inicializar base de datos: {}", e);
