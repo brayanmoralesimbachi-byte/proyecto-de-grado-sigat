@@ -56,6 +56,15 @@
         }
       </select>
 
+      @if (authService.hasMultipleBases() || authService.availableBases().length === 0) {
+        <select [ngModel]="filtroBaseDatos()" (ngModelChange)="onBaseDatosFilterChange($event)" class="filter-select">
+          <option [ngValue]="undefined">Todas las bases</option>
+          @for (bd of authService.availableBases(); track bd.id) {
+            <option [ngValue]="bd.id">{{ bd.nombre }}</option>
+          }
+        </select>
+      }
+
       <button class="btn-filter" (click)="toggleFiltrosAvanzados()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
@@ -342,6 +351,16 @@
           </div>
 
           <div class="form-group">
+            <label>Base de Datos</label>
+            <select [(ngModel)]="currentActivo().base_datos_id" name="base_datos_id" class="form-input" required>
+              <option [ngValue]="undefined">Seleccione una base de datos...</option>
+              @for (bd of authService.availableBases(); track bd.id) {
+                <option [ngValue]="bd.id">{{ bd.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
             <label>Palabras Clave</label>
             <input 
               type="text" 
@@ -443,6 +462,10 @@
               <div class="detalles-item">
                 <label>Ubicación:</label>
                 <span>{{ selectedActivoDetalle()!.ubicacion || '-' }}</span>
+              </div>
+              <div class="detalles-item">
+                <label>Base de Datos:</label>
+                <span>{{ selectedActivoDetalle()!.base_datos_nombre || '-' }}</span>
               </div>
               <div class="detalles-item">
                 <label>Valor de Adquisición:</label>

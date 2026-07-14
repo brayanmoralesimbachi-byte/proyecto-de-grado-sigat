@@ -29,12 +29,14 @@ export interface Activo {
   fecha_vencimiento?: string;
   imagen_base64?: string;
   palabras_clave?: string;
+  base_datos_id?: number;
   created_by?: number;
   created_at?: string;
 }
 
 export interface ActivoDetalle extends Activo {
   created_by_username?: string;
+  base_datos_nombre?: string;
 }
 
 export interface ActivoVista {
@@ -98,12 +100,14 @@ export class TauriService {
   /**
    * Crear un nuevo usuario en el sistema
    */
-  async createUser(username: string, password: string, rol: string): Promise<string> {
+  async createUser(username: string, password: string, rol: string, baseDatosIds?: number[], adminId?: number): Promise<string> {
     try {
       const result = await invoke<string>('create_user', {
         username,
         password,
-        rol
+        rol,
+        baseDatosIds: baseDatosIds || null,
+        adminId: adminId || null
       });
       return result;
     } catch (error) {
@@ -128,9 +132,12 @@ export class TauriService {
   /**
    * Obtener lista de activos
    */
-  async getActivos(): Promise<Activo[]> {
+  async getActivos(userId?: number, baseDatosId?: number): Promise<Activo[]> {
     try {
-      const result = await invoke<Activo[]>('get_activos');
+      const result = await invoke<Activo[]>('get_activos', {
+        userId: userId || null,
+        baseDatosId: baseDatosId || null
+      });
       return result;
     } catch (error) {
       console.error('Error en getActivos:', error);
@@ -219,9 +226,13 @@ export class TauriService {
   /**
    * Obtener log de auditoría
    */
-  async getAuditLog(limit?: number): Promise<AuditLog[]> {
+  async getAuditLog(limit?: number, userId?: number, baseDatosId?: number): Promise<AuditLog[]> {
     try {
-      const result = await invoke<AuditLog[]>('get_audit_log', { limit });
+      const result = await invoke<AuditLog[]>('get_audit_log', {
+        limit,
+        userId: userId || null,
+        baseDatosId: baseDatosId || null
+      });
       return result;
     } catch (error) {
       console.error('Error en getAuditLog:', error);
@@ -238,6 +249,19 @@ export class TauriService {
       return result;
     } catch (error) {
       console.error('Error en changePassword:', error);
+      throw new Error(`Error al cambiar contraseña: ${error}`);
+    }
+  }
+
+  /**
+   * Cambiar contraseña de otro usuario (solo administrador)
+   */
+  async adminChangePassword(adminId: number, targetUserId: number, newPassword: string): Promise<string> {
+    try {
+      const result = await invoke<string>('admin_change_password', { adminId, targetUserId, newPassword });
+      return result;
+    } catch (error) {
+      console.error('Error en adminChangePassword:', error);
       throw new Error(`Error al cambiar contraseña: ${error}`);
     }
   }
@@ -457,4 +481,87 @@ export class TauriService {
       throw new Error(`Error al eliminar keyword: ${error}`);
     }
   }
+
+  // ==================== MÉTODOS DE BASES DE DATOS (ASIGNACIONES) ====================
+
+  async getBasesDatos(): Promise<BaseDatos[]> {
+    try {
+      return await invoke<BaseDatos[]>('get_bases_datos');
+    } catch (error) {
+      console.error('Error en getBasesDatos:', error);
+      throw new Error(`Error al obtener bases de datos: ${error}`);
+    }
+  }
+
+  async createBaseDatos(baseDatos: { nombre: string; descripcion?: string }, userId: number): Promise<number> {
+    try {
+      return await invoke<number>('create_base_datos', { baseDatos, userId });
+    } catch (error) {
+      console.error('Error en createBaseDatos:', error);
+      throw new Error(`Error al crear base de datos: ${error}`);
+    }
+  }
+
+  async updateBaseDatos(id: number, baseDatos: { nombre: string; descripcion?: string }, userId: number): Promise<string> {
+    try {
+      return await invoke<string>('update_base_datos', { id, baseDatos, userId });
+    } catch (error) {
+      console.error('Error en updateBaseDatos:', error);
+      throw new Error(`Error al actualizar base de datos: ${error}`);
+    }
+  }
+
+  async deleteBaseDatos(id: number, userId: number): Promise<string> {
+    try {
+      return await invoke<string>('delete_base_datos', { id, userId });
+    } catch (error) {
+      console.error('Error en deleteBaseDatos:', error);
+      throw new Error(`Error al eliminar base de datos: ${error}`);
+    }
+  }
+
+  async getUserBasesDatos(targetUserId: number): Promise<BaseDatos[]> {
+    try {
+      return await invoke<BaseDatos[]>('get_user_bases_datos', { targetUserId });
+    } catch (error) {
+      console.error('Error en getUserBasesDatos:', error);
+      throw new Error(`Error al obtener BD del usuario: ${error}`);
+    }
+  }
+
+  async assignUserToBaseDatos(targetUserId: number, baseDatosId: number, adminId: number): Promise<string> {
+    try {
+      return await invoke<string>('assign_user_to_base_datos', { targetUserId, baseDatosId, adminId });
+    } catch (error) {
+      console.error('Error en assignUserToBaseDatos:', error);
+      throw new Error(`Error al asignar BD: ${error}`);
+    }
+  }
+
+  async unassignUserFromBaseDatos(targetUserId: number, baseDatosId: number, adminId: number): Promise<string> {
+    try {
+      return await invoke<string>('unassign_user_from_base_datos', { targetUserId, baseDatosId, adminId });
+    } catch (error) {
+      console.error('Error en unassignUserFromBaseDatos:', error);
+      throw new Error(`Error al desasignar BD: ${error}`);
+    }
+  }
+
+  async getAvailableBasesDatos(userId: number): Promise<BaseDatos[]> {
+    try {
+      return await invoke<BaseDatos[]>('get_available_bases_datos', { userId });
+    } catch (error) {
+      console.error('Error en getAvailableBasesDatos:', error);
+      throw new Error(`Error al obtener BD disponibles: ${error}`);
+    }
+  }
+}
+
+export interface BaseDatos {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  created_at?: string;
+  updated_at?: string;
+  assigned_at?: string;
 }

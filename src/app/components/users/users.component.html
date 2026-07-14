@@ -7,7 +7,12 @@
       Volver
     </button>
     <h1>Gestión de Usuarios</h1>
-    <div></div>
+    <button class="btn-create" (click)="openCreateModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+      </svg>
+      Crear Usuario
+    </button>
   </div>
 
   @if (successMessage()) {
@@ -58,6 +63,20 @@
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
                 </svg>
               </button>
+              @if (!isCurrentUser(user.id)) {
+                <button class="btn-icon btn-password" (click)="openPasswordModal(user)" title="Cambiar contraseña">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/>
+                  </svg>
+                </button>
+              }
+              @if (!isCurrentUser(user.id)) {
+                <button class="btn-icon btn-assign" (click)="openAssignmentModal(user)" title="Asignar bases de datos">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/>
+                  </svg>
+                </button>
+              }
               @if (!isCurrentUser(user.id)) {
                 <button class="btn-icon btn-delete" (click)="deleteUser(user.id)" title="Eliminar usuario">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -135,6 +154,188 @@
           <button type="button" class="btn-primary" (click)="updateRole()" [disabled]="isLoading()">
             {{ isLoading() ? 'Actualizando...' : 'Actualizar Rol' }}
           </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Create User Modal -->
+  @if (showCreateModal()) {
+    <div class="modal-overlay" (click)="closeCreateModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Crear Nuevo Usuario</h2>
+          <button class="btn-close" (click)="closeCreateModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="alert alert-error">{{ errorMessage() }}</div>
+        }
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nombre de Usuario *</label>
+            <input 
+              type="text" 
+              [(ngModel)]="newUsername" 
+              name="newUsername"
+              placeholder="Nombre de usuario"
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label>Contraseña *</label>
+            <input 
+              type="password" 
+              [(ngModel)]="newUserPassword" 
+              name="newUserPassword"
+              placeholder="Mínimo 6 caracteres"
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label>Repetir Contraseña *</label>
+            <input 
+              type="password" 
+              [(ngModel)]="confirmUserPassword" 
+              name="confirmUserPassword"
+              placeholder="Repite la contraseña"
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label>Rol *</label>
+            <select [(ngModel)]="newUserRole" name="newUserRole" class="role-select">
+              @for (role of roles; track role) {
+                <option [value]="role">{{ role }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeCreateModal()">Cancelar</button>
+          <button type="button" class="btn-primary" (click)="createUser()" [disabled]="isLoading()">
+            {{ isLoading() ? 'Creando...' : 'Crear Usuario' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Password Modal -->
+  @if (showPasswordModal() && selectedUser()) {
+    <div class="modal-overlay" (click)="closePasswordModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Cambiar Contraseña</h2>
+          <button class="btn-close" (click)="closePasswordModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="alert alert-error">{{ errorMessage() }}</div>
+        }
+
+        <div class="modal-body">
+          <div class="user-info">
+            <strong>Usuario:</strong> {{ selectedUser()!.username }}
+          </div>
+
+          <div class="form-group">
+            <label>Nueva Contraseña *</label>
+            <input 
+              type="password" 
+              [(ngModel)]="newPassword" 
+              name="newPassword"
+              placeholder="Mínimo 6 caracteres"
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label>Confirmar Contraseña *</label>
+            <input 
+              type="password" 
+              [(ngModel)]="confirmPassword" 
+              name="confirmPassword"
+              placeholder="Repite la nueva contraseña"
+              class="form-input">
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closePasswordModal()">Cancelar</button>
+          <button type="button" class="btn-primary" (click)="adminChangePassword()" [disabled]="isLoading()">
+            {{ isLoading() ? 'Guardando...' : 'Actualizar Contraseña' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Assignment Modal -->
+  @if (showAssignmentModal() && selectedUser()) {
+    <div class="modal-overlay" (click)="closeAssignmentModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Asignar Bases de Datos</h2>
+          <button class="btn-close" (click)="closeAssignmentModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="alert alert-error">{{ errorMessage() }}</div>
+        }
+
+        <div class="modal-body">
+          <div class="user-info">
+            <strong>Usuario:</strong> {{ selectedUser()!.username }}
+            <span [class]="'badge ' + getRoleBadgeClass(selectedUser()!.rol)">{{ selectedUser()!.rol }}</span>
+          </div>
+
+          <p class="assignment-info">Selecciona las bases de datos a las que este usuario tendrá acceso:</p>
+
+          @if (isLoading()) {
+            <div class="loading-small">Cargando...</div>
+          } @else if (basesDatos().length === 0) {
+            <div class="empty-bd">
+              <p>No hay bases de datos disponibles. Crea una en la sección Asignaciones.</p>
+            </div>
+          } @else {
+            <div class="bd-list">
+              @for (bd of basesDatos(); track bd.id) {
+                <div class="bd-item" (click)="toggleBaseDatosAssignment(bd.id)">
+                  <div class="bd-checkbox" [class.checked]="isBaseDatosAssigned(bd.id)">
+                    @if (isBaseDatosAssigned(bd.id)) {
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                      </svg>
+                    }
+                  </div>
+                  <div class="bd-info">
+                    <strong>{{ bd.nombre }}</strong>
+                    @if (bd.descripcion) {
+                      <span>{{ bd.descripcion }}</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeAssignmentModal()">Cerrar</button>
         </div>
       </div>
     </div>

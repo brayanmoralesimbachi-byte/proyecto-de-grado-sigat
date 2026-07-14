@@ -1,3 +1,4 @@
+use crate::crypto::hash_password;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePool, SqlitePoolOptions};
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -160,6 +161,38 @@ impl Database {
                 .await?;
         }
 
+        // Tabla de bases de datos (grupos lógicos independientes)
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS bases_datos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre TEXT NOT NULL UNIQUE,
+                descripcion TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+            "#,
+        )
+        .execute(&self.pool)
+        .await?;
+
+        // Tabla de asignación usuario <-> base_datos
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS usuario_base_datos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                usuario_id INTEGER NOT NULL,
+                base_datos_id INTEGER NOT NULL,
+                assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+                FOREIGN KEY (base_datos_id) REFERENCES bases_datos(id) ON DELETE CASCADE,
+                UNIQUE(usuario_id, base_datos_id)
+            )
+            "#,
+        )
+        .execute(&self.pool)
+        .await?;
+
         // Migración: Agregar columna timezone a usuarios si no existe
         let user_table_info: Vec<(i64, String, String, i64, Option<String>, i64)> = sqlx::query_as(
             "PRAGMA table_info(usuarios)"
@@ -230,6 +263,28 @@ impl Database {
                 .await?;
         }
 
+        // Migración: Agregar columna base_datos_id a activos si no existe
+        let has_base_datos_activos = table_info.iter().any(|(_, name, _, _, _, _)| name == "base_datos_id");
+        if !has_base_datos_activos {
+            sqlx::query("ALTER TABLE activos ADD COLUMN base_datos_id INTEGER REFERENCES bases_datos(id)")
+                .execute(&self.pool)
+                .await?;
+        }
+
+        // Migración: Agregar columna base_datos_id a auditoria si no existe
+        let audit_table_info: Vec<(i64, String, String, i64, Option<String>, i64)> = sqlx::query_as(
+            "PRAGMA table_info(auditoria)"
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        let has_base_datos_audit = audit_table_info.iter().any(|(_, name, _, _, _, _)| name == "base_datos_id");
+        if !has_base_datos_audit {
+            sqlx::query("ALTER TABLE auditoria ADD COLUMN base_datos_id INTEGER REFERENCES bases_datos(id)")
+                .execute(&self.pool)
+                .await?;
+        }
+
         // Insertar categorías base si no existen
         let categorias_base = vec![
             ("Equipos de Cómputo", "Computadores, laptops, monitores, etc.", "#3b82f6"),
@@ -261,6 +316,59 @@ impl Database {
         self.initialize_base_keywords().await?;
 
         Ok(())
+    }
+
+    /// Crea un usuario administrador por defecto si no existen usuarios.
+    /// Las credenciales se obtienen de (en orden de prioridad):
+    /// 1. Variables de entorno en tiempo de ejecución (APP_DEFAULT_ADMIN_USERNAME/PASSWORD)
+    /// 2. Variables de entorno en tiempo de compilación (mismo nombre, usando option_env!)
+    pub async fn create_default_admin_if_needed(&self) -> Result<(), String> {
+        let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM usuarios")
+            .fetch_one(self.pool())
+            .await
+            .map_err(|e| format!("Error al contar usuarios: {}", e))?;
+
+        if count > 0 {
+            return Ok(());
+        }
+
+        let admin_username = std::env::var("APP_DEFAULT_ADMIN_USERNAME")
+            .ok()
+            .filter(|v| !v.trim().is_empty())
+            .or_else(|| option_env!("APP_DEFAULT_ADMIN_USERNAME")
+                .map(|s| s.to_string())
+                .filter(|v| !v.trim().is_empty()));
+
+        let admin_password = std::env::var("APP_DEFAULT_ADMIN_PASSWORD")
+            .ok()
+            .filter(|v| !v.trim().is_empty())
+            .or_else(|| option_env!("APP_DEFAULT_ADMIN_PASSWORD")
+                .map(|s| s.to_string())
+                .filter(|v| !v.trim().is_empty()));
+
+        match (admin_username, admin_password) {
+            (Some(username), Some(password)) => {
+                let (password_hash, salt) = hash_password(&password)?;
+
+                sqlx::query(
+                    "INSERT INTO usuarios (username, password_hash, salt, rol) VALUES (?, ?, ?, ?)"
+                )
+                .bind(&username)
+                .bind(&password_hash)
+                .bind(&salt)
+                .bind("administrador")
+                .execute(self.pool())
+                .await
+                .map_err(|e| format!("Error al crear admin por defecto: {}", e))?;
+
+                println!("Usuario administrador por defecto creado: {}", username);
+                Ok(())
+            }
+            _ => {
+                println!("No se creó admin por defecto: faltan APP_DEFAULT_ADMIN_USERNAME/PASSWORD en .env o variables de compilación");
+                Ok(())
+            }
+        }
     }
 
     /// Inicializa las keywords base para el chatbot
@@ -513,6 +621,7 @@ impl Database {
     }
 
     /// Registra una acción en la auditoría
+    /// base_datos_id es opcional: para acciones sobre activos se setea, para otras (login, users) puede ser None
     pub async fn log_audit(
         &self,
         usuario_id: i64,
@@ -521,11 +630,12 @@ impl Database {
         registro_id: i64,
         datos_anteriores: Option<&str>,
         datos_nuevos: Option<&str>,
+        base_datos_id: Option<i64>,
     ) -> Result<(), sqlx::Error> {
         sqlx::query(
             r#"
-            INSERT INTO auditoria (usuario_id, accion, tabla, registro_id, datos_anteriores, datos_nuevos)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO auditoria (usuario_id, accion, tabla, registro_id, datos_anteriores, datos_nuevos, base_datos_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             "#,
         )
         .bind(usuario_id)
@@ -534,10 +644,67 @@ impl Database {
         .bind(registro_id)
         .bind(datos_anteriores)
         .bind(datos_nuevos)
+        .bind(base_datos_id)
         .execute(&self.pool)
         .await?;
 
         Ok(())
+    }
+
+    /// Verifica si un usuario tiene acceso a una base_datos específica
+    pub async fn check_base_datos_access(
+        &self,
+        user_id: i64,
+        base_datos_id: i64,
+    ) -> Result<bool, sqlx::Error> {
+        let rol: String = sqlx::query_scalar("SELECT rol FROM usuarios WHERE id = ?")
+            .bind(user_id)
+            .fetch_optional(&self.pool)
+            .await?
+            .ok_or(sqlx::Error::Protocol("Usuario no encontrado".to_string()))?;
+
+        if rol == "administrador" {
+            return Ok(true);
+        }
+
+        let has_access: bool = sqlx::query_scalar(
+            "SELECT COUNT(*) > 0 FROM usuario_base_datos WHERE usuario_id = ? AND base_datos_id = ?"
+        )
+        .bind(user_id)
+        .bind(base_datos_id)
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(has_access)
+    }
+
+    /// Obtiene los IDs de bases_datos a los que un usuario tiene acceso
+    /// (todas para admin, o las asignadas para otros roles)
+    pub async fn get_user_base_datos_ids(
+        &self,
+        user_id: i64,
+    ) -> Result<Vec<i64>, sqlx::Error> {
+        let rol: String = sqlx::query_scalar("SELECT rol FROM usuarios WHERE id = ?")
+            .bind(user_id)
+            .fetch_optional(&self.pool)
+            .await?
+            .ok_or(sqlx::Error::Protocol("Usuario no encontrado".to_string()))?;
+
+        if rol == "administrador" {
+            let rows: Vec<i64> = sqlx::query_scalar("SELECT id FROM bases_datos")
+                .fetch_all(&self.pool)
+                .await?;
+            return Ok(rows);
+        }
+
+        let rows: Vec<i64> = sqlx::query_scalar(
+            "SELECT base_datos_id FROM usuario_base_datos WHERE usuario_id = ?"
+        )
+        .bind(user_id)
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(rows)
     }
 
     /// Obtiene una referencia al pool de conexiones

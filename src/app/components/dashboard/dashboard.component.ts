@@ -35,6 +35,7 @@ export class DashboardComponent implements OnInit {
 
     console.log('[Dashboard] Current user:', this.authService.currentUser());
     console.log('[Dashboard] isAdmin:', this.isAdmin());
+    await this.authService.loadAvailableBases();
     await this.loadActivos();
   }
 
@@ -48,7 +49,9 @@ export class DashboardComponent implements OnInit {
     this.errorMessage.set('');
 
     try {
-      const activos = await this.tauriService.getActivos();
+      const user = this.authService.currentUser();
+      const userId = user?.id;
+      const activos = await this.tauriService.getActivos(userId);
       this.activos.set(activos);
     } catch (error) {
       this.errorMessage.set('Error al cargar activos: ' + error);

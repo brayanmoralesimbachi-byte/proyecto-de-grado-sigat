@@ -27,6 +27,7 @@ export class AuditComponent implements OnInit {
   
   // Filtro por acción
   filtroAccion = signal('');
+  filtroBaseDatos = signal<number | undefined>(undefined);
   acciones: string[] = [];
 
   constructor(
@@ -56,7 +57,9 @@ export class AuditComponent implements OnInit {
   async loadAuditLog(): Promise<void> {
     try {
       this.isLoading.set(true);
-      const data = await this.tauriService.getAuditLog(this.limit());
+      const user = this.authService.currentUser();
+      const userId = user?.id;
+      const data = await this.tauriService.getAuditLog(this.limit(), userId, this.filtroBaseDatos());
       this.auditLogs.set(data);
       this.aplicarFiltrosYAgrupar();
       this.errorMessage.set('');
@@ -130,6 +133,11 @@ export class AuditComponent implements OnInit {
       month: 'long',
       day: 'numeric'
     }).format(date);
+  }
+
+  onBaseDatosFilterChange(bdId: number | undefined): void {
+    this.filtroBaseDatos.set(bdId);
+    this.loadAuditLog();
   }
 
   async changeLimit(newLimit: number): Promise<void> {

@@ -34,6 +34,18 @@
       </select>
     </div>
 
+    @if (authService.hasMultipleBases() || authService.availableBases().length === 0) {
+      <div class="filter-group">
+        <label>Base de datos:</label>
+        <select [ngModel]="filtroBaseDatos()" (ngModelChange)="onBaseDatosFilterChange($event)" class="filter-select">
+          <option [ngValue]="undefined">Todas las bases</option>
+          @for (bd of authService.availableBases(); track bd.id) {
+            <option [ngValue]="bd.id">{{ bd.nombre }}</option>
+          }
+        </select>
+      </div>
+    }
+
     <div class="filter-group">
       <label>Mostrar:</label>
       <select [value]="limit()" (change)="changeLimit(+$any($event.target).value)" class="filter-select">

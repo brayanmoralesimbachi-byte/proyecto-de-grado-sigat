@@ -173,3 +173,23 @@
     </div>
   </div>
 </div>
+
+@if (showUsernameConfirm() && pendingNewUsername()) {
+  <div class="modal-overlay" (click)="cancelUsernameChange()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Confirmar Cambio de Nombre</h2>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-text">
+          Su nombre de usuario va a ser cambiado a <strong>{{ pendingNewUsername() }}</strong>.
+          Para esto será necesario cerrar su sesión. ¿Desea continuar?
+        </p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="cancelUsernameChange()">No</button>
+        <button type="button" class="btn-primary" (click)="confirmUsernameChange()">Sí, cambiar nombre</button>
+      </div>
+    </div>
+  </div>
+}

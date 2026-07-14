@@ -22,6 +22,8 @@ export class ProfileComponent implements OnInit {
   
   // Username change
   newUsername = signal('');
+  showUsernameConfirm = signal(false);
+  pendingNewUsername = signal('');
   
   // Timezone change
   selectedTimezone = signal('America/Bogota');
@@ -127,24 +129,33 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
+    this.pendingNewUsername.set(this.newUsername());
+    this.showUsernameConfirm.set(true);
+  }
+
+  cancelUsernameChange(): void {
+    this.showUsernameConfirm.set(false);
+    this.pendingNewUsername.set('');
+  }
+
+  async confirmUsernameChange(): Promise<void> {
+    this.showUsernameConfirm.set(false);
+    const newName = this.pendingNewUsername();
+    this.pendingNewUsername.set('');
     this.isLoading.set(true);
 
     try {
       await this.tauriService.changeUsername(
         this.currentUser().id,
-        this.newUsername()
+        newName
       );
 
-      // Actualizar usuario en sessionStorage
-      const updatedUser = { ...this.currentUser(), username: this.newUsername() };
-      this.currentUser.set(updatedUser);
-      sessionStorage.setItem('currentUser', JSON.stringify(updatedUser));
-
-      this.successMessage.set('Nombre de usuario actualizado exitosamente');
+      // Cerrar sesión
+      await this.authService.logout();
+      this.router.navigate(['/login']);
     } catch (error: any) {
       this.errorMessage.set(error.message || 'Error al cambiar el nombre de usuario');
       this.newUsername.set(this.currentUser()?.username || '');
-    } finally {
       this.isLoading.set(false);
     }
   }

@@ -31,21 +31,18 @@ pub struct LoginResponse {
     pub timezone: Option<String>,
 }
 
-/// Comando Tauri para crear un nuevo usuario
-/// 
-/// Este comando es invocado desde Angular mediante invoke()
 #[tauri::command]
 pub async fn create_user(
     username: String,
     password: String,
     rol: String,
+    base_datos_ids: Option<Vec<i64>>,
+    admin_id: Option<i64>,
     state: State<'_, AppState>,
 ) -> Result<String, String> {
-    // Obtener conexión a la base de datos
     let db_lock = state.db.lock().await;
     let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
 
-    // Verificar si el usuario ya existe
     let exists: bool = sqlx::query_scalar("SELECT COUNT(*) > 0 FROM usuarios WHERE username = ?")
         .bind(&username)
         .fetch_one(db.pool())
@@ -56,10 +53,8 @@ pub async fn create_user(
         return Err("El nombre de usuario ya está en uso. Por favor, intente con otro nombre de usuario.".to_string());
     }
 
-    // Hashear contraseña
     let (password_hash, salt) = hash_password(&password)?;
 
-    // Insertar usuario
     sqlx::query(
         r#"
         INSERT INTO usuarios (username, password_hash, salt, rol)
@@ -73,6 +68,29 @@ pub async fn create_user(
     .execute(db.pool())
     .await
     .map_err(|e| format!("Error al crear usuario: {}", e))?;
+
+    let user_id = sqlx::query_scalar::<_, i64>("SELECT id FROM usuarios WHERE username = ?")
+        .bind(&username)
+        .fetch_one(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener usuario creado: {}", e))?;
+
+    if let Some(ref ids) = base_datos_ids {
+        for bd_id in ids {
+            sqlx::query("INSERT INTO usuario_base_datos (usuario_id, base_datos_id) VALUES (?, ?)")
+                .bind(user_id)
+                .bind(bd_id)
+                .execute(db.pool())
+                .await
+                .map_err(|e| format!("Error al asignar base de datos: {}", e))?;
+        }
+    }
+
+    if let Some(aid) = admin_id {
+        db.log_audit(aid, "CREATE", "usuarios", user_id, None, Some(&format!("Usuario creado: {}, rol: {}", username, rol)), None)
+            .await
+            .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
+    }
 
     Ok(format!("Usuario {} creado exitosamente", username))
 }
@@ -103,7 +121,7 @@ pub async fn login(
         // Verificar contraseña
         if verify_password(&request.password, &password_hash)? {
             // Registrar auditoría de login exitoso
-            db.log_audit(user_id, "LOGIN", "usuarios", user_id, None, None)
+            db.log_audit(user_id, "LOGIN", "usuarios", user_id, None, None, None)
                 .await
                 .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
 
@@ -166,8 +184,7 @@ pub async fn logout(
     let session_duration = format!("{}h {}m {}s", hours, minutes, seconds);
     let logout_message = format!("Sesión finalizada. Duración: {}", session_duration);
 
-    // Registrar auditoría de logout
-    db.log_audit(user_id, "LOGOUT", "usuarios", user_id, None, Some(&logout_message))
+    db.log_audit(user_id, "LOGOUT", "usuarios", user_id, None, Some(&logout_message), None)
         .await
         .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
 
@@ -207,7 +224,7 @@ pub async fn force_logout(state: State<'_, AppState>) -> Result<String, String> 
                 let logout_message = format!("Sesión finalizada forzosamente (cierre de aplicación). Duración: {}", session_duration);
 
                 // Registrar auditoría de logout forzoso
-                let _ = db.log_audit(user_id, "LOGOUT", "usuarios", user_id, None, Some(&logout_message)).await;
+                let _ = db.log_audit(user_id, "LOGOUT", "usuarios", user_id, None, Some(&logout_message), None).await;
             }
         }
 
@@ -222,26 +239,72 @@ pub async fn force_logout(state: State<'_, AppState>) -> Result<String, String> 
     Ok("No hay sesión activa".to_string())
 }
 
-/// Comando Tauri para obtener la lista de activos
 #[tauri::command]
-pub async fn get_activos(state: State<'_, AppState>) -> Result<Vec<serde_json::Value>, String> {
+pub async fn get_activos(
+    user_id: Option<i64>,
+    base_datos_id: Option<i64>,
+    state: State<'_, AppState>,
+) -> Result<Vec<serde_json::Value>, String> {
     let db_lock = state.db.lock().await;
     let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
 
-    let activos = sqlx::query(
-        r#"
-        SELECT id, codigo, nombre, descripcion, categoria, ubicacion, 
-               responsable_id, estado, valor_adquisicion, fecha_adquisicion, 
-               fecha_vencimiento, imagen_base64, palabras_clave, created_by, created_at
-        FROM activos
-        ORDER BY codigo
-        "#,
-    )
-    .fetch_all(db.pool())
-    .await
-    .map_err(|e| format!("Error al obtener activos: {}", e))?;
+    let base_ids = if let Some(uid) = user_id {
+        db.get_user_base_datos_ids(uid)
+            .await
+            .map_err(|e| format!("Error al obtener bases de datos: {}", e))?
+    } else {
+        // No user specified: return all activos
+        sqlx::query_scalar("SELECT id FROM bases_datos")
+            .fetch_all(db.pool())
+            .await
+            .map_err(|e| format!("Error al obtener bases de datos: {}", e))?
+    };
 
-    // Convertir resultados a JSON
+    let activos = if let Some(filter_bd_id) = base_datos_id {
+        // Filter by a specific base_datos
+        sqlx::query(
+            r#"
+            SELECT a.id, a.codigo, a.nombre, a.descripcion, a.categoria, a.ubicacion, 
+                   a.responsable_id, a.estado, a.valor_adquisicion, a.fecha_adquisicion, 
+                   a.fecha_vencimiento, a.imagen_base64, a.palabras_clave, a.created_by, a.created_at,
+                   b.nombre as base_datos_nombre
+            FROM activos a
+            LEFT JOIN bases_datos b ON a.base_datos_id = b.id
+            WHERE a.base_datos_id = ?
+            ORDER BY a.codigo
+            "#,
+        )
+        .bind(filter_bd_id)
+        .fetch_all(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener activos: {}", e))?
+    } else {
+        if base_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let mut query = String::from(
+            r#"
+            SELECT a.id, a.codigo, a.nombre, a.descripcion, a.categoria, a.ubicacion, 
+                   a.responsable_id, a.estado, a.valor_adquisicion, a.fecha_adquisicion, 
+                   a.fecha_vencimiento, a.imagen_base64, a.palabras_clave, a.created_by, a.created_at,
+                   b.nombre as base_datos_nombre
+            FROM activos a
+            LEFT JOIN bases_datos b ON a.base_datos_id = b.id
+            WHERE a.base_datos_id IN ("#
+        );
+        let placeholders: Vec<String> = base_ids.iter().map(|_| "?".to_string()).collect();
+        query.push_str(&placeholders.join(", "));
+        query.push_str(") ORDER BY a.codigo");
+
+        let mut q = sqlx::query(&query);
+        for id in &base_ids {
+            q = q.bind(id);
+        }
+        q.fetch_all(db.pool())
+            .await
+            .map_err(|e| format!("Error al obtener activos: {}", e))?
+    };
+
     let mut result = Vec::new();
     for row in activos {
         let json = serde_json::json!({
@@ -260,6 +323,7 @@ pub async fn get_activos(state: State<'_, AppState>) -> Result<Vec<serde_json::V
             "palabras_clave": row.try_get::<Option<String>, _>("palabras_clave").ok().flatten(),
             "created_by": row.try_get::<Option<i64>, _>("created_by").ok().flatten(),
             "created_at": row.try_get::<Option<String>, _>("created_at").ok().flatten(),
+            "base_datos_nombre": row.try_get::<Option<String>, _>("base_datos_nombre").ok().flatten(),
         });
         result.push(json);
     }
@@ -276,6 +340,7 @@ pub struct ActivoInput {
     pub categoria: String,
     pub ubicacion: Option<String>,
     pub responsable_id: Option<i64>,
+    pub base_datos_id: i64,
     pub estado: String,
     pub valor_adquisicion: Option<f64>,
     pub fecha_adquisicion: Option<String>,
@@ -297,9 +362,9 @@ pub async fn create_activo(
     let result = sqlx::query(
         r#"
         INSERT INTO activos (codigo, nombre, descripcion, categoria, ubicacion, 
-                            responsable_id, estado, valor_adquisicion, fecha_adquisicion, 
+                            responsable_id, base_datos_id, estado, valor_adquisicion, fecha_adquisicion, 
                             fecha_vencimiento, imagen_base64, palabras_clave, created_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         "#,
     )
     .bind(&activo.codigo)
@@ -308,6 +373,7 @@ pub async fn create_activo(
     .bind(&activo.categoria)
     .bind(&activo.ubicacion)
     .bind(&activo.responsable_id)
+    .bind(activo.base_datos_id)
     .bind(&activo.estado)
     .bind(&activo.valor_adquisicion)
     .bind(&activo.fecha_adquisicion)
@@ -322,7 +388,7 @@ pub async fn create_activo(
     let activo_id = result.last_insert_rowid();
 
     // Registrar auditoría
-    db.log_audit(user_id, "CREATE", "activos", activo_id, None, Some(&format!("Creado activo: {}", activo.nombre)))
+    db.log_audit(user_id, "CREATE", "activos", activo_id, None, Some(&format!("Creado activo: {}", activo.nombre)), Some(activo.base_datos_id))
         .await
         .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
 
@@ -340,9 +406,8 @@ pub async fn update_activo(
     let db_lock = state.db.lock().await;
     let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
 
-    // Obtener valores anteriores para auditoría
     let old_values = sqlx::query(
-        "SELECT codigo, nombre, categoria, estado FROM activos WHERE id = ?"
+        "SELECT codigo, nombre, categoria, estado, base_datos_id FROM activos WHERE id = ?"
     )
     .bind(id)
     .fetch_optional(db.pool())
@@ -378,7 +443,8 @@ pub async fn update_activo(
     // Registrar auditoría
     if let Some(old_row) = old_values {
         let old_nombre: String = old_row.try_get("nombre").unwrap_or_default();
-        db.log_audit(user_id, "UPDATE", "activos", id, Some(&old_nombre), Some(&activo.nombre))
+        let bd_id: Option<i64> = old_row.try_get("base_datos_id").ok().flatten();
+        db.log_audit(user_id, "UPDATE", "activos", id, Some(&old_nombre), Some(&activo.nombre), bd_id)
             .await
             .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
     }
@@ -396,12 +462,13 @@ pub async fn delete_activo(
     let db_lock = state.db.lock().await;
     let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
 
-    // Obtener nombre del activo para auditoría
-    let activo_nombre: Option<String> = sqlx::query_scalar("SELECT nombre FROM activos WHERE id = ?")
-        .bind(id)
-        .fetch_optional(db.pool())
-        .await
-        .map_err(|e| format!("Error al obtener activo: {}", e))?;
+    let activo_info: Option<(String, Option<i64>)> = sqlx::query_as(
+        "SELECT nombre, base_datos_id FROM activos WHERE id = ?"
+    )
+    .bind(id)
+    .fetch_optional(db.pool())
+    .await
+    .map_err(|e| format!("Error al obtener activo: {}", e))?;
 
     sqlx::query("DELETE FROM activos WHERE id = ?")
         .bind(id)
@@ -409,9 +476,8 @@ pub async fn delete_activo(
         .await
         .map_err(|e| format!("Error al eliminar activo: {}", e))?;
 
-    // Registrar auditoría
-    if let Some(nombre) = activo_nombre {
-        db.log_audit(user_id, "DELETE", "activos", id, Some(&nombre), None)
+    if let Some((nombre, bd_id)) = activo_info {
+        db.log_audit(user_id, "DELETE", "activos", id, Some(&nombre), None, bd_id)
             .await
             .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
     }
@@ -468,8 +534,7 @@ pub async fn update_user_role(
         .await
         .map_err(|e| format!("Error al actualizar rol: {}", e))?;
 
-    // Registrar auditoría
-    db.log_audit(admin_id, "UPDATE", "usuarios", user_id, None, Some(&format!("Rol cambiado a: {}", new_role)))
+    db.log_audit(admin_id, "UPDATE", "usuarios", user_id, None, Some(&format!("Rol cambiado a: {}", new_role)), None)
         .await
         .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
 
@@ -501,7 +566,7 @@ pub async fn delete_user(
 
     // Registrar auditoría
     if let Some(name) = username {
-        db.log_audit(admin_id, "DELETE", "usuarios", user_id, Some(&name), None)
+        db.log_audit(admin_id, "DELETE", "usuarios", user_id, Some(&name), None, None)
             .await
             .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
     }
@@ -509,9 +574,9 @@ pub async fn delete_user(
     Ok("Usuario eliminado exitosamente".to_string())
 }
 
-/// Comando para obtener el log de auditoría
 #[tauri::command]
 pub async fn get_audit_log(
+    user_id: Option<i64>,
     limit: Option<i64>,
     state: State<'_, AppState>,
 ) -> Result<Vec<serde_json::Value>, String> {
@@ -520,20 +585,78 @@ pub async fn get_audit_log(
 
     let limit_value = limit.unwrap_or(100);
 
-    let logs = sqlx::query(
-        r#"
-        SELECT a.id, a.usuario_id as user_id, u.username, a.accion as action, a.tabla as table_name, 
-               a.registro_id as record_id, a.datos_anteriores as old_value, a.datos_nuevos as new_value, a.timestamp
-        FROM auditoria a
-        LEFT JOIN usuarios u ON a.usuario_id = u.id
-        ORDER BY a.timestamp DESC
-        LIMIT ?
-        "#,
-    )
-    .bind(limit_value)
-    .fetch_all(db.pool())
-    .await
-    .map_err(|e| format!("Error al obtener log de auditoría: {}", e))?;
+    let logs = if let Some(uid) = user_id {
+        let user_rol: String = sqlx::query_scalar("SELECT rol FROM usuarios WHERE id = ?")
+            .bind(uid)
+            .fetch_one(db.pool())
+            .await
+            .map_err(|e| format!("Error al verificar rol: {}", e))?;
+
+        if user_rol == "administrador" {
+            sqlx::query(
+                r#"
+                SELECT a.id, a.usuario_id as user_id, u.username, a.accion as action, a.tabla as table_name, 
+                       a.registro_id as record_id, a.datos_anteriores as old_value, a.datos_nuevos as new_value, a.timestamp,
+                       a.base_datos_id
+                FROM auditoria a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                ORDER BY a.timestamp DESC
+                LIMIT ?
+                "#,
+            )
+            .bind(limit_value)
+            .fetch_all(db.pool())
+            .await
+            .map_err(|e| format!("Error al obtener log de auditoría: {}", e))?
+        } else {
+            let base_ids = db.get_user_base_datos_ids(uid)
+                .await
+                .map_err(|e| format!("Error al obtener bases de datos: {}", e))?;
+
+            if base_ids.is_empty() {
+                return Ok(Vec::new());
+            }
+
+            let mut query = String::from(
+                r#"
+                SELECT a.id, a.usuario_id as user_id, u.username, a.accion as action, a.tabla as table_name, 
+                       a.registro_id as record_id, a.datos_anteriores as old_value, a.datos_nuevos as new_value, a.timestamp,
+                       a.base_datos_id
+                FROM auditoria a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                WHERE a.base_datos_id IN ("#
+            );
+            let placeholders: Vec<String> = base_ids.iter().map(|_| "?".to_string()).collect();
+            query.push_str(&placeholders.join(", "));
+            query.push_str(") ORDER BY a.timestamp DESC LIMIT ?");
+
+            let mut q = sqlx::query(&query);
+            for id in &base_ids {
+                q = q.bind(id);
+            }
+            q.bind(limit_value)
+                .fetch_all(db.pool())
+                .await
+                .map_err(|e| format!("Error al obtener log de auditoría: {}", e))?
+        }
+    } else {
+        // No user_id provided: return all logs (fallback for chatbot etc.)
+        sqlx::query(
+            r#"
+            SELECT a.id, a.usuario_id as user_id, u.username, a.accion as action, a.tabla as table_name, 
+                   a.registro_id as record_id, a.datos_anteriores as old_value, a.datos_nuevos as new_value, a.timestamp,
+                   a.base_datos_id
+            FROM auditoria a
+            LEFT JOIN usuarios u ON a.usuario_id = u.id
+            ORDER BY a.timestamp DESC
+            LIMIT ?
+            "#,
+        )
+        .bind(limit_value)
+        .fetch_all(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener log de auditoría: {}", e))?
+    };
 
     let mut result = Vec::new();
     for row in logs {
@@ -547,6 +670,7 @@ pub async fn get_audit_log(
             "old_value": row.try_get::<Option<String>, _>("old_value").ok().flatten(),
             "new_value": row.try_get::<Option<String>, _>("new_value").ok().flatten(),
             "timestamp": row.try_get::<String, _>("timestamp").ok(),
+            "base_datos_id": row.try_get::<Option<i64>, _>("base_datos_id").ok().flatten(),
         });
         result.push(json);
     }
@@ -589,11 +713,39 @@ pub async fn change_password(
         .map_err(|e| format!("Error al actualizar contraseña: {}", e))?;
 
     // Registrar auditoría
-    db.log_audit(user_id, "UPDATE", "usuarios", user_id, Some("password"), Some("***"))
+    db.log_audit(user_id, "UPDATE", "usuarios", user_id, Some("password"), Some("***"), None)
         .await
         .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
 
     Ok("Contraseña actualizada exitosamente".to_string())
+}
+
+/// Comando para que un administrador cambie la contraseña de otro usuario
+#[tauri::command]
+pub async fn admin_change_password(
+    admin_id: i64,
+    target_user_id: i64,
+    new_password: String,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    let (new_hash, new_salt) = hash_password(&new_password)?;
+
+    sqlx::query("UPDATE usuarios SET password_hash = ?, salt = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+        .bind(&new_hash)
+        .bind(&new_salt)
+        .bind(target_user_id)
+        .execute(db.pool())
+        .await
+        .map_err(|e| format!("Error al actualizar contraseña: {}", e))?;
+
+    db.log_audit(admin_id, "UPDATE", "usuarios", target_user_id, Some("password"), Some("*** (cambio por administrador)"), None)
+        .await
+        .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
+
+    Ok("Contraseña actualizada exitosamente por el administrador".to_string())
 }
 
 /// Comando para cambiar nombre de usuario
@@ -645,7 +797,7 @@ pub async fn change_username(
         .map_err(|e| format!("Error al actualizar username: {}", e))?;
 
     // Registrar auditoría
-    db.log_audit(user_id, "UPDATE", "usuarios", user_id, Some(&old_username), Some(&new_username))
+    db.log_audit(user_id, "UPDATE", "usuarios", user_id, Some(&old_username), Some(&new_username), None)
         .await
         .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
 
@@ -698,9 +850,10 @@ pub async fn get_activo_detalles(
 
     let activo = sqlx::query(
         r#"
-        SELECT a.*, u.username as created_by_username
+        SELECT a.*, u.username as created_by_username, b.nombre as base_datos_nombre
         FROM activos a
         LEFT JOIN usuarios u ON a.created_by = u.id
+        LEFT JOIN bases_datos b ON a.base_datos_id = b.id
         WHERE a.id = ?
         "#,
     )
@@ -726,6 +879,8 @@ pub async fn get_activo_detalles(
             "created_by": row.try_get::<Option<i64>, _>("created_by").ok().flatten(),
             "created_by_username": row.try_get::<Option<String>, _>("created_by_username").ok().flatten(),
             "created_at": row.try_get::<String, _>("created_at").ok(),
+            "base_datos_id": row.try_get::<Option<i64>, _>("base_datos_id").ok().flatten(),
+            "base_datos_nombre": row.try_get::<Option<String>, _>("base_datos_nombre").ok().flatten(),
         });
         Ok(json)
     } else {
@@ -815,8 +970,16 @@ pub async fn update_fecha_vencimiento(
     .await
     .map_err(|e| format!("Error al actualizar fecha de vencimiento: {}", e))?;
 
+    // Obtener base_datos_id para auditoría
+    let bd_id: Option<i64> = sqlx::query_scalar("SELECT base_datos_id FROM activos WHERE id = ?")
+        .bind(activo_id)
+        .fetch_optional(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener base_datos_id: {}", e))?
+        .flatten();
+
     // Registrar auditoría
-    db.log_audit(user_id, "UPDATE", "activos", activo_id, None, Some("Actualizada fecha de vencimiento"))
+    db.log_audit(user_id, "UPDATE", "activos", activo_id, None, Some("Actualizada fecha de vencimiento"), bd_id)
         .await
         .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
 
@@ -842,7 +1005,7 @@ pub async fn update_timezone(
         .map_err(|e| format!("Error al actualizar zona horaria: {}", e))?;
 
     // Registrar auditoría
-    db.log_audit(user_id, "UPDATE", "usuarios", user_id, None, Some(&format!("Zona horaria actualizada a: {}", timezone)))
+    db.log_audit(user_id, "UPDATE", "usuarios", user_id, None, Some(&format!("Zona horaria actualizada a: {}", timezone)), None)
         .await
         .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
 
@@ -910,7 +1073,7 @@ pub async fn create_categoria(
     let categoria_id = result.last_insert_rowid();
 
     // Registrar auditoría
-    db.log_audit(user_id, "CREATE", "categorias", categoria_id, None, Some(&format!("Creada categoría: {}", categoria.nombre)))
+    db.log_audit(user_id, "CREATE", "categorias", categoria_id, None, Some(&format!("Creada categoría: {}", categoria.nombre)), None)
         .await
         .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
 
@@ -941,7 +1104,7 @@ pub async fn delete_categoria(
         .map_err(|e| format!("Error al eliminar categoría: {}", e))?;
 
     if let Some(cat_nombre) = nombre {
-        db.log_audit(user_id, "DELETE", "categorias", id, Some(&cat_nombre), None)
+        db.log_audit(user_id, "DELETE", "categorias", id, Some(&cat_nombre), None, None)
             .await
             .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
     }
@@ -1030,7 +1193,7 @@ pub async fn create_keyword(
 
     let keyword_id = result.last_insert_rowid();
 
-    db.log_audit(user_id, "CREATE", "keywords", keyword_id, None, Some(&format!("Creada keyword: {}", keyword.palabra)))
+    db.log_audit(user_id, "CREATE", "keywords", keyword_id, None, Some(&format!("Creada keyword: {}", keyword.palabra)), None)
         .await
         .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
 
@@ -1061,12 +1224,312 @@ pub async fn delete_keyword(
         .map_err(|e| format!("Error al eliminar keyword: {}", e))?;
 
     if let Some(kw) = palabra {
-        db.log_audit(user_id, "DELETE", "keywords", id, Some(&kw), None)
+        db.log_audit(user_id, "DELETE", "keywords", id, Some(&kw), None, None)
             .await
             .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
     }
 
     Ok("Keyword eliminada exitosamente".to_string())
+}
+
+// ==================== COMANDOS DE BASES DE DATOS ====================
+
+/// Estructura para crear/actualizar una base de datos
+#[derive(Debug, Deserialize)]
+pub struct BaseDatosInput {
+    pub nombre: String,
+    pub descripcion: Option<String>,
+}
+
+/// Comando para obtener todas las bases de datos
+#[tauri::command]
+pub async fn get_bases_datos(state: State<'_, AppState>) -> Result<Vec<serde_json::Value>, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    let rows = sqlx::query(
+        r#"
+        SELECT b.id, b.nombre, b.descripcion, b.created_at,
+               (SELECT COUNT(*) FROM activos a WHERE a.base_datos_id = b.id) as total_activos
+        FROM bases_datos b
+        ORDER BY b.nombre
+        "#
+    )
+    .fetch_all(db.pool())
+    .await
+    .map_err(|e| format!("Error al obtener bases de datos: {}", e))?;
+
+    let mut result = Vec::new();
+    for row in rows {
+        let json = serde_json::json!({
+            "id": row.try_get::<i64, _>("id").ok(),
+            "nombre": row.try_get::<String, _>("nombre").ok(),
+            "descripcion": row.try_get::<Option<String>, _>("descripcion").ok().flatten(),
+            "created_at": row.try_get::<Option<String>, _>("created_at").ok().flatten(),
+            "total_activos": row.try_get::<i64, _>("total_activos").ok().unwrap_or(0),
+        });
+        result.push(json);
+    }
+
+    Ok(result)
+}
+
+/// Comando para crear una base de datos
+#[tauri::command]
+pub async fn create_base_datos(
+    base_datos: BaseDatosInput,
+    user_id: i64,
+    state: State<'_, AppState>,
+) -> Result<i64, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    let exists: bool = sqlx::query_scalar("SELECT COUNT(*) > 0 FROM bases_datos WHERE nombre = ?")
+        .bind(&base_datos.nombre)
+        .fetch_one(db.pool())
+        .await
+        .map_err(|e| format!("Error al verificar base de datos: {}", e))?;
+
+    if exists {
+        return Err("Ya existe una base de datos con ese nombre".to_string());
+    }
+
+    let result = sqlx::query(
+        "INSERT INTO bases_datos (nombre, descripcion) VALUES (?, ?)"
+    )
+    .bind(&base_datos.nombre)
+    .bind(&base_datos.descripcion)
+    .execute(db.pool())
+    .await
+    .map_err(|e| format!("Error al crear base de datos: {}", e))?;
+
+    let bd_id = result.last_insert_rowid();
+
+    db.log_audit(user_id, "CREATE", "bases_datos", bd_id, None, Some(&format!("Creada base de datos: {}", base_datos.nombre)), None)
+        .await
+        .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
+
+    Ok(bd_id)
+}
+
+/// Comando para actualizar una base de datos
+#[tauri::command]
+pub async fn update_base_datos(
+    id: i64,
+    base_datos: BaseDatosInput,
+    user_id: i64,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    let old_nombre: Option<String> = sqlx::query_scalar("SELECT nombre FROM bases_datos WHERE id = ?")
+        .bind(id)
+        .fetch_optional(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener base de datos: {}", e))?
+        .and_then(|v: String| if v.is_empty() { None } else { Some(v) });
+
+    sqlx::query(
+        "UPDATE bases_datos SET nombre = ?, descripcion = ? WHERE id = ?"
+    )
+    .bind(&base_datos.nombre)
+    .bind(&base_datos.descripcion)
+    .bind(id)
+    .execute(db.pool())
+    .await
+    .map_err(|e| format!("Error al actualizar base de datos: {}", e))?;
+
+    db.log_audit(user_id, "UPDATE", "bases_datos", id, old_nombre.as_deref(), Some(&format!("Actualizada base de datos: {}", base_datos.nombre)), None)
+        .await
+        .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
+
+    Ok("Base de datos actualizada exitosamente".to_string())
+}
+
+/// Comando para eliminar una base de datos
+#[tauri::command]
+pub async fn delete_base_datos(
+    id: i64,
+    user_id: i64,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    let activos_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM activos WHERE base_datos_id = ?")
+        .bind(id)
+        .fetch_one(db.pool())
+        .await
+        .map_err(|e| format!("Error al verificar activos: {}", e))?;
+
+    if activos_count > 0 {
+        return Err(format!("No se puede eliminar la base de datos porque tiene {} activos asociados. Reasigne o elimine los activos primero.", activos_count));
+    }
+
+    let nombre: Option<String> = sqlx::query_scalar("SELECT nombre FROM bases_datos WHERE id = ?")
+        .bind(id)
+        .fetch_optional(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener base de datos: {}", e))?;
+
+    sqlx::query("DELETE FROM usuario_base_datos WHERE base_datos_id = ?")
+        .bind(id)
+        .execute(db.pool())
+        .await
+        .map_err(|e| format!("Error al eliminar asignaciones: {}", e))?;
+
+    sqlx::query("DELETE FROM bases_datos WHERE id = ?")
+        .bind(id)
+        .execute(db.pool())
+        .await
+        .map_err(|e| format!("Error al eliminar base de datos: {}", e))?;
+
+    if let Some(nom) = nombre {
+        db.log_audit(user_id, "DELETE", "bases_datos", id, Some(&nom), None, None)
+            .await
+            .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
+    }
+
+    Ok("Base de datos eliminada exitosamente".to_string())
+}
+
+/// Comando para obtener las bases de datos asignadas a un usuario
+#[tauri::command]
+pub async fn get_user_bases_datos(
+    target_user_id: i64,
+    state: State<'_, AppState>,
+) -> Result<Vec<serde_json::Value>, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    let rows = sqlx::query(
+        r#"
+        SELECT b.id, b.nombre, b.descripcion
+        FROM bases_datos b
+        INNER JOIN usuario_base_datos ub ON b.id = ub.base_datos_id
+        WHERE ub.usuario_id = ?
+        ORDER BY b.nombre
+        "#
+    )
+    .bind(target_user_id)
+    .fetch_all(db.pool())
+    .await
+    .map_err(|e| format!("Error al obtener bases de datos del usuario: {}", e))?;
+
+    let mut result = Vec::new();
+    for row in rows {
+        let json = serde_json::json!({
+            "id": row.try_get::<i64, _>("id").ok(),
+            "nombre": row.try_get::<String, _>("nombre").ok(),
+            "descripcion": row.try_get::<Option<String>, _>("descripcion").ok().flatten(),
+        });
+        result.push(json);
+    }
+
+    Ok(result)
+}
+
+/// Comando para asignar un usuario a una base de datos
+#[tauri::command]
+pub async fn assign_user_to_base_datos(
+    target_user_id: i64,
+    base_datos_id: i64,
+    admin_id: i64,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    let exists: bool = sqlx::query_scalar(
+        "SELECT COUNT(*) > 0 FROM usuario_base_datos WHERE usuario_id = ? AND base_datos_id = ?"
+    )
+    .bind(target_user_id)
+    .bind(base_datos_id)
+    .fetch_one(db.pool())
+    .await
+    .map_err(|e| format!("Error al verificar asignación: {}", e))?;
+
+    if !exists {
+        sqlx::query(
+            "INSERT INTO usuario_base_datos (usuario_id, base_datos_id) VALUES (?, ?)"
+        )
+        .bind(target_user_id)
+        .bind(base_datos_id)
+        .execute(db.pool())
+        .await
+        .map_err(|e| format!("Error al asignar base de datos: {}", e))?;
+    }
+
+    db.log_audit(admin_id, "ASSIGN", "usuario_base_datos", target_user_id, None, Some(&format!("Asignada base_datos_id: {}", base_datos_id)), Some(base_datos_id))
+        .await
+        .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
+
+    Ok("Usuario asignado exitosamente".to_string())
+}
+
+/// Comando para desasignar un usuario de una base de datos
+#[tauri::command]
+pub async fn unassign_user_from_base_datos(
+    target_user_id: i64,
+    base_datos_id: i64,
+    admin_id: i64,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    sqlx::query(
+        "DELETE FROM usuario_base_datos WHERE usuario_id = ? AND base_datos_id = ?"
+    )
+    .bind(target_user_id)
+    .bind(base_datos_id)
+    .execute(db.pool())
+    .await
+    .map_err(|e| format!("Error al desasignar base de datos: {}", e))?;
+
+    db.log_audit(admin_id, "UNASSIGN", "usuario_base_datos", target_user_id, None, Some(&format!("Desasignada base_datos_id: {}", base_datos_id)), Some(base_datos_id))
+        .await
+        .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
+
+    Ok("Usuario desasignado exitosamente".to_string())
+}
+
+/// Comando para obtener las bases de datos disponibles (a las que un usuario NO está asignado)
+#[tauri::command]
+pub async fn get_available_bases_datos(
+    target_user_id: i64,
+    state: State<'_, AppState>,
+) -> Result<Vec<serde_json::Value>, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    let rows = sqlx::query(
+        r#"
+        SELECT b.id, b.nombre, b.descripcion
+        FROM bases_datos b
+        WHERE b.id NOT IN (
+            SELECT base_datos_id FROM usuario_base_datos WHERE usuario_id = ?
+        )
+        ORDER BY b.nombre
+        "#
+    )
+    .bind(target_user_id)
+    .fetch_all(db.pool())
+    .await
+    .map_err(|e| format!("Error al obtener bases de datos disponibles: {}", e))?;
+
+    let mut result = Vec::new();
+    for row in rows {
+        let json = serde_json::json!({
+            "id": row.try_get::<i64, _>("id").ok(),
+            "nombre": row.try_get::<String, _>("nombre").ok(),
+            "descripcion": row.try_get::<Option<String>, _>("descripcion").ok().flatten(),
+        });
+        result.push(json);
+    }
+
+    Ok(result)
 }
 
 /// Función auxiliar para normalizar keywords (quitar acentos, minúsculas)

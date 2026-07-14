@@ -29,6 +29,13 @@
           </svg>
           <span>Usuarios</span>
         </a>
+
+        <a class="nav-item" (click)="navigateTo('/asignaciones')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z"/>
+          </svg>
+          <span>Asignaciones</span>
+        </a>
       }
 
       <a class="nav-item" (click)="navigateTo('/audit')">
@@ -68,11 +75,34 @@
   </aside>
 
   <main class="main-content">
-    <header class="page-header">
-      <div>
-        <h1>Bienvenido al Sistema</h1>
+    @if (authService.hasNoBases()) {
+      <div class="no-bases-block">
+        <div class="no-bases-card">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="80" height="80">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+          <h2>Sin Bases de Datos Asignadas</h2>
+          <p>Aún no tienes ninguna base de datos asignada. Contacta a un administrador para que te asigne una base de datos y puedas comenzar a trabajar.</p>
+          <div class="no-bases-info">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            <span>Una vez que un administrador te asigne una base de datos, podrás acceder a todas las funcionalidades de tu rol.</span>
+          </div>
+          <button class="btn-secondary" (click)="authService.loadAvailableBases()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+            </svg>
+            Verificar nuevamente
+          </button>
+        </div>
       </div>
-    </header>
+    } @else {
+      <header class="page-header">
+        <div>
+          <h1>Bienvenido al Sistema</h1>
+        </div>
+      </header>
 
     <!-- Aviso de seguridad -->
     <div class="security-notice">
@@ -154,7 +184,9 @@
         <button class="btn-primary" (click)="navigateTo('/activos')">Ir a Gestión de Activos</button>
       </div>
     }
-  </main>
+  }
+
+</main>
 
   <!-- Modal de Detalles -->
   @if (showDetallesModal() && selectedActivoDetalle()) {
@@ -200,6 +232,10 @@
               <div class="detalles-item">
                 <label>Ubicación:</label>
                 <span>{{ selectedActivoDetalle()!.ubicacion || '-' }}</span>
+              </div>
+              <div class="detalles-item">
+                <label>Base de Datos:</label>
+                <span>{{ selectedActivoDetalle()!.base_datos_nombre || '-' }}</span>
               </div>
               <div class="detalles-item">
                 <label>Valor de Adquisición:</label>

@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { LoginRequest, LoginResponse, TauriService } from './tauri.service';
+import { BaseDatos, LoginRequest, LoginResponse, TauriService } from './tauri.service';
 
 export interface User {
   id: number;
@@ -15,6 +15,9 @@ export interface User {
 export class AuthService {
   private currentUserSignal = signal<User | null>(null);
   private isAuthenticatedSignal = signal<boolean>(false);
+  availableBases = signal<BaseDatos[]>([]);
+  selectedBaseDatosId = signal<number | null>(null);
+  hasLoadedBases = signal(false);
 
   currentUser = this.currentUserSignal.asReadonly();
   isAuthenticated = this.isAuthenticatedSignal.asReadonly();
@@ -29,6 +32,20 @@ export class AuthService {
       const user = JSON.parse(userData);
       this.currentUserSignal.set(user);
       this.isAuthenticatedSignal.set(true);
+    }
+  }
+
+  async loadAvailableBases(): Promise<void> {
+    const user = this.currentUserSignal();
+    if (!user) return;
+    try {
+      const bases = await this.tauriService.getAvailableBasesDatos(user.id);
+      this.availableBases.set(bases);
+      this.selectedBaseDatosId.set(bases.length === 1 ? bases[0].id : null);
+      this.hasLoadedBases.set(true);
+    } catch (error) {
+      console.error('Error al cargar bases disponibles:', error);
+      this.hasLoadedBases.set(true);
     }
   }
 
@@ -66,6 +83,18 @@ export class AuthService {
     this.currentUserSignal.set(null);
     this.isAuthenticatedSignal.set(false);
     sessionStorage.removeItem('currentUser');
+  }
+
+  hasMultipleBases(): boolean {
+    return this.availableBases().length > 1;
+  }
+
+  hasSingleBase(): boolean {
+    return this.availableBases().length === 1;
+  }
+
+  hasNoBases(): boolean {
+    return !this.hasRole('admin') && this.availableBases().length === 0 && this.hasLoadedBases();
   }
 
   hasRole(rol: string): boolean {

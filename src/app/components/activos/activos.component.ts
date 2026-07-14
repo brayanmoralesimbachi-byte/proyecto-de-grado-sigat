@@ -36,7 +36,8 @@ export class ActivosComponent implements OnInit {
     estado: 'operativo',
     valor_adquisicion: undefined,
     fecha_adquisicion: '',
-    palabras_clave: ''
+    palabras_clave: '',
+    base_datos_id: undefined
   });
   
   errorMessage = signal('');
@@ -54,6 +55,7 @@ export class ActivosComponent implements OnInit {
   filtroPalabrasClave = signal('');
   filtroRangoValor = signal('');
   filtroTiempoVencimiento = signal('');
+  filtroBaseDatos = signal<number | undefined>(undefined);
 
   // Paginación
   currentPage = signal(1);
@@ -118,7 +120,8 @@ export class ActivosComponent implements OnInit {
   async loadActivos(): Promise<void> {
     try {
       this.isLoading.set(true);
-      const data = await this.tauriService.getActivos();
+      const user = this.authService.currentUser();
+      const data = await this.tauriService.getActivos(user?.id, this.filtroBaseDatos());
       this.activos.set(data);
       this.aplicarFiltros();
       this.errorMessage.set('');
@@ -212,6 +215,11 @@ export class ActivosComponent implements OnInit {
     this.aplicarFiltros();
   }
 
+  onBaseDatosFilterChange(bdId: number | undefined): void {
+    this.filtroBaseDatos.set(bdId);
+    this.loadActivos();
+  }
+
   limpiarFiltros(): void {
     this.searchTerm.set('');
     this.filtroEstado.set('');
@@ -245,6 +253,9 @@ export class ActivosComponent implements OnInit {
 
   openCreateModal(): void {
     this.isEditing.set(false);
+    const firstBaseId = this.authService.availableBases().length === 1
+      ? this.authService.availableBases()[0].id
+      : undefined;
     this.currentActivo.set({
       codigo: '',
       nombre: '',
@@ -257,7 +268,8 @@ export class ActivosComponent implements OnInit {
       fecha_adquisicion: '',
       fecha_vencimiento: undefined,
       imagen_base64: undefined,
-      palabras_clave: ''
+      palabras_clave: '',
+      base_datos_id: firstBaseId
     });
     this.showModal.set(true);
     this.errorMessage.set('');
@@ -286,7 +298,8 @@ export class ActivosComponent implements OnInit {
       fecha_adquisicion: '',
       fecha_vencimiento: undefined,
       imagen_base64: undefined,
-      palabras_clave: ''
+      palabras_clave: '',
+      base_datos_id: undefined
     });
   }
 
@@ -296,6 +309,11 @@ export class ActivosComponent implements OnInit {
     // Validaciones
     if (!activo.codigo || !activo.nombre || !activo.categoria) {
       this.errorMessage.set('Código, nombre y categoría son obligatorios');
+      return;
+    }
+
+    if (!activo.base_datos_id) {
+      this.errorMessage.set('Debe seleccionar una base de datos');
       return;
     }
 

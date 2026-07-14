@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { ActivosComponent } from './components/activos/activos.component';
+import { AsignacionesComponent } from './components/asignaciones/asignaciones.component';
 import { AuditComponent } from './components/audit/audit.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { HomeComponent } from './components/home/home.component';
@@ -17,6 +18,7 @@ export const routes: Routes = [
   { path: 'activos', component: ActivosComponent, canActivate: [authGuard] },
   { path: 'users', component: UsersComponent, canActivate: [authGuard] },
   { path: 'audit', component: AuditComponent, canActivate: [authGuard] },
+  { path: 'asignaciones', component: AsignacionesComponent, canActivate: [authGuard] },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

@@ -6,10 +6,13 @@ mod commands;
 
 use commands::{AppState, create_user, login, logout, can_close_app, force_logout, get_activos, create_activo, update_activo, 
                delete_activo, get_users, update_user_role, delete_user, get_audit_log,
-               change_password, change_username, get_username_history, get_activo_detalles,
+               change_password, admin_change_password, change_username, get_username_history, get_activo_detalles,
                register_activo_vista, get_activo_vistas, update_fecha_vencimiento, update_timezone,
                get_categorias, create_categoria, delete_categoria,
-                get_keywords, create_keyword, delete_keyword};
+               get_keywords, create_keyword, delete_keyword,
+               get_bases_datos, create_base_datos, update_base_datos, delete_base_datos,
+               get_user_bases_datos, assign_user_to_base_datos, unassign_user_from_base_datos,
+               get_available_bases_datos};
 use tokio::sync::Mutex;
 use std::sync::Mutex as StdMutex;
 use std::env;
@@ -62,9 +65,15 @@ pub fn run() {
         });
       }
 
+      // Intentar cargar .env desde el directorio de datos (producción)
+      if let Ok(app_data_dir) = app.path().app_data_dir() {
+        let env_path = app_data_dir.join(".env");
+        if env_path.exists() {
+          let _ = dotenvy::from_path(&env_path);
+        }
+      }
+
       // Inicializar la base de datos en el setup
-      // NOTA: En producción, la clave de cifrado debe derivarse de credenciales del usuario
-      // Este es solo un ejemplo para desarrollo
       let app_handle = app.handle().clone();
       let app_data_dir = app.path().app_data_dir()
         .expect("No se pudo obtener directorio de datos");
@@ -93,7 +102,12 @@ pub fn run() {
               eprintln!("Error al inicializar base de datos: {}", e);
             } else {
               println!("Base de datos inicializada correctamente");
-              
+
+              // Crear administrador por defecto si no hay usuarios
+              if let Err(e) = database.create_default_admin_if_needed().await {
+                eprintln!("Error al crear administrador por defecto: {}", e);
+              }
+
               // Guardar en el estado
               let app_state = app_handle.state::<AppState>();
               let mut db_lock = app_state.db.lock().await;
@@ -123,6 +137,7 @@ pub fn run() {
       delete_user,
       get_audit_log,
       change_password,
+      admin_change_password,
       change_username,
       get_username_history,
       get_activo_detalles,
@@ -135,7 +150,15 @@ pub fn run() {
       delete_categoria,
       get_keywords,
       create_keyword,
-      delete_keyword
+      delete_keyword,
+      get_bases_datos,
+      create_base_datos,
+      update_base_datos,
+      delete_base_datos,
+      get_user_bases_datos,
+      assign_user_to_base_datos,
+      unassign_user_from_base_datos,
+      get_available_bases_datos
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
