@@ -1,16 +1,25 @@
 # Gestor de Activos
 
-Aplicación de escritorio para gestión segura de activos con Angular + Tauri + Rust + SQLite.
+Aplicación de escritorio para gestión segura de activos multi-base de datos con Angular + Tauri + Rust + SQLite.
 
-- Versión actual: `1.2.0`
-- Última actualización: `22 de Abril 2026`
+- Versión actual: `1.3.0`
+- Última actualización: `14 de Julio 2026`
 
 ## Stack
 
 - Frontend: Angular 21
 - Backend: Rust + Tauri 2
-- Base de datos: SQLite cifrada
+- Base de datos: SQLite cifrada + SQLCipher
 - Hash de contraseñas: Argon2id
+
+## Características principales
+
+- CRUD completo de activos con imágenes e historial de vistas
+- Autenticación segura con roles (Administrador / Operador / Auditor)
+- **Bases de Datos lógicas (Asignaciones)**: segmentación de activos por unidad/departamento
+- Chatbot NLP con búsqueda inteligente en español
+- Auditoría inmutable con exportación PDF/XML
+- Base de datos cifrada con AES-256 (SQLCipher)
 
 ## Comandos principales
 
@@ -24,8 +33,15 @@ npm run dev
 # Build frontend
 npm run build
 
-# Build app de escritorio
+# Build app de escritorio (MSI)
 npm run tauri build
+
+# Build completo (Angular + MSI)
+npm run build:installer
+
+# Admin por defecto (configurar en src-tauri/.env)
+# APP_DEFAULT_ADMIN_USERNAME=admin
+# APP_DEFAULT_ADMIN_PASSWORD=admin123
 ```
 
 ## Comandos de testing de seguridad

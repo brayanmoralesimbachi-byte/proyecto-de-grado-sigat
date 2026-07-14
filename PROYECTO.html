@@ -545,7 +545,7 @@
     <header>
         <h1>🛡️ Gestor de Activos</h1>
         <p class="subtitle">Centro de Investigación - Escuela de Telecomunicaciones de Facatativá</p>
-        <span class="version-badge">Versión 1.2.0 | Última actualización: 22 de Abril 2026</span>
+        <span class="version-badge">Versión 1.3.0 | Última actualización: 14 de Julio 2026</span>
     </header>
 
     <!-- Navegación -->
@@ -557,6 +557,7 @@
             <li><a href="#comandos">🚀 Comandos</a></li>
             <li><a href="#testing">🧪 Testing</a></li>
             <li><a href="#modulos">📋 Módulos</a></li>
+            <li><a href="#asignaciones">🗂️ Asignaciones</a></li>
             <li><a href="#roles">🔒 Roles</a></li>
             <li><a href="#diseno">🎨 Diseño</a></li>
             <li><a href="#changelog">📝 Changelog</a></li>
@@ -575,7 +576,7 @@
                     <li><strong>Frontend Security Suite:</strong> 14/14 PASS</li>
                     <li><strong>Backend Security Suite:</strong> 5/5 PASS</li>
                     <li><strong>Security CI:</strong> PASS frontend + PASS backend</li>
-                    <li><strong>Versión documentada:</strong> 1.2.0</li>
+                    <li><strong>Versión documentada:</strong> 1.3.0</li>
                 </ul>
             </div>
             
@@ -682,7 +683,8 @@
 │   │   │   ├── <span class="folder">login/</span>         <span class="comment"># Autenticación</span>
 │   │   │   ├── <span class="folder">profile/</span>       <span class="comment"># Perfil de usuario</span>
 │   │   │   ├── <span class="folder">register/</span>      <span class="comment"># Registro</span>
-│   │   │   └── <span class="folder">users/</span>         <span class="comment"># Gestión usuarios (admin)</span>
+│   │   ├── <span class="folder">asignaciones/</span>  <span class="comment"># Gestión de bases de datos (admin)</span>
+│   │   └── <span class="folder">users/</span>         <span class="comment"># Gestión usuarios (admin)</span>
 │   │   ├── <span class="folder">guards/</span>
 │   │   │   └── <span class="file">auth.guard.ts</span>   <span class="comment"># Protección de rutas</span>
 │   │   └── <span class="folder">services/</span>
@@ -1063,10 +1065,13 @@ npm run test:security:ci</code></pre>
                     <ul>
                         <li><code>create_user</code>: Crear usuarios con contraseñas hasheadas</li>
                         <li><code>login</code>/<code>logout</code>: Autenticación segura</li>
-                        <li><code>get_activos</code>: Consultar activos</li>
-                        <li><code>get_activo_detalles</code>: Detalles completos</li>
+                        <li><code>get_activos</code>: Consultar activos (filtrados por base de datos)</li>
+                        <li><code>get_activo_detalles</code>: Detalles completos con base de datos</li>
                         <li><code>register_activo_vista</code>: Registrar visualización</li>
-                        <li><code>get_audit_log</code>: Obtener logs de auditoría</li>
+                        <li><code>get_audit_log</code>: Obtener logs de auditoría (filtrados por base de datos)</li>
+                        <li><code>get_bases_datos</code>/<code>create_base_datos</code>/<code>update_base_datos</code>/<code>delete_base_datos</code>: CRUD de bases de datos lógicas</li>
+                        <li><code>get_user_bases_datos</code>/<code>assign_user_to_base_datos</code>/<code>unassign_user_from_base_datos</code>: Asignación usuario-BD</li>
+                        <li><code>get_available_bases_datos</code>: Bases disponibles para asignar</li>
                     </ul>
                 </div>
             </div>
@@ -1114,8 +1119,18 @@ npm run test:security:ci</code></pre>
                     <h4>👥 Usuarios (Admin)</h4>
                     <ul>
                         <li>Gestión de usuarios del sistema</li>
-                        <li>Asignación de roles (admin/user)</li>
+                        <li>Asignación de roles (admin/operador/auditor)</li>
                         <li>Configuración de zonas horarias</li>
+                        <li>Asignación de bases de datos al crear usuario</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🗂️ Asignaciones (Admin)</h4>
+                    <ul>
+                        <li>CRUD de bases de datos lógicas (por unidad/departamento)</li>
+                        <li>Asignación de usuarios a bases de datos</li>
+                        <li>Bloqueo de eliminación si hay activos asociados</li>
+                        <li>Sidebar con enlace directo</li>
                     </ul>
                 </div>
                 <div class="card">
@@ -1262,6 +1277,57 @@ npm run test:security:ci</code></pre>
             </div>
         </section>
 
+        <!-- ===== ASIGNACIONES DE BASES DE DATOS ===== -->
+        <section id="asignaciones">
+            <h2><span class="icon">🗂️</span> Asignaciones - Bases de Datos Lógicas</h2>
+            <p>Sistema de segmentación de activos por bases de datos lógicas, permitiendo que cada unidad/departamento gestione sus propios activos de forma aislada dentro de la misma aplicación.</p>
+
+            <h3 class="mt-2">📋 Gestión de Bases de Datos</h3>
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>➕ Crear Base de Datos</h4>
+                    <p>El administrador puede crear bases de datos lógicas con nombre y descripción, representando unidades, departamentos o sedes.</p>
+                </div>
+                <div class="card">
+                    <h4>👥 Asignar Usuarios</h4>
+                    <p>Cada usuario (operador/auditor) puede ser asignado a una o varias bases de datos. Los administradores ven todas.</p>
+                </div>
+                <div class="card">
+                    <h4>🔒 Aislamiento de Datos</h4>
+                    <p>Los usuarios no administradores solo ven activos, auditorías y logs de las bases de datos a las que están asignados.</p>
+                </div>
+                <div class="card">
+                    <h4>⛔ Sin Base Asignada</h4>
+                    <p>Si un usuario no tiene bases asignadas, se le muestra una pantalla informativa bloqueando el acceso hasta que el administrador lo asigne.</p>
+                </div>
+                <div class="card">
+                    <h4>🛡️ Protección al Eliminar</h4>
+                    <p>No se puede eliminar una base de datos que tenga activos asociados. El sistema muestra un mensaje con la cantidad de activos bloqueantes.</p>
+                </div>
+                <div class="card">
+                    <h4>📊 Filtro por Base</h4>
+                    <p>Los usuarios con múltiples bases pueden filtrar activos y auditorías por base de datos mediante un dropdown.</p>
+                </div>
+            </div>
+
+            <h3 class="mt-2">🔧 Implementación Técnica</h3>
+            <pre><code>-- Tablas del sistema
+bases_datos (id, nombre, descripcion, created_at)
+usuario_base_datos (usuario_id, base_datos_id)
+
+-- Columnas agregadas
+ALTER TABLE activos ADD COLUMN base_datos_id INTEGER REFERENCES bases_datos(id);
+ALTER TABLE auditoria ADD COLUMN base_datos_id INTEGER REFERENCES bases_datos(id);
+
+-- Filtrado en backend (Rust)
+let base_ids = db.get_user_base_datos_ids(user_id).await?;
+// Admin: todas las bases. Operador/Auditor: solo las asignadas.
+
+-- Auditoría con contexto
+db.log_audit(user_id, "CREATE", "activos", activo_id,
+             None, Some(&activo.nombre), Some(activo.base_datos_id)).await?;</code></pre>
+        </section>
+
         <!-- ===== CONTROL DE ACCESO ===== -->
         <section id="roles">
             <h2><span class="icon">🔒</span> Control de Acceso Basado en Roles (RBAC)</h2>
@@ -1283,7 +1349,7 @@ npm run test:security:ci</code></pre>
                 </div>
                 <div class="role-card">
                     <div class="role-header">
-                        <h4>👤 Usuarios Regulares</h4>
+                        <h4>👤 Usuarios Regulares (Operador / Auditor)</h4>
                     </div>
                     <ul>
                         <li><strong>CRUD de activos</strong> - Crear, leer, actualizar, eliminar</li>
@@ -1291,6 +1357,7 @@ npm run test:security:ci</code></pre>
                         <li><strong>Gestionar su perfil</strong> - Cambiar contraseña, zona horaria</li>
                         <li><strong>Búsqueda y filtros</strong> - Acceso completo a búsquedas</li>
                         <li><strong>Dashboard</strong> - Estadísticas y vista de activos</li>
+                        <li><strong>Segmentación por base de datos</strong> - Solo acceden a activos y auditoría de sus bases asignadas</li>
                     </ul>
                 </div>
             </div>
@@ -1400,6 +1467,7 @@ if (!this.authService.hasRole('admin')) {
                 <li>Separación frontend/backend con control estricto de permisos</li>
                 <li>Instalador y desinstalador nativos (MSI para Windows)</li>
                 <li>Control de acceso basado en roles (RBAC)</li>
+                <li>Segmentación lógica de datos por bases de datos (multi-departamento)</li>
                 <li>Interfaz de usuario con diseño militar elegante</li>
             </ul>
         </section>
@@ -1409,6 +1477,34 @@ if (!this.authService.hasRole('admin')) {
             <h2><span class="icon">📝</span> Historial de Cambios</h2>
 
             <div class="timeline">
+                <div class="timeline-item">
+                    <h4>Versión 1.3.0 - Julio 2026</h4>
+
+                    <h5 class="mt-1">🗂️ Multi-Base de Datos (Asignaciones)</h5>
+                    <ul>
+                        <li><strong>Nuevo sistema de bases de datos lógicas</strong>: tablas <code>bases_datos</code> y <code>usuario_base_datos</code> con migración automática.</li>
+                        <li><strong>CRUD completo de bases de datos</strong>: crear, editar, eliminar con protección de activos asociados.</li>
+                        <li><strong>Asignación de usuarios a bases</strong>: administradores asignan operadores/auditores a una o varias bases.</li>
+                        <li><strong>Aislamiento por base</strong>: cada usuario no-admin solo ve activos y auditoría de sus bases asignadas.</li>
+                        <li><strong>Filtro por base de datos</strong>: dropdown en activos y auditoría para usuarios con múltiples bases.</li>
+                        <li><strong>Pantalla "Sin Bases Asignadas"</strong>: bloqueo informativo para usuarios sin asignación.</li>
+                        <li><strong>Auditoría con contexto de base</strong>: cada log de activo incluye <code>base_datos_id</code> para filtrado preciso.</li>
+                        <li><strong>Creación de usuarios con asignación</strong>: seleccionar bases al momento de crear un usuario.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🔧 Mejoras técnicas</h5>
+                    <ul>
+                        <li>9 nuevos comandos Rust para gestión de bases de datos.</li>
+                        <li>8 nuevos métodos en <code>TauriService</code> de Angular.</li>
+                        <li><code>get_activos</code> y <code>get_audit_log</code> filtran automáticamente por rol y bases asignadas.</li>
+                        <li><code>create_user</code> acepta asignación opcional de bases al crear.</li>
+                        <li><code>get_activo_detalles</code> incluye <code>base_datos_nombre</code>.</li>
+                        <li>Nuevo componente <code>AsignacionesComponent</code> con tabla CRUD y modales.</li>
+                        <li>Ruta <code>/asignaciones</code> y enlace en sidebar para administradores.</li>
+                        <li>Parámetros opcionales (<code>Option</code>) en Rust para compatibilidad con llamadas sin usuario (chatbot).</li>
+                    </ul>
+                </div>
+
                 <div class="timeline-item">
                     <h4>Versión 1.2.0 - Abril 2026</h4>
 
@@ -1603,8 +1699,8 @@ await this.tauriService.registerActivoVista(activoId, userId);</code></pre>
 
     <!-- Footer -->
     <footer>
-        <p><strong>Gestor de Activos v1.2.0</strong></p>
-        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 22 de Abril 2026</p>
+        <p><strong>Gestor de Activos v1.3.0</strong></p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 14 de Julio 2026</p>
     </footer>
 
 </body>
