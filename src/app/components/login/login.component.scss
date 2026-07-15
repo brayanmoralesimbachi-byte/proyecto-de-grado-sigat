@@ -6,8 +6,7 @@
   background: linear-gradient(135deg, #556B2F 0%, #3C3F2E 100%);
   padding: 20px;
   position: relative;
-  
-  /* Efecto de camuflaje sutil */
+
   &::before {
     content: '';
     position: absolute;
@@ -15,11 +14,48 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: 
+    background-image:
       radial-gradient(circle at 20% 50%, rgba(107, 142, 35, 0.1) 0%, transparent 50%),
       radial-gradient(circle at 80% 80%, rgba(74, 93, 35, 0.1) 0%, transparent 50%),
       radial-gradient(circle at 40% 20%, rgba(90, 108, 45, 0.1) 0%, transparent 50%);
     pointer-events: none;
+  }
+}
+
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 2;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s;
+  font-family: 'Lato', sans-serif;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 }
 
@@ -97,7 +133,6 @@
       }
     }
   }
-
   .error-message {
     background-color: #f8e8e0;
     color: var(--military-danger);

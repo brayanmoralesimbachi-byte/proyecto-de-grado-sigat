@@ -2,8 +2,8 @@
 
 Aplicación de escritorio para gestión segura de activos multi-base de datos con Angular + Tauri + Rust + SQLite.
 
-- Versión actual: `1.3.0`
-- Última actualización: `14 de Julio 2026`
+- Versión actual: `1.4.0`
+- Última actualización: `15 de Julio 2026`
 
 ## Stack
 
@@ -20,6 +20,7 @@ Aplicación de escritorio para gestión segura de activos multi-base de datos co
 - Chatbot NLP con búsqueda inteligente en español
 - Auditoría inmutable con exportación PDF/XML
 - Base de datos cifrada con AES-256 (SQLCipher)
+- **Protección contra navegación atrás/adelante**: los botones del mouse no salen de la app estando logueado
 
 ## Comandos principales
 
@@ -44,10 +45,13 @@ npm run build:installer
 # APP_DEFAULT_ADMIN_PASSWORD=admin123
 ```
 
-## Comandos de testing de seguridad
+## Comandos de testing
 
 ```bash
-# Suite de seguridad frontend
+# Tests unitarios Angular
+npm run test
+
+# Suite de seguridad frontend (44 tests)
 npm run test:security:frontend
 
 # Suite de seguridad backend
@@ -60,15 +64,17 @@ npm run test:security:ci
 ## Qué se valida en pruebas
 
 - Login/sesión: persistencia segura, rechazo de credenciales inválidas, limpieza en logout.
-- Guard de rutas: bloqueo de acceso anónimo.
-- Chatbot: control por rol para auditorías y respuesta funcional.
+- Guard de rutas: authGuard (bloqueo anónimo) + loginGuard (redirección si logueado).
+- Chatbot: control por rol, parser de filtros (categoría, estado, marca, precio, pulgadas).
 - Subida de archivos: límite de tamaño, validación de tipo y conversión base64.
-- Performance frontend: umbrales de respuesta en login/chatbot/upload.
+- Performance frontend: umbrales de respuesta en login/chatbot/upload/bases_datos.
 - Backend: criptografía, clave local, auditoría en DB y pruebas de rendimiento.
+- AuthService: hasRole, carga de bases, timezone, logout.
 
 ## Resultados validados
 
-- Frontend Security Suite: `14/14 PASS`
+- Angular Unit Tests (`ng test`): `1/1 PASS`
+- Frontend Security Suite: `44/44 PASS` (11 archivos)
 - Backend Security Suite: `5/5 PASS`
 - Security CI Summary: `PASS frontend + PASS backend`
 
@@ -76,6 +82,7 @@ npm run test:security:ci
 
 `tsconfig.app.json` sí se utiliza en el build de Angular y no debe eliminarse.
 Se ajustó `rootDir` para compatibilidad con TypeScript 6 y eliminación de error de compilación.
+`tsconfig.spec.json` incluye `tests/**/*.spec.ts` para soporte dual (ng test + vitest).
 
 ## Documentación extendida
 

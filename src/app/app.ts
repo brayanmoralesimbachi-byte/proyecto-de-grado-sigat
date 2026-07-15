@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { TauriService } from './services/tauri.service';
 
@@ -13,14 +13,26 @@ export class App implements OnInit, OnDestroy {
   protected readonly title = signal('gestor-activos');
   private tauriService = inject(TauriService);
   private authService = inject(AuthService);
+  private router = inject(Router);
 
   ngOnInit(): void {
-    // Listener para cierre forzoso (Ctrl+W, Alt+F4, etc)
     window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
+    window.addEventListener('popstate', this.handlePopState.bind(this));
   }
 
   ngOnDestroy(): void {
     window.removeEventListener('beforeunload', this.handleBeforeUnload.bind(this));
+    window.removeEventListener('popstate', this.handlePopState.bind(this));
+  }
+
+  /** Bloquea los botones atrás/adelante del mouse cuando hay sesión activa */
+  private handlePopState(event: PopStateEvent): void {
+    if (!this.authService.currentUser()) return;
+
+    event.preventDefault();
+    // Re-push la ruta actual para anular el popstate
+    const currentUrl = this.router.url;
+    window.history.pushState(null, '', currentUrl);
   }
 
   private handleBeforeUnload(event: BeforeUnloadEvent): void {

@@ -545,7 +545,7 @@
     <header>
         <h1>🛡️ Gestor de Activos</h1>
         <p class="subtitle">Centro de Investigación - Escuela de Telecomunicaciones de Facatativá</p>
-        <span class="version-badge">Versión 1.3.0 | Última actualización: 14 de Julio 2026</span>
+        <span class="version-badge">Versión 1.4.0 | Última actualización: 15 de Julio 2026</span>
     </header>
 
     <!-- Navegación -->
@@ -573,10 +573,11 @@
             <div class="card mt-1" style="border-left: 4px solid var(--secondary); background: #fffef7;">
                 <h4>✅ Estado validado en esta versión</h4>
                 <ul>
-                    <li><strong>Frontend Security Suite:</strong> 14/14 PASS</li>
+                    <li><strong>Frontend Security Suite:</strong> 44/44 PASS (11 archivos)</li>
                     <li><strong>Backend Security Suite:</strong> 5/5 PASS</li>
+                    <li><strong>Angular ng test:</strong> 1/1 PASS</li>
                     <li><strong>Security CI:</strong> PASS frontend + PASS backend</li>
-                    <li><strong>Versión documentada:</strong> 1.3.0</li>
+                    <li><strong>Versión documentada:</strong> 1.4.0</li>
                 </ul>
             </div>
             
@@ -686,7 +687,8 @@
 │   │   ├── <span class="folder">asignaciones/</span>  <span class="comment"># Gestión de bases de datos (admin)</span>
 │   │   └── <span class="folder">users/</span>         <span class="comment"># Gestión usuarios (admin)</span>
 │   │   ├── <span class="folder">guards/</span>
-│   │   │   └── <span class="file">auth.guard.ts</span>   <span class="comment"># Protección de rutas</span>
+│   │   │   ├── <span class="file">auth.guard.ts</span>   <span class="comment"># Protección de rutas</span>
+│   │   └── <span class="file">login.guard.ts</span>  <span class="comment"># Redirección si ya logueado</span>
 │   │   └── <span class="folder">services/</span>
 │   │       ├── <span class="file">auth.service.ts</span>  <span class="comment"># Servicio de autenticación</span>
 │   │       └── <span class="file">tauri.service.ts</span> <span class="comment"># Comunicación con Rust</span>
@@ -967,6 +969,36 @@
                         <td>Validación previa estricta antes de guardar contenido en estado.</td>
                     </tr>
                     <tr>
+                        <td><strong>Control de acceso login (Frontend)</strong></td>
+                        <td>loginGuard redirige a dashboard si ya hay sesión activa.</td>
+                        <td><code>tests/frontend/login.guard.spec.ts</code></td>
+                        <td>Acceso a /login solo sin sesión activa.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>AuthService (Frontend)</strong></td>
+                        <td>hasRole, carga de bases, timezone, logout, normalización admin/administrador.</td>
+                        <td><code>tests/frontend/auth.service.spec.ts</code></td>
+                        <td>6 tests cubriendo todos los métodos públicos.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Integración de guards (Frontend)</strong></td>
+                        <td>authGuard + loginGuard son mutuamente excluyentes.</td>
+                        <td><code>tests/frontend/routing.security.spec.ts</code></td>
+                        <td>Comportamiento combinado validado.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Parser del Chatbot (Frontend)</strong></td>
+                        <td>Extracción de filtros: categoría, estado, marca, pulgadas, precio, auditoría.</td>
+                        <td><code>tests/frontend/chatbot.parser.spec.ts</code></td>
+                        <td>7 tests cubriendo cada tipo de filtro.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rendimiento extendido (Frontend)</strong></td>
+                        <td>100 login concurrentes, 50 búsquedas chatbot, bases_datos, hasRole.</td>
+                        <td><code>tests/frontend/performance_extended.spec.ts</code></td>
+                        <td>Umbrales: 100 login &lt; 500ms, 50 chatbot &lt; 1000ms.</td>
+                    </tr>
+                    <tr>
                         <td><strong>Rendimiento Frontend</strong></td>
                         <td>Tiempos de respuesta de login, chatbot y transformación de imagen.</td>
                         <td><code>tests/frontend/performance.security.spec.ts</code></td>
@@ -993,9 +1025,9 @@
                     <h4>Frontend Security Suite</h4>
                     <p><span class="badge badge-success">PASS</span></p>
                     <ul>
-                        <li><strong>14/14 tests</strong> aprobados</li>
-                        <li>Cobertura de login, guard, chatbot, subida y performance</li>
-                        <li>Ejecución estable en Vitest</li>
+                        <li><strong>44/44 tests</strong> aprobados (11 archivos)</li>
+                        <li>Cobertura de login, guards, auth service, chatbot parser, subida, routing, performance</li>
+                        <li>Ejecución estable en Vitest y ng test</li>
                     </ul>
                 </div>
                 <div class="card">
@@ -1478,6 +1510,40 @@ if (!this.authService.hasRole('admin')) {
 
             <div class="timeline">
                 <div class="timeline-item">
+                    <h4>Versión 1.4.0 - Julio 2026</h4>
+
+                    <h5 class="mt-1">🖱️ Protección contra navegación atrás/adelante</h5>
+                    <ul>
+                        <li><strong>loginGuard</strong>: nuevo guard en <code>/login</code> que redirige a dashboard si el usuario ya tiene sesión activa.</li>
+                        <li><strong>Popstate listener</strong>: intercepta los botones atrás/adelante del mouse, re-push la ruta actual si hay sesión activa.</li>
+                        <li><strong>Mutua exclusión</strong>: authGuard y loginGuard validados como complementarios.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🎨 Consistencia visual</h5>
+                    <ul>
+                        <li><strong>Register</strong>: reemplazado tema púrpura/indigo por el mismo esquema militar verde oliva del login.</li>
+                        <li><strong>Botón Volver</strong>: añadido en la esquina superior izquierda del registro, con estilo vítreo igual al del login.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🧪 Ampliación de tests (44 tests)</h5>
+                    <ul>
+                        <li><code>tests/frontend/login.guard.spec.ts</code>: 2 tests para el nuevo loginGuard.</li>
+                        <li><code>tests/frontend/routing.security.spec.ts</code>: 2 tests de integración de guards.</li>
+                        <li><code>tests/frontend/auth.service.spec.ts</code>: 6 tests de AuthService (hasRole, bases, timezone, logout).</li>
+                        <li><code>tests/frontend/chatbot.parser.spec.ts</code>: 7 tests del parser del chatbot.</li>
+                        <li><code>tests/frontend/performance_extended.spec.ts</code>: 4 tests de rendimiento extendido.</li>
+                        <li>Total: <strong>44 tests</strong> en 11 archivos.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🔧 Correcciones y compatibilidad</h5>
+                    <ul>
+                        <li><strong>Angular 21</strong>: tests migrados de <code>createEnvironmentInjector</code> a <code>TestBed</code> y <code>runInInjectionContext</code>.</li>
+                        <li><strong>ng test</strong>: arreglado para que pase correctamente con Angular 21.</li>
+                        <li><strong>app.spec.ts</strong>: test actualizado para reflejar template actual (router-outlet).</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
                     <h4>Versión 1.3.0 - Julio 2026</h4>
 
                     <h5 class="mt-1">🗂️ Multi-Base de Datos (Asignaciones)</h5>
@@ -1699,8 +1765,8 @@ await this.tauriService.registerActivoVista(activoId, userId);</code></pre>
 
     <!-- Footer -->
     <footer>
-        <p><strong>Gestor de Activos v1.3.0</strong></p>
-        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 14 de Julio 2026</p>
+        <p><strong>Gestor de Activos v1.4.0</strong></p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 15 de Julio 2026</p>
     </footer>
 
 </body>

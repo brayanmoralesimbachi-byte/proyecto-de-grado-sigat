@@ -22,7 +22,7 @@ async fn database_initializes_and_records_audit_entries() {
     .expect("debe crear usuario de prueba");
 
     database
-        .log_audit(1, "CREATE", "usuarios", 1, None, Some("evento de seguridad"))
+        .log_audit(1, "CREATE", "usuarios", 1, None, Some("evento de seguridad"), None)
         .await
         .expect("debe registrar auditoría");
 

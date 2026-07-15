@@ -88,6 +88,10 @@ export class RegisterComponent {
     }
   }
 
+  goHome(): void {
+    this.router.navigate(['']);
+  }
+
   goToLogin(): void {
     this.router.navigate(['/login']);
   }
