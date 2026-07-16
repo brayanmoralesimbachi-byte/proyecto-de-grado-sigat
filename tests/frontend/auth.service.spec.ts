@@ -7,7 +7,7 @@ import { TauriService } from '../../src/app/services/tauri.service';
 const createTauriMock = () => ({
   login: vi.fn(),
   logout: vi.fn(),
-  getAvailableBasesDatos: vi.fn(),
+  getUserBasesDatos: vi.fn(),
 } as unknown as TauriService);
 
 describe('AuthService', () => {
@@ -38,7 +38,7 @@ describe('AuthService', () => {
 
   it('loadAvailableBases sets selectedBaseDatosId when only one base', async () => {
     const tauri = createTauriMock();
-    vi.mocked(tauri.getAvailableBasesDatos).mockResolvedValue([{ id: 5, nombre: 'Sede Única' }]);
+    vi.mocked(tauri.getUserBasesDatos).mockResolvedValue([{ id: 5, nombre: 'Sede Única' }]);
     const service = new AuthService(tauri);
 
     sessionStorage.setItem('currentUser', JSON.stringify({ id: 1, username: 'user', rol: 'user' }));
@@ -53,7 +53,7 @@ describe('AuthService', () => {
 
   it('loadAvailableBases sets null when multiple bases', async () => {
     const tauri = createTauriMock();
-    vi.mocked(tauri.getAvailableBasesDatos).mockResolvedValue([
+    vi.mocked(tauri.getUserBasesDatos).mockResolvedValue([
       { id: 1, nombre: 'Base A' },
       { id: 2, nombre: 'Base B' },
     ]);

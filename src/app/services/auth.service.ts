@@ -39,7 +39,7 @@ export class AuthService {
     const user = this.currentUserSignal();
     if (!user) return;
     try {
-      const bases = await this.tauriService.getAvailableBasesDatos(user.id);
+      const bases = await this.tauriService.getUserBasesDatos(user.id);
       this.availableBases.set(bases);
       this.selectedBaseDatosId.set(bases.length === 1 ? bases[0].id : null);
       this.hasLoadedBases.set(true);

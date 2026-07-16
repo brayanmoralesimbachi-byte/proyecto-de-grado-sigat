@@ -7,7 +7,7 @@ import { ChatbotService } from '../../src/app/services/chatbot.service';
 const createTauriAuthMock = () => ({
   login: vi.fn(),
   logout: vi.fn(),
-  getAvailableBasesDatos: vi.fn(),
+  getUserBasesDatos: vi.fn(),
 } as unknown as TauriService);
 
 const createTauriChatMock = () => ({
@@ -71,9 +71,9 @@ describe('Extended performance thresholds', () => {
     expect(elapsed).toBeLessThan(1000);
   });
 
-  it('getAvailableBasesDatos resolves under 50ms', async () => {
+  it('getUserBasesDatos resolves under 50ms', async () => {
     const tauri = createTauriAuthMock();
-    vi.mocked(tauri.getAvailableBasesDatos).mockResolvedValue([
+    vi.mocked(tauri.getUserBasesDatos).mockResolvedValue([
       { id: 1, nombre: 'Base A' },
       { id: 2, nombre: 'Base B' },
     ]);
