@@ -555,6 +555,33 @@ export class TauriService {
       throw new Error(`Error al obtener BD disponibles: ${error}`);
     }
   }
+
+  async verifyAdminPassword(adminId: number, password: string): Promise<void> {
+    try {
+      await invoke<void>('verify_admin_password', { adminId, password });
+    } catch (error) {
+      console.error('Error en verifyAdminPassword:', error);
+      throw new Error(`${error}`);
+    }
+  }
+
+  async exportBaseDatos(adminId: number, password: string, baseDatosId: number, savePath: string): Promise<string> {
+    try {
+      return await invoke<string>('export_base_datos', { adminId, password, baseDatosId, savePath });
+    } catch (error) {
+      console.error('Error en exportBaseDatos:', error);
+      throw new Error(`Error al exportar base de datos: ${error}`);
+    }
+  }
+
+  async importBaseDatos(adminId: number, password: string, filePath: string, importPassword: string): Promise<string> {
+    try {
+      return await invoke<string>('import_base_datos', { adminId, password, filePath, importPassword });
+    } catch (error) {
+      console.error('Error en importBaseDatos:', error);
+      throw new Error(`Error al importar base de datos: ${error}`);
+    }
+  }
 }
 
 export interface BaseDatos {

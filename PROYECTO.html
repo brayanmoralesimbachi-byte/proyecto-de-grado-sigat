@@ -545,7 +545,7 @@
     <header>
         <h1>🛡️ Gestor de Activos</h1>
         <p class="subtitle">Centro de Investigación - Escuela de Telecomunicaciones de Facatativá</p>
-        <span class="version-badge">Versión 1.4.0 | Última actualización: 16 de Julio 2026</span>
+        <span class="version-badge">Versión 1.5.0 | Última actualización: 21 de Julio 2026</span>
     </header>
 
     <!-- Navegación -->
@@ -1104,6 +1104,9 @@ npm run test:security:ci</code></pre>
                         <li><code>get_bases_datos</code>/<code>create_base_datos</code>/<code>update_base_datos</code>/<code>delete_base_datos</code>: CRUD de bases de datos lógicas</li>
                         <li><code>get_user_bases_datos</code>/<code>assign_user_to_base_datos</code>/<code>unassign_user_from_base_datos</code>: Asignación usuario-BD</li>
                         <li><code>get_available_bases_datos</code>: Bases disponibles para asignar</li>
+                        <li><code>verify_admin_password</code>: Verifica contraseña de administrador para exportar/importar</li>
+                        <li><code>export_base_datos</code>: Exporta base de datos completa a ZIP cifrado con AES-256</li>
+                        <li><code>import_base_datos</code>: Importa base de datos desde ZIP cifrado (crea nueva BD + activos + re-asigna usuarios)</li>
                     </ul>
                 </div>
             </div>
@@ -1337,6 +1340,10 @@ npm run test:security:ci</code></pre>
                     <p>No se puede eliminar una base de datos que tenga activos asociados. El sistema muestra un mensaje con la cantidad de activos bloqueantes.</p>
                 </div>
                 <div class="card">
+                    <h4>📤 Exportar / Importar</h4>
+                    <p>Exporta cualquier base de datos a un archivo ZIP cifrado con AES-256. Se genera una contraseña aleatoria de 30 caracteres que se muestra al usuario con opción de copiar. Importa desde ZIP: verifica admin password, selecciona archivo, ingresa la contraseña de exportación, y crea una nueva base de datos con todos los activos y re-asignación de usuarios.</p>
+                </div>
+                <div class="card">
                     <h4>📊 Filtro por Base</h4>
                     <p>Los usuarios con múltiples bases pueden filtrar activos y auditorías por base de datos mediante un dropdown.</p>
                 </div>
@@ -1512,6 +1519,7 @@ if (!this.authService.hasRole('admin')) {
                 <li>Instalador y desinstalador nativos (MSI para Windows)</li>
                 <li>Control de acceso basado en roles (RBAC)</li>
                 <li>Segmentación lógica de datos por bases de datos (multi-departamento)</li>
+                <li>Exportación/Importación de bases de datos con cifrado AES-256 vía ZIP</li>
                 <li>Interfaz de usuario con diseño militar elegante</li>
             </ul>
         </section>
@@ -1521,6 +1529,64 @@ if (!this.authService.hasRole('admin')) {
             <h2><span class="icon">📝</span> Historial de Cambios</h2>
 
             <div class="timeline">
+                <div class="timeline-item">
+                    <h4>Versión 1.5.0 - Julio 2026</h4>
+
+                    <h5 class="mt-1">📤 Exportación e Importación de Bases de Datos</h5>
+                    <ul>
+                        <li><strong>Exportar BD</strong>: verifica contraseña de admin, diálogo nativo con ruta por defecto en Descargas, exporta todos los activos (con imágenes) + auditoría como JSON a un archivo <code>.7z</code> cifrado con AES-256 (LZMA2), genera contraseña aleatoria de 30 caracteres con advertencia roja de seguridad.</li>
+                        <li><strong>Importar BD</strong>: verifica contraseña de admin, selecciona archivo <code>.7z</code>, ingresa contraseña de exportación, Rust descifra con <code>sevenz-rust</code>, crea nueva base de datos, inserta todos los activos (con imágenes), preserva nombre de base original en descripción de cada activo, re-asigna usuarios existentes.</li>
+                        <li><strong>Manejo de errores claro</strong>: errores LZMA2/contraseña incorrecta traducidos a "Contraseña de exportación incorrecta".</li>
+                        <li><strong>Seguridad:</strong> <code>sevenz-rust</code> v0.6 con feature <code>aes256</code>, contraseña con <code>rand::thread_rng().sample_iter(Alphanumeric).take(30)</code>.</li>
+                        <li><strong>Plugins Tauri:</strong> <code>tauri-plugin-dialog</code> (save/open), <code>tauri-plugin-fs</code>. Permisos <code>dialog:default</code> y <code>fs:default</code> agregados en capabilities.</li>
+                        <li><strong>Nuevos comandos Rust:</strong> <code>verify_admin_password</code>, <code>export_base_datos</code>, <code>import_base_datos</code>.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🎨 Tema oscuro militar completo</h5>
+                    <ul>
+                        <li><strong>Home</strong>: rediseño completo con fondo verde oscuro (#1E2614), emblema animado (escudo + anillo dorado), patrón de camuflaje cruzado, tarjetas con esquinas doradas, barra de stats, sección Misión, CTA con bordes decorativos.</li>
+                        <li><strong>Login</strong>: fondo oscuro #1E2614 con patrón camuflaje, tarjeta glassmorphism (blur 16px), escudo en anillo dorado, inputs oscuros con texto crema, botón dorado #C4A265, esquinas decorativas doradas.</li>
+                        <li><strong>Register</strong>: mismo tratamiento oscuro que Login, con escudo interior y estrella en emblema.</li>
+                        <li><strong>Paleta unificada</strong>: #1E2614, #2D3A1E, #4A5D23, #6B8E23 verdes; #E8E4D9, #F5F2E8 cremas; #C4A265, #A6884D dorados.</li>
+                        <li><strong>Asignaciones</strong>: ahora también con tema oscuro militar, tabla con header dorado, botones de acción (export dorado, edit oliva, delete rojo), modales glassmorphism.</li>
+                    </ul>
+
+                    <h5 class="mt-1">✅ Modales de confirmación para eliminaciones</h5>
+                    <ul>
+                        <li><strong>Activos</strong>, <strong>Usuarios</strong> y <strong>Bases de Datos</strong>: reemplazo de <code>confirm()</code> nativo por modal propio con diseño militar, icono de advertencia naranja, texto en negrita, botón Cancelar y Eliminar (rojo).</li>
+                        <li>Estilos globales <code>.btn-danger</code> y <code>.confirm-modal</code> en <code>styles.scss</code>.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🧪 Ampliación de tests (44 tests)</h5>
+                    <ul>
+                        <li><code>tests/frontend/login.guard.spec.ts</code>: 2 tests para el nuevo loginGuard.</li>
+                        <li><code>tests/frontend/routing.security.spec.ts</code>: 2 tests de integración de guards.</li>
+                        <li><code>tests/frontend/auth.service.spec.ts</code>: 6 tests de AuthService (hasRole, bases, timezone, logout).</li>
+                        <li><code>tests/frontend/chatbot.parser.spec.ts</code>: 7 tests del parser del chatbot.</li>
+                        <li><code>tests/frontend/performance_extended.spec.ts</code>: 4 tests de rendimiento extendido.</li>
+                        <li>Total: <strong>44 tests</strong> en 11 archivos.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🐛 Correcciones</h5>
+                    <ul>
+                        <li><strong>auth.service.ts</strong>: <code>loadAvailableBases()</code> llamaba a <code>getAvailableBasesDatos()</code> (bases NO asignadas) en vez de <code>getUserBasesDatos()</code> (bases SÍ asignadas). Fix en <code>auth.service.ts:42</code>.</li>
+                        <li><strong>Export SQL columnas incorrectas</strong>: columnas <code>user_id/action/entity_type/entity_id/old_value/new_value/created_at</code> no existen en tabla auditoria. Corregido a <code>usuario_id/accion/tabla/registro_id/datos_anteriores/datos_nuevos/timestamp</code>.</li>
+                        <li><strong>FK al eliminar usuario</strong>: no se limpiaban registros en <code>auditoria</code>, <code>activo_vistas</code> y <code>usuario_base_datos</code> antes de borrar el usuario. Causaba error 787.</li>
+                        <li><strong>FK al eliminar base de datos</strong>: no se limpiaban registros en <code>auditoria</code> antes de borrar la base. Causaba error 787 incluso sin activos.</li>
+                        <li><strong>Export no incluía imágenes</strong>: faltaba columna <code>imagen_base64</code> en SELECT de activos. También faltaba en INSERT de importación.</li>
+                        <li><strong>Import LZMA2 error confuso</strong>: contraseña incorrecta mostraba "Corrupted input data (LZMA2:0)". Ahora traduce a "Contraseña de exportación incorrecta".</li>
+                        <li><strong>Diálogo de guardado sin ruta por defecto</strong>: ahora usa <code>downloadDir()</code> de <code>@tauri-apps/api/path</code> para abrir en Descargas.</li>
+                        <li><strong>Tauri version mismatch</strong>: Rust tauri v2.10.3 vs @tauri-apps/api v2.11.1. Actualizado Rust a v2.11.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🔧 Compatibilidad y mantenimiento</h5>
+                    <ul>
+                        <li><strong>Angular 21</strong>: tests migrados de <code>createEnvironmentInjector</code> a <code>TestBed</code> y <code>runInInjectionContext</code>.</li>
+                        <li><strong>ng test</strong>: arreglado para que pase correctamente con Angular 21.</li>
+                        <li><strong>app.spec.ts</strong>: test actualizado para reflejar template actual (router-outlet).</li>
+                    </ul>
+                </div>
+
                 <div class="timeline-item">
                     <h4>Versión 1.4.0 - Julio 2026</h4>
 
@@ -1786,8 +1852,8 @@ await this.tauriService.registerActivoVista(activoId, userId);</code></pre>
 
     <!-- Footer -->
     <footer>
-        <p><strong>Gestor de Activos v1.4.0</strong></p>
-        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 16 de Julio 2026</p>
+        <p><strong>Gestor de Activos v1.5.0</strong></p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 21 de Julio 2026</p>
     </footer>
 
 </body>

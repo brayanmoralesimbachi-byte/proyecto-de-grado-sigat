@@ -2,8 +2,8 @@
 
 Aplicación de escritorio para gestión segura de activos multi-base de datos con Angular + Tauri + Rust + SQLite.
 
-- Versión actual: `1.4.0`
-- Última actualización: `15 de Julio 2026`
+- Versión actual: `1.5.0`
+- Última actualización: `21 de Julio 2026`
 
 ## Stack
 
@@ -21,6 +21,8 @@ Aplicación de escritorio para gestión segura de activos multi-base de datos co
 - Auditoría inmutable con exportación PDF/XML
 - Base de datos cifrada con AES-256 (SQLCipher)
 - **Protección contra navegación atrás/adelante**: los botones del mouse no salen de la app estando logueado
+- **Exportación/Importación de bases de datos**: archivo `.7z` cifrado con AES-256, contraseña aleatoria de 30 caracteres
+- **Modales de confirmación**: para eliminar activos, usuarios y bases de datos con diseño militar
 
 ## Comandos principales
 

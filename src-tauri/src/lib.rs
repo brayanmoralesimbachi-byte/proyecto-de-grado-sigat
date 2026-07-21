@@ -12,7 +12,7 @@ use commands::{AppState, create_user, login, logout, can_close_app, force_logout
                get_keywords, create_keyword, delete_keyword,
                get_bases_datos, create_base_datos, update_base_datos, delete_base_datos,
                get_user_bases_datos, assign_user_to_base_datos, unassign_user_from_base_datos,
-               get_available_bases_datos};
+               get_available_bases_datos, verify_admin_password, export_base_datos, import_base_datos};
 use tokio::sync::Mutex;
 use std::sync::Mutex as StdMutex;
 use std::env;
@@ -32,6 +32,8 @@ pub fn run() {
   };
 
   tauri::Builder::default()
+    .plugin(tauri_plugin_dialog::init())
+    .plugin(tauri_plugin_fs::init())
     .manage(app_state)
     .setup(|app| {
       if cfg!(debug_assertions) {
@@ -158,7 +160,10 @@ pub fn run() {
       get_user_bases_datos,
       assign_user_to_base_datos,
       unassign_user_from_base_datos,
-      get_available_bases_datos
+      get_available_bases_datos,
+      verify_admin_password,
+      export_base_datos,
+      import_base_datos
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

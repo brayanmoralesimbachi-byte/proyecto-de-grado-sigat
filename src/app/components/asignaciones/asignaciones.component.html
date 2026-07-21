@@ -1,21 +1,29 @@
 <div class="asignaciones-container">
   <div class="header">
     <button class="btn-back" (click)="goBack()">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+      <svg viewBox="0 0 24 24" fill="currentColor">
         <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
       </svg>
       Volver
     </button>
-    <h1>Gestión de Bases de Datos</h1>
-    <button class="btn-create" (click)="openCreateModal()">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-      </svg>
-      Nueva Base de Datos
-    </button>
+    <h1>Gesti&oacute;n de Bases de Datos</h1>
+    <div class="header-actions">
+      <button class="btn-import" (click)="openImportModal()">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v4h3.66V9h3.84L12 2z"/>
+        </svg>
+        Importar
+      </button>
+      <button class="btn-create" (click)="openCreateModal()">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+        Nueva Base de Datos
+      </button>
+    </div>
   </div>
 
-  @if (errorMessage()) {
+  @if (errorMessage() && !showModal()) {
     <div class="alert alert-error">{{ errorMessage() }}</div>
   }
   @if (successMessage()) {
@@ -23,17 +31,17 @@
   }
 
   <div class="info-box">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+    <svg viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
     </svg>
-    <span>Cada base de datos agrupa activos de forma independiente. Los usuarios solo ven los datos de las bases que tengan asignadas. Los administradores ven todas.</span>
+    <span>Cada base de datos agrupa activos de forma independiente. Los administradores ven todas. Use <strong>Exportar</strong> para respaldar y <strong>Importar</strong> para restaurar.</span>
   </div>
 
-  @if (isLoading()) {
+  @if (isLoading() && basesDatos().length === 0) {
     <div class="loading">Cargando...</div>
   } @else if (basesDatos().length === 0) {
     <div class="empty-state">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="64" height="64">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="64" height="64">
         <path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2z"/>
       </svg>
       <h3>No hay bases de datos</h3>
@@ -46,7 +54,7 @@
         <thead>
           <tr>
             <th>Nombre</th>
-            <th>Descripción</th>
+            <th>Descripci&oacute;n</th>
             <th>Creado</th>
             <th>Acciones</th>
           </tr>
@@ -58,13 +66,18 @@
               <td>{{ bd.descripcion || '-' }}</td>
               <td>{{ formatDate(bd.created_at) }}</td>
               <td class="actions-cell">
+                <button class="btn-icon btn-export" (click)="openExportModal(bd)" title="Exportar">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                  </svg>
+                </button>
                 <button class="btn-icon btn-edit" (click)="openEditModal(bd)" title="Editar">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
                   </svg>
                 </button>
-                <button class="btn-icon btn-delete" (click)="deleteBaseDatos(bd.id)" title="Eliminar">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <button class="btn-icon btn-delete" (click)="openConfirmDelete(bd.id)" title="Eliminar">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                   </svg>
                 </button>
@@ -76,30 +89,223 @@
     </div>
   }
 
-  <!-- Modal de creación/edición -->
+  <!-- ===== MODAL GENERAL ===== -->
   @if (showModal()) {
     <div class="modal-overlay" (click)="closeModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
+
+        @if (modalType() === 'create') {
+          <!-- === CREATE / EDIT === -->
+          <div class="modal-header">
+            <h2>{{ isEditing() ? 'Editar Base de Datos' : 'Nueva Base de Datos' }}</h2>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Nombre *</label>
+              <input type="text" [(ngModel)]="nombre" placeholder="Ej: Base Central" maxlength="100" required>
+            </div>
+            <div class="form-group">
+              <label>Descripci&oacute;n</label>
+              <textarea [(ngModel)]="descripcion" placeholder="Descripci&oacute;n opcional" rows="3"></textarea>
+            </div>
+            @if (errorMessage()) {
+              <div class="alert alert-error">{{ errorMessage() }}</div>
+            }
+          </div>
+          <div class="modal-actions">
+            <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+            <button class="btn-primary" (click)="saveBaseDatos()" [disabled]="isLoading()">
+              {{ isEditing() ? 'Guardar Cambios' : 'Crear' }}
+            </button>
+          </div>
+        }
+
+        @if (modalType() === 'export') {
+          <!-- === EXPORT === -->
+          <div class="modal-header">
+            <h2>Exportar Base de Datos</h2>
+          </div>
+          <div class="modal-body">
+
+            @if (!passwordVerified()) {
+              <!-- Step 1: Verify password -->
+              <p class="modal-desc">Ingrese su contrase&ntilde;a de administrador para exportar <strong>{{ exportBaseName() }}</strong>.</p>
+              <div class="form-group">
+                <label>Contrase&ntilde;a de Administrador</label>
+                <input type="password" [(ngModel)]="adminPassword" placeholder="Ingrese su contrase&ntilde;a" (keyup.enter)="verifyExportPassword()">
+              </div>
+              @if (errorMessage()) {
+                <div class="alert alert-error">{{ errorMessage() }}</div>
+              }
+              <div class="modal-actions">
+                <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+                <button class="btn-primary" (click)="verifyExportPassword()" [disabled]="isLoading()">Verificar</button>
+              </div>
+            }
+
+            @if (passwordVerified() && !exportDone()) {
+              <!-- Step 2: Show export button -->
+              <div class="verified-badge">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                Contrase&ntilde;a verificada
+              </div>
+              <p class="modal-desc">Presione el bot&oacute;n para elegir d&oacute;nde guardar el archivo cifrado.</p>
+              @if (errorMessage()) {
+                <div class="alert alert-error">{{ errorMessage() }}</div>
+              }
+              <div class="modal-actions">
+                <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+                <button class="btn-export-action" (click)="doExport()" [disabled]="isExporting()">
+                  @if (isExporting()) {
+                    <span class="spinner"></span> Exportando...
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                      <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                    </svg>
+                    Exportar {{ exportBaseName() }}
+                  }
+                </button>
+              </div>
+            }
+
+            @if (exportDone()) {
+              <!-- Step 3: Export complete - show password -->
+              <div class="success-badge">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                Base de Datos exportada
+              </div>
+              <div class="export-password-section">
+                <label>Contrase&ntilde;a de Exportaci&oacute;n</label>
+                <div class="password-display">
+                  <input [type]="exportShowPassword() ? 'text' : 'password'" [value]="exportPassword()" readonly class="pwd-input">
+                  <button class="pwd-toggle" (click)="toggleExportPassword()" title="Mostrar/Ocultar">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      @if (exportShowPassword()) {
+                        <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
+                      } @else {
+                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                      }
+                    </svg>
+                  </button>
+                  <button class="pwd-copy" (click)="copyExportPassword()" title="Copiar">
+                    @if (exportCopied()) {
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                    } @else {
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                    }
+                  </button>
+                </div>
+                <p class="pwd-danger">⚠️ Esta contrase&ntilde;a es su &uacute;nica forma de recuperar los datos. Si la pierde, su informaci&oacute;n exportada se perder&aacute; para siempre. Gu&aacute;rdela en un lugar seguro.</p>
+              </div>
+              <div class="modal-actions">
+                <button class="btn-primary" (click)="closeModal()">Cerrar</button>
+              </div>
+            }
+          </div>
+        }
+
+        @if (modalType() === 'import') {
+          <!-- === IMPORT === -->
+          <div class="modal-header">
+            <h2>Importar Base de Datos</h2>
+          </div>
+          <div class="modal-body">
+
+            @if (!importPasswordVerified()) {
+              <!-- Step 1: Verify password -->
+              <p class="modal-desc">Ingrese su contrase&ntilde;a de administrador para importar una base de datos.</p>
+              <div class="form-group">
+                <label>Contrase&ntilde;a de Administrador</label>
+                <input type="password" [(ngModel)]="importPassword" placeholder="Ingrese su contrase&ntilde;a" (keyup.enter)="verifyImportPassword()">
+              </div>
+              @if (errorMessage()) {
+                <div class="alert alert-error">{{ errorMessage() }}</div>
+              }
+              <div class="modal-actions">
+                <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+                <button class="btn-primary" (click)="verifyImportPassword()" [disabled]="isLoading()">Verificar</button>
+              </div>
+            }
+
+            @if (importPasswordVerified() && !importDone()) {
+              <!-- Step 2: File selection -->
+              <div class="verified-badge">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                Contrase&ntilde;a verificada
+              </div>
+              <div class="form-group">
+                <label>Archivo cifrado (.7z)</label>
+                <div class="file-select">
+                  <input type="text" [value]="importFilePath()" placeholder="Ning&uacute;n archivo seleccionado" readonly class="file-path">
+                  <button class="btn-browse" (click)="selectImportFile()">Examinar</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Contrase&ntilde;a de Exportaci&oacute;n</label>
+                <input type="password" [(ngModel)]="importFilePassword" placeholder="Ingrese la contrase&ntilde;a del archivo">
+              </div>
+              @if (errorMessage()) {
+                <div class="alert alert-error">{{ errorMessage() }}</div>
+              }
+              <div class="modal-actions">
+                <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+                <button class="btn-import-action" (click)="doImport()" [disabled]="isImporting() || !importFilePath()">
+                  @if (isImporting()) {
+                    <span class="spinner"></span> Importando...
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                      <path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v4h3.66V9h3.84L12 2z"/>
+                    </svg>
+                    Importar
+                  }
+                </button>
+              </div>
+            }
+
+            @if (importDone()) {
+              <!-- Step 3: Import complete -->
+              <div class="success-badge">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                {{ importResult() }}
+              </div>
+              <div class="modal-actions">
+                <button class="btn-primary" (click)="closeModal()">Cerrar</button>
+              </div>
+            }
+          </div>
+        }
+
+      </div>
+    </div>
+  }
+
+  <!-- ===== CONFIRM DELETE MODAL ===== -->
+  @if (confirmDeleteId()) {
+    <div class="modal-overlay" (click)="cancelDelete()">
+      <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>{{ isEditing() ? 'Editar Base de Datos' : 'Nueva Base de Datos' }}</h2>
+          <h2>Eliminar Base de Datos</h2>
         </div>
         <div class="modal-body">
-          <div class="form-group">
-            <label>Nombre *</label>
-            <input type="text" [(ngModel)]="nombre" placeholder="Ej: Base Central" maxlength="100" required>
+          <div class="confirm-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
           </div>
-          <div class="form-group">
-            <label>Descripción</label>
-            <textarea [(ngModel)]="descripcion" placeholder="Descripción opcional de esta base de datos" rows="3"></textarea>
-          </div>
+          <p class="confirm-text texto-blanco">¿Está seguro de eliminar esta base de datos?</p>
+          <p class="confirm-subtext texto-blanco">Los activos asociados deben reasignarse primero. Esta acción no se puede deshacer.</p>
           @if (errorMessage()) {
             <div class="alert alert-error">{{ errorMessage() }}</div>
           }
         </div>
         <div class="modal-actions">
-          <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
-          <button class="btn-primary" (click)="saveBaseDatos()" [disabled]="isLoading()">
-            {{ isEditing() ? 'Guardar Cambios' : 'Crear' }}
+          <button class="btn-secondary" (click)="cancelDelete()">Cancelar</button>
+          <button class="btn-danger" (click)="confirmDelete()" [disabled]="isLoading()">
+            @if (isLoading()) {
+              <span class="spinner"></span> Eliminando...
+            } @else {
+              Eliminar
+            }
           </button>
         </div>
       </div>

@@ -284,24 +284,29 @@ export class UsersComponent implements OnInit {
     }
   }
 
-  async deleteUser(userId: number): Promise<void> {
+  confirmDeleteId = signal<number | null>(null);
+
+  openConfirmDelete(userId: number): void {
     const currentUser = this.authService.currentUser();
-    
-    // No permitir eliminarse a sí mismo
     if (currentUser && currentUser.id === userId) {
       this.errorMessage.set('No puedes eliminar tu propio usuario');
       setTimeout(() => this.errorMessage.set(''), 3000);
       return;
     }
+    this.confirmDeleteId.set(userId);
+  }
 
-    if (!confirm('¿Está seguro de eliminar este usuario? Esta acción no se puede deshacer.')) {
-      return;
-    }
+  cancelDelete(): void {
+    this.confirmDeleteId.set(null);
+  }
 
-    if (!currentUser) {
-      this.errorMessage.set('Usuario no autenticado');
-      return;
-    }
+  async confirmDelete(): Promise<void> {
+    const userId = this.confirmDeleteId();
+    if (!userId) return;
+    this.confirmDeleteId.set(null);
+
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) { this.errorMessage.set('Usuario no autenticado'); return; }
 
     try {
       this.isLoading.set(true);

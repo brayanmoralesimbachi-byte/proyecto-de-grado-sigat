@@ -346,10 +346,20 @@ export class ActivosComponent implements OnInit {
     }
   }
 
-  async deleteActivo(id: number): Promise<void> {
-    if (!confirm('¿Está seguro de eliminar este activo?')) {
-      return;
-    }
+  confirmDeleteId = signal<number | null>(null);
+
+  openConfirmDelete(id: number): void {
+    this.confirmDeleteId.set(id);
+  }
+
+  cancelDelete(): void {
+    this.confirmDeleteId.set(null);
+  }
+
+  async confirmDelete(): Promise<void> {
+    const id = this.confirmDeleteId();
+    if (!id) return;
+    this.confirmDeleteId.set(null);
 
     const user = this.authService.currentUser();
     if (!user) {

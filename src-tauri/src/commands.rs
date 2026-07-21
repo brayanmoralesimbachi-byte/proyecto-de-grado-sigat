@@ -4,6 +4,9 @@ use tauri::State;
 use tokio::sync::Mutex;
 use std::sync::Mutex as StdMutex;
 use sqlx::Row;
+use std::io::BufReader;
+use rand::Rng;
+use sevenz_rust::SevenZReader;
 
 /// Estado compartido de la aplicación
 pub struct AppState {
@@ -557,6 +560,25 @@ pub async fn delete_user(
         .fetch_optional(db.pool())
         .await
         .map_err(|e| format!("Error al obtener usuario: {}", e))?;
+
+    // Eliminar registros relacionados antes de eliminar el usuario
+    sqlx::query("DELETE FROM usuario_base_datos WHERE usuario_id = ?")
+        .bind(user_id)
+        .execute(db.pool())
+        .await
+        .map_err(|e| format!("Error al eliminar asignaciones: {}", e))?;
+
+    sqlx::query("DELETE FROM auditoria WHERE usuario_id = ?")
+        .bind(user_id)
+        .execute(db.pool())
+        .await
+        .map_err(|e| format!("Error al eliminar registros de auditoría: {}", e))?;
+
+    sqlx::query("DELETE FROM activo_vistas WHERE usuario_id = ?")
+        .bind(user_id)
+        .execute(db.pool())
+        .await
+        .map_err(|e| format!("Error al eliminar vistas de activos: {}", e))?;
 
     sqlx::query("DELETE FROM usuarios WHERE id = ?")
         .bind(user_id)
@@ -1379,6 +1401,12 @@ pub async fn delete_base_datos(
         .await
         .map_err(|e| format!("Error al eliminar asignaciones: {}", e))?;
 
+    sqlx::query("DELETE FROM auditoria WHERE base_datos_id = ?")
+        .bind(id)
+        .execute(db.pool())
+        .await
+        .map_err(|e| format!("Error al eliminar auditoría: {}", e))?;
+
     sqlx::query("DELETE FROM bases_datos WHERE id = ?")
         .bind(id)
         .execute(db.pool())
@@ -1551,6 +1579,397 @@ pub async fn get_available_bases_datos(
     }
 
     Ok(result)
+}
+
+/// Comando para verificar la contraseña de un administrador
+#[tauri::command]
+pub async fn verify_admin_password(
+    admin_id: i64,
+    password: String,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    let admin_rol: String = sqlx::query_scalar("SELECT rol FROM usuarios WHERE id = ?")
+        .bind(admin_id)
+        .fetch_optional(db.pool())
+        .await
+        .map_err(|e| format!("Error al verificar admin: {}", e))?
+        .ok_or("Usuario no encontrado")?;
+
+    if admin_rol != "administrador" {
+        return Err("Solo los administradores pueden realizar esta acción".to_string());
+    }
+
+    let stored_hash: String = sqlx::query_scalar("SELECT password_hash FROM usuarios WHERE id = ?")
+        .bind(admin_id)
+        .fetch_optional(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener hash: {}", e))?
+        .ok_or("Usuario no encontrado")?;
+
+    if !verify_password(&password, &stored_hash).map_err(|e| format!("Error al verificar: {}", e))? {
+        return Err("Contraseña incorrecta".to_string());
+    }
+
+    Ok(())
+}
+
+/// Comando para exportar una base de datos como JSON cifrado en ZIP
+#[tauri::command]
+pub async fn export_base_datos(
+    admin_id: i64,
+    password: String,
+    base_datos_id: i64,
+    save_path: String,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    // Verificar que el usuario es administrador
+    let admin_rol: String = sqlx::query_scalar("SELECT rol FROM usuarios WHERE id = ?")
+        .bind(admin_id)
+        .fetch_optional(db.pool())
+        .await
+        .map_err(|e| format!("Error al verificar admin: {}", e))?
+        .ok_or("Usuario no encontrado")?;
+
+    if admin_rol != "administrador" {
+        return Err("Solo los administradores pueden exportar bases de datos".to_string());
+    }
+
+    // Verificar contraseña
+    let stored_hash: String = sqlx::query_scalar("SELECT password_hash FROM usuarios WHERE id = ?")
+        .bind(admin_id)
+        .fetch_optional(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener hash: {}", e))?
+        .ok_or("Usuario no encontrado")?;
+
+    if !verify_password(&password, &stored_hash).map_err(|e| format!("Error al verificar: {}", e))? {
+        return Err("Contraseña incorrecta".to_string());
+    }
+
+    // Obtener info de la base de datos
+    let base_info: (String, Option<String>) = sqlx::query_as(
+        "SELECT nombre, descripcion FROM bases_datos WHERE id = ?"
+    )
+    .bind(base_datos_id)
+    .fetch_optional(db.pool())
+    .await
+    .map_err(|e| format!("Error al obtener base de datos: {}", e))?
+    .ok_or("Base de datos no encontrada")?;
+
+    // Obtener activos de esta base
+    let activos: Vec<serde_json::Value> = sqlx::query(
+        r#"
+        SELECT id, codigo, nombre, descripcion, categoria, ubicacion, estado,
+               valor_adquisicion, fecha_adquisicion, fecha_vencimiento, palabras_clave,
+               imagen_base64, created_at, created_by
+        FROM activos WHERE base_datos_id = ?
+        ORDER BY id
+        "#
+    )
+    .bind(base_datos_id)
+    .fetch_all(db.pool())
+    .await
+    .map_err(|e| format!("Error al obtener activos: {}", e))?
+    .iter()
+    .map(|row| {
+        serde_json::json!({
+            "id": row.try_get::<i64, _>("id").ok(),
+            "codigo": row.try_get::<String, _>("codigo").ok(),
+            "nombre": row.try_get::<String, _>("nombre").ok(),
+            "descripcion": row.try_get::<Option<String>, _>("descripcion").ok().flatten(),
+            "categoria": row.try_get::<String, _>("categoria").ok(),
+            "ubicacion": row.try_get::<Option<String>, _>("ubicacion").ok().flatten(),
+            "estado": row.try_get::<String, _>("estado").ok(),
+            "valor_adquisicion": row.try_get::<Option<f64>, _>("valor_adquisicion").ok().flatten(),
+            "fecha_adquisicion": row.try_get::<Option<String>, _>("fecha_adquisicion").ok().flatten(),
+            "fecha_vencimiento": row.try_get::<Option<String>, _>("fecha_vencimiento").ok().flatten(),
+            "palabras_clave": row.try_get::<Option<String>, _>("palabras_clave").ok().flatten(),
+            "imagen_base64": row.try_get::<Option<String>, _>("imagen_base64").ok().flatten(),
+            "created_at": row.try_get::<Option<String>, _>("created_at").ok().flatten(),
+            "created_by": row.try_get::<Option<i64>, _>("created_by").ok().flatten(),
+        })
+    })
+    .collect();
+
+    // Obtener auditoría de esta base
+    let auditoria: Vec<serde_json::Value> = sqlx::query(
+        r#"
+        SELECT id, usuario_id, accion, tabla, registro_id, datos_anteriores, datos_nuevos, timestamp
+        FROM auditoria WHERE base_datos_id = ? OR (tabla = 'activos' AND registro_id IN (
+            SELECT id FROM activos WHERE base_datos_id = ?
+        ))
+        ORDER BY id
+        "#
+    )
+    .bind(base_datos_id)
+    .bind(base_datos_id)
+    .fetch_all(db.pool())
+    .await
+    .map_err(|e| format!("Error al obtener auditoría: {}", e))?
+    .iter()
+    .map(|row| {
+        serde_json::json!({
+            "id": row.try_get::<i64, _>("id").ok(),
+            "usuario_id": row.try_get::<i64, _>("usuario_id").ok(),
+            "accion": row.try_get::<String, _>("accion").ok(),
+            "tabla": row.try_get::<String, _>("tabla").ok(),
+            "registro_id": row.try_get::<Option<i64>, _>("registro_id").ok().flatten(),
+            "datos_anteriores": row.try_get::<Option<String>, _>("datos_anteriores").ok().flatten(),
+            "datos_nuevos": row.try_get::<Option<String>, _>("datos_nuevos").ok().flatten(),
+            "timestamp": row.try_get::<Option<String>, _>("timestamp").ok().flatten(),
+        })
+    })
+    .collect();
+
+    // Obtener usuarios asignados a esta base
+    let usuarios_asignados: Vec<i64> = sqlx::query_scalar(
+        "SELECT usuario_id FROM usuario_base_datos WHERE base_datos_id = ?"
+    )
+    .bind(base_datos_id)
+    .fetch_all(db.pool())
+    .await
+    .map_err(|e| format!("Error al obtener usuarios asignados: {}", e))?;
+
+    // Construir JSON completo
+    let export_data = serde_json::json!({
+        "version": "1.0",
+        "exported_at": chrono::Utc::now().to_rfc3339(),
+        "exported_by": admin_id,
+        "base_datos": {
+            "id": base_datos_id,
+            "nombre": base_info.0,
+            "descripcion": base_info.1,
+        },
+        "activos": activos,
+        "auditoria": auditoria,
+        "usuarios_asignados": usuarios_asignados,
+    });
+
+    let json_str = serde_json::to_string_pretty(&export_data)
+        .map_err(|e| format!("Error al serializar JSON: {}", e))?;
+
+    // Generar contraseña aleatoria de 30 caracteres
+    let export_password: String = rand::thread_rng()
+        .sample_iter(&rand::distributions::Alphanumeric)
+        .take(30)
+        .map(char::from)
+        .collect();
+
+    // Crear archivo 7z cifrado con AES-256
+    // Escribimos JSON a un archivo temporal y lo comprimimos
+    let temp_dir = std::env::temp_dir().join("gestor_export");
+    std::fs::create_dir_all(&temp_dir)
+        .map_err(|e| format!("Error al crear directorio temporal: {}", e))?;
+    let temp_file = temp_dir.join("datos.json");
+    std::fs::write(&temp_file, &json_str)
+        .map_err(|e| format!("Error al escribir archivo temporal: {}", e))?;
+
+    sevenz_rust::compress_to_path_encrypted(
+        &temp_file,
+        &save_path,
+        export_password.as_str().into(),
+    )
+    .map_err(|e| format!("Error al crear archivo 7z cifrado: {}", e))?;
+
+    // Limpiar archivos temporales
+    std::fs::remove_file(&temp_file).ok();
+    std::fs::remove_dir(&temp_dir).ok();
+
+    Ok(export_password)
+}
+
+/// Comando para importar una base de datos desde un archivo JSON cifrado
+#[tauri::command]
+pub async fn import_base_datos(
+    admin_id: i64,
+    password: String,
+    file_path: String,
+    import_password: String,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    // Verificar que el usuario es administrador
+    let admin_rol: String = sqlx::query_scalar("SELECT rol FROM usuarios WHERE id = ?")
+        .bind(admin_id)
+        .fetch_optional(db.pool())
+        .await
+        .map_err(|e| format!("Error al verificar admin: {}", e))?
+        .ok_or("Usuario no encontrado")?;
+
+    if admin_rol != "administrador" {
+        return Err("Solo los administradores pueden importar bases de datos".to_string());
+    }
+
+    // Verificar contraseña del admin
+    let stored_hash: String = sqlx::query_scalar("SELECT password_hash FROM usuarios WHERE id = ?")
+        .bind(admin_id)
+        .fetch_optional(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener hash: {}", e))?
+        .ok_or("Usuario no encontrado")?;
+
+    if !verify_password(&password, &stored_hash).map_err(|e| format!("Error al verificar: {}", e))? {
+        return Err("Contraseña incorrecta".to_string());
+    }
+
+    // Leer y desencriptar el archivo 7z
+    let file = std::fs::File::open(&file_path)
+        .map_err(|e| format!("Error al abrir archivo: {}", e))?;
+    let file_len = file.metadata()
+        .map_err(|e| format!("Error al obtener tamaño: {}", e))?
+        .len();
+    let reader = BufReader::new(file);
+    let mut archive = SevenZReader::new(reader, file_len, import_password.as_str().into())
+        .map_err(|e| format!("Error al leer archivo 7z: {}", e))?;
+
+    // Buscar el archivo datos.json dentro del 7z
+    let mut json_str = String::new();
+    let mut found = false;
+
+    let result = archive.for_each_entries(|entry, entry_reader| {
+        if entry.name == "datos.json" {
+            let mut buf = String::new();
+            entry_reader.read_to_string(&mut buf)
+                .map_err(|e| sevenz_rust::Error::io_msg(e, "Error al leer datos.json"))?;
+            json_str = buf;
+            found = true;
+            Ok(false) // stop iterating
+        } else {
+            Ok(true) // continue
+        }
+    });
+    if let Err(e) = result {
+        let err_msg = format!("{}", e);
+        if err_msg.contains("Corrupted input data") || err_msg.contains("LZMA") {
+            return Err("Contraseña de exportación incorrecta. El archivo no pudo ser descifrado. Verifique la contraseña e intente de nuevo.".to_string());
+        }
+        return Err(format!("Error al procesar entradas: {}", e));
+    }
+
+    if !found {
+        return Err("No se encontró datos.json en el archivo o contraseña incorrecta".to_string());
+    }
+
+    // Parsear JSON
+    let data: serde_json::Value = serde_json::from_str(&json_str)
+        .map_err(|e| format!("Error al parsear JSON: {}", e))?;
+
+    let base_datos = data.get("base_datos")
+        .ok_or("JSON inválido: falta base_datos")?;
+    let base_nombre = base_datos.get("nombre")
+        .and_then(|v| v.as_str())
+        .ok_or("JSON inválido: falta nombre")?;
+
+    // Verificar que no exista ya una base con ese nombre
+    let exists: bool = sqlx::query_scalar("SELECT COUNT(*) > 0 FROM bases_datos WHERE nombre = ?")
+        .bind(base_nombre)
+        .fetch_one(db.pool())
+        .await
+        .map_err(|e| format!("Error al verificar base existente: {}", e))?;
+
+    if exists {
+        return Err(format!("Ya existe una base de datos llamada '{}'. Renombre el archivo o cambie el nombre en el JSON.", base_nombre));
+    }
+
+    // Crear la base de datos
+    let base_descripcion = base_datos.get("descripcion").and_then(|v| v.as_str());
+    sqlx::query("INSERT INTO bases_datos (nombre, descripcion) VALUES (?, ?)")
+        .bind(base_nombre)
+        .bind(base_descripcion)
+        .execute(db.pool())
+        .await
+        .map_err(|e| format!("Error al crear base de datos: {}", e))?;
+
+    let new_base_id: i64 = sqlx::query_scalar("SELECT id FROM bases_datos WHERE nombre = ?")
+        .bind(base_nombre)
+        .fetch_one(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener nueva base: {}", e))?;
+
+    // Importar activos
+    let base_nombre_ref = base_nombre; // capturar para usar en descripción
+    if let Some(activos) = data.get("activos").and_then(|v| v.as_array()) {
+        for activo in activos {
+            let codigo = activo.get("codigo").and_then(|v| v.as_str()).unwrap_or("SIN-CODIGO");
+            let nombre = activo.get("nombre").and_then(|v| v.as_str()).unwrap_or("Sin nombre");
+            let descripcion_original = activo.get("descripcion").and_then(|v| v.as_str()).unwrap_or("");
+            let descripcion = if descripcion_original.is_empty() {
+                Some(format!("[Base original: {}]", base_nombre_ref))
+            } else {
+                Some(format!("[Base original: {}] {}", base_nombre_ref, descripcion_original))
+            };
+            let categoria = activo.get("categoria").and_then(|v| v.as_str()).unwrap_or("General");
+            let ubicacion = activo.get("ubicacion").and_then(|v| v.as_str());
+            let estado = activo.get("estado").and_then(|v| v.as_str()).unwrap_or("operativo");
+            let valor = activo.get("valor_adquisicion").and_then(|v| v.as_f64());
+            let fecha_adq = activo.get("fecha_adquisicion").and_then(|v| v.as_str());
+            let fecha_venc = activo.get("fecha_vencimiento").and_then(|v| v.as_str());
+            let palabras = activo.get("palabras_clave").and_then(|v| v.as_str());
+            let imagen = activo.get("imagen_base64").and_then(|v| v.as_str());
+            let created_by = activo.get("created_by").and_then(|v| v.as_i64());
+
+            sqlx::query(
+                r#"
+                INSERT INTO activos (codigo, nombre, descripcion, categoria, ubicacion, estado,
+                    valor_adquisicion, fecha_adquisicion, fecha_vencimiento, palabras_clave,
+                    imagen_base64, base_datos_id, created_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                "#
+            )
+            .bind(codigo)
+            .bind(nombre)
+            .bind(descripcion)
+            .bind(categoria)
+            .bind(ubicacion)
+            .bind(estado)
+            .bind(valor)
+            .bind(fecha_adq)
+            .bind(fecha_venc)
+            .bind(palabras)
+            .bind(imagen)
+            .bind(new_base_id)
+            .bind(created_by)
+            .execute(db.pool())
+            .await
+            .map_err(|e| format!("Error al importar activo '{}': {}", nombre, e))?;
+        }
+    }
+
+    // Asignar usuarios que estaban asignados originalmente (si existen)
+    if let Some(usuarios) = data.get("usuarios_asignados").and_then(|v| v.as_array()) {
+        for uid in usuarios {
+            if let Some(uid_val) = uid.as_i64() {
+                let _ = sqlx::query("INSERT OR IGNORE INTO usuario_base_datos (usuario_id, base_datos_id) VALUES (?, ?)")
+                    .bind(uid_val)
+                    .bind(new_base_id)
+                    .execute(db.pool())
+                    .await;
+            }
+        }
+    }
+
+    // Registrar auditoría
+    let _ = db.log_audit(
+        admin_id,
+        "IMPORT",
+        "bases_datos",
+        new_base_id,
+        None,
+        Some(&format!("Base de datos importada: {} ({} activos)", base_nombre, data.get("activos").and_then(|v| v.as_array()).map(|a| a.len()).unwrap_or(0))),
+        None,
+    ).await;
+
+    Ok(format!("Base de datos '{}' importada exitosamente con {} activos",
+        base_nombre,
+        data.get("activos").and_then(|v| v.as_array()).map(|a| a.len()).unwrap_or(0)))
 }
 
 /// Función auxiliar para normalizar keywords (quitar acentos, minúsculas)
