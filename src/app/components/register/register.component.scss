@@ -1,24 +1,37 @@
+$green-dark: #1E2614;
+$green-mid: #2D3A1E;
+$green-olive: #4A5D23;
+$green-olive-light: #6B8E23;
+$green-sage: #8B9A46;
+$cream: #E8E4D9;
+$cream-light: #F5F2E8;
+$cream-dark: #D4CDB5;
+$gold: #C4A265;
+$gold-dark: #A6884D;
+$text-light: rgba(255, 255, 255, 0.88);
+$text-muted: rgba(255, 255, 255, 0.55);
+
 .register-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #556B2F 0%, #3C3F2E 100%);
+  background: $green-dark;
   padding: 20px;
   position: relative;
 
   &::before {
     content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    position: fixed;
+    inset: 0;
     background-image:
-      radial-gradient(circle at 20% 50%, rgba(107, 142, 35, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(74, 93, 35, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 40% 20%, rgba(90, 108, 45, 0.1) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 10%, rgba($green-olive-light, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba($green-sage, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba($green-mid, 0.3) 0%, transparent 70%),
+      repeating-linear-gradient(45deg, transparent, transparent 40px, rgba($green-olive, 0.03) 40px, rgba($green-olive, 0.03) 41px),
+      repeating-linear-gradient(-45deg, transparent, transparent 40px, rgba($green-olive, 0.03) 40px, rgba($green-olive, 0.03) 41px);
     pointer-events: none;
+    z-index: 0;
   }
 }
 
@@ -26,19 +39,19 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  position: absolute;
+  position: fixed;
   top: 20px;
   left: 20px;
-  z-index: 2;
+  z-index: 10;
   padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba($cream, 0.06);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba($gold, 0.2);
   border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba($cream, 0.7);
   transition: all 0.3s;
   font-family: 'Lato', sans-serif;
 
@@ -49,8 +62,9 @@
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba($cream, 0.12);
+    border-color: $gold;
+    color: $cream-light;
     transform: translateY(-1px);
   }
 
@@ -60,49 +74,65 @@
 }
 
 .register-card {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(60, 63, 46, 0.3);
-  padding: 40px;
+  background: rgba($green-mid, 0.5);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba($gold, 0.15);
+  border-radius: 14px;
+  padding: 40px 40px 36px;
   width: 100%;
   max-width: 480px;
-  border: 2px solid var(--military-border);
   position: relative;
   z-index: 1;
+
+  .card-corner {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+
+    &.tl { top: 10px; left: 10px; border-top: 2px solid rgba($gold, 0.3); border-left: 2px solid rgba($gold, 0.3); }
+    &.tr { top: 10px; right: 10px; border-top: 2px solid rgba($gold, 0.3); border-right: 2px solid rgba($gold, 0.3); }
+    &.bl { bottom: 10px; left: 10px; border-bottom: 2px solid rgba($gold, 0.3); border-left: 2px solid rgba($gold, 0.3); }
+    &.br { bottom: 10px; right: 10px; border-bottom: 2px solid rgba($gold, 0.3); border-right: 2px solid rgba($gold, 0.3); }
+  }
 }
 
 .register-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 28px;
 
-  .logo-icon {
-    width: 72px;
-    height: 72px;
-    margin: 0 auto 16px;
-    background: var(--military-primary);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(85, 107, 47, 0.3);
+  .emblem {
+    margin-bottom: 18px;
+    display: inline-block;
 
-    svg {
-      width: 40px;
-      height: 40px;
-      fill: white;
+    .emblem-ring {
+      width: 64px;
+      height: 64px;
+      border: 2px solid rgba($gold, 0.35);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      color: rgba($cream, 0.75);
+
+      svg {
+        width: 36px;
+        height: 36px;
+      }
     }
   }
 
   h1 {
     font-family: 'Playfair Display', serif;
-    color: var(--military-dark);
-    font-size: 28px;
-    margin-bottom: 8px;
+    color: $text-light;
+    font-size: 26px;
+    margin: 0 0 6px;
     font-weight: 700;
+    letter-spacing: 1px;
   }
 
   p {
-    color: var(--military-text-light);
+    color: $text-muted;
     font-size: 14px;
     margin: 0;
     font-family: 'Lato', sans-serif;
@@ -111,95 +141,98 @@
 
 .register-form {
   .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 
     label {
       display: block;
-      color: var(--military-dark);
+      color: rgba($cream, 0.8);
       font-weight: 600;
-      margin-bottom: 8px;
-      font-size: 14px;
+      margin-bottom: 6px;
+      font-size: 13px;
       font-family: 'Lato', sans-serif;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
 
     input {
       width: 100%;
-      padding: 12px 16px;
-      border: 2px solid var(--military-border);
+      padding: 11px 16px;
+      background: rgba($cream, 0.06);
+      border: 1px solid rgba($cream, 0.12);
       border-radius: 8px;
       font-size: 14px;
       transition: all 0.3s;
       box-sizing: border-box;
-      background-color: white;
-      color: var(--military-text);
+      color: $cream-light;
       font-family: 'Lato', sans-serif;
 
       &:focus {
         outline: none;
-        border-color: var(--military-primary);
-        box-shadow: 0 0 0 3px rgba(85, 107, 47, 0.15);
+        border-color: $gold;
+        box-shadow: 0 0 0 3px rgba($gold, 0.1);
+        background: rgba($cream, 0.1);
       }
 
       &:disabled {
-        background-color: var(--military-bg-light);
+        opacity: 0.5;
         cursor: not-allowed;
       }
 
       &::placeholder {
-        color: var(--military-text-light);
+        color: rgba($cream, 0.25);
       }
     }
 
     small {
       display: block;
-      margin-top: 6px;
-      color: var(--military-text-light);
+      margin-top: 5px;
+      color: rgba($cream, 0.35);
       font-size: 12px;
       font-family: 'Lato', sans-serif;
     }
   }
 
   .error-message {
-    background-color: #f8e8e0;
-    color: var(--military-danger);
-    padding: 12px;
+    background: rgba(#ff6b35, 0.08);
+    color: #ff8a5c;
+    padding: 12px 14px;
     border-radius: 6px;
-    font-size: 14px;
-    margin-bottom: 20px;
-    border-left: 4px solid var(--military-danger);
+    font-size: 13px;
+    margin-bottom: 18px;
+    border-left: 3px solid #ff6b35;
     font-family: 'Lato', sans-serif;
   }
 
   .success-message {
-    background-color: #e8f0d8;
-    color: #3c5a1e;
-    padding: 12px;
+    background: rgba($green-olive-light, 0.1);
+    color: rgba($cream, 0.85);
+    padding: 12px 14px;
     border-radius: 6px;
-    font-size: 14px;
-    margin-bottom: 20px;
-    border-left: 4px solid var(--military-primary);
+    font-size: 13px;
+    margin-bottom: 18px;
+    border-left: 3px solid $green-olive-light;
     font-family: 'Lato', sans-serif;
   }
 
-  .register-button {
+  .btn-submit {
     width: 100%;
-    padding: 14px;
-    background: linear-gradient(135deg, var(--military-primary) 0%, var(--military-secondary) 100%);
-    color: white;
+    padding: 13px;
+    background: $gold;
     border: none;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s;
     font-family: 'Lato', sans-serif;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+    color: $green-dark;
 
     &:hover:not(:disabled) {
+      background: $gold-dark;
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(85, 107, 47, 0.4);
-      background: linear-gradient(135deg, var(--military-secondary) 0%, var(--military-primary) 100%);
+      box-shadow: 0 6px 24px rgba($gold, 0.25);
     }
 
     &:active:not(:disabled) {
@@ -207,30 +240,30 @@
     }
 
     &:disabled {
-      opacity: 0.6;
+      opacity: 0.5;
       cursor: not-allowed;
     }
   }
 
-  .login-link {
+  .auth-link {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 22px;
 
     p {
-      color: var(--military-text-light);
+      color: $text-muted;
       font-size: 14px;
       margin: 0;
       font-family: 'Lato', sans-serif;
 
       a {
-        color: var(--military-primary);
+        color: $gold;
         font-weight: 600;
         cursor: pointer;
         text-decoration: none;
         transition: color 0.2s;
 
         &:hover {
-          color: var(--military-secondary);
+          color: $cream-light;
           text-decoration: underline;
         }
       }

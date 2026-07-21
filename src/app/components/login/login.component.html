@@ -1,18 +1,28 @@
 <div class="login-container">
-    
   <button class="btn-back" (click)="goHome()">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-      </svg>
-      Volver
-    </button>
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+    </svg>
+    Volver
+  </button>
 
   <div class="login-card">
+    <div class="card-corner tl"></div>
+    <div class="card-corner tr"></div>
+    <div class="card-corner bl"></div>
+    <div class="card-corner br"></div>
+
     <div class="login-header">
-      <h1>Gestor de Activos</h1>
+      <div class="emblem">
+        <div class="emblem-ring">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+          </svg>
+        </div>
+      </div>
+      <h1>Iniciar Sesi&oacute;n</h1>
+      <p>Acceda al sistema de gesti&oacute;n</p>
     </div>
-
-
 
     <form (ngSubmit)="onLogin()" class="login-form">
       <div class="form-group">
@@ -29,37 +39,31 @@
       </div>
 
       <div class="form-group">
-        <label for="password">Contraseña</label>
+        <label for="password">Contrase&ntilde;a</label>
         <input
           type="password"
           id="password"
           [value]="password()"
           (input)="password.set($any($event.target).value)"
           [disabled]="isLoading()"
-          placeholder="Ingrese su contraseña"
+          placeholder="Ingrese su contrase&ntilde;a"
           required
         />
       </div>
 
       @if (errorMessage()) {
-        <div class="error-message">
-          {{ errorMessage() }}
-        </div>
+        <div class="error-message">{{ errorMessage() }}</div>
       }
 
-      <button
-        type="submit"
-        class="login-button"
-        [disabled]="isLoading()"
-      >
+      <button type="submit" class="btn-submit" [disabled]="isLoading()">
         @if (isLoading()) {
-          <span>Iniciando sesión...</span>
+          <span>Iniciando sesi&oacute;n...</span>
         } @else {
-          <span>Iniciar Sesión</span>
+          <span>Iniciar Sesi&oacute;n</span>
         }
       </button>
 
-      <div class="register-link">
+      <div class="auth-link">
         <p>¿No tienes cuenta? <a (click)="goToRegister()">Registrarse</a></p>
       </div>
     </form>

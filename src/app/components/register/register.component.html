@@ -1,16 +1,25 @@
 <div class="register-container">
   <button class="btn-back" (click)="goHome()">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+    <svg viewBox="0 0 24 24" fill="currentColor">
       <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
     </svg>
     Volver
   </button>
+
   <div class="register-card">
+    <div class="card-corner tl"></div>
+    <div class="card-corner tr"></div>
+    <div class="card-corner bl"></div>
+    <div class="card-corner br"></div>
+
     <div class="register-header">
-      <div class="logo-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-        </svg>
+      <div class="emblem">
+        <div class="emblem-ring">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            <path d="M12 7l1.5 4.5H18l-3.5 2.5 1.5 4.5L12 16l-4 2.5 1.5-4.5L6 11.5h4.5z" fill="currentColor" opacity="0.25"/>
+          </svg>
+        </div>
       </div>
       <h1>Crear Cuenta</h1>
       <p>Complete el formulario para registrarse</p>
@@ -28,55 +37,45 @@
           placeholder="Ingrese un nombre de usuario"
           required
         />
-        <small>Mínimo 3 caracteres</small>
+        <small>M&iacute;nimo 3 caracteres</small>
       </div>
 
       <div class="form-group">
-        <label for="password">Contraseña</label>
+        <label for="password">Contrase&ntilde;a</label>
         <input
           type="password"
           id="password"
           [value]="password()"
           (input)="password.set($any($event.target).value)"
           [disabled]="isLoading()"
-          placeholder="Ingrese una contraseña segura"
+          placeholder="Ingrese una contrase&ntilde;a segura"
           required
         />
-        <small>Mínimo 6 caracteres, una mayúscula y un número</small>
+        <small>M&iacute;nimo 6 caracteres, una may&uacute;scula y un n&uacute;mero</small>
       </div>
 
       <div class="form-group">
-        <label for="confirmPassword">Confirmar Contraseña</label>
+        <label for="confirmPassword">Confirmar Contrase&ntilde;a</label>
         <input
           type="password"
           id="confirmPassword"
           [value]="confirmPassword()"
           (input)="confirmPassword.set($any($event.target).value)"
           [disabled]="isLoading()"
-          placeholder="Repita la contraseña"
+          placeholder="Repita la contrase&ntilde;a"
           required
         />
       </div>
 
       @if (errorMessage()) {
-        <div class="error-message">
-          {{ errorMessage() }}
-        </div>
+        <div class="error-message">{{ errorMessage() }}</div>
       }
 
       @if (successMessage()) {
-        <div class="success-message">
-          {{ successMessage() }}
-          <br>
-          Redirigiendo al login...
-        </div>
+        <div class="success-message">{{ successMessage() }}<br>Redirigiendo al login...</div>
       }
 
-      <button
-        type="submit"
-        class="register-button"
-        [disabled]="isLoading()"
-      >
+      <button type="submit" class="btn-submit" [disabled]="isLoading()">
         @if (isLoading()) {
           <span>Registrando...</span>
         } @else {
@@ -84,10 +83,9 @@
         }
       </button>
 
-      <div class="login-link">
-        <p>¿Ya tienes cuenta? <a (click)="goToLogin()">Iniciar Sesión</a></p>
+      <div class="auth-link">
+        <p>¿Ya tienes cuenta? <a (click)="goToLogin()">Iniciar Sesi&oacute;n</a></p>
       </div>
     </form>
-
   </div>
 </div>

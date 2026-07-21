@@ -545,7 +545,7 @@
     <header>
         <h1>🛡️ Gestor de Activos</h1>
         <p class="subtitle">Centro de Investigación - Escuela de Telecomunicaciones de Facatativá</p>
-        <span class="version-badge">Versión 1.4.0 | Última actualización: 15 de Julio 2026</span>
+        <span class="version-badge">Versión 1.4.0 | Última actualización: 16 de Julio 2026</span>
     </header>
 
     <!-- Navegación -->
@@ -1417,29 +1417,37 @@ if (!this.authService.hasRole('admin')) {
         <section id="diseno">
             <h2><span class="icon">🎨</span> Diseño de Interfaz</h2>
 
-            <h3>Tema Militar Elegante</h3>
-            <p>Paleta de colores inspirada en estética militar con toques elegantes:</p>
+            <h3>Tema Oscuro Militar</h3>
+            <p>Paleta de colores oscura premium inspirada en equipamiento táctico militar:</p>
 
             <div class="color-palette">
                 <div class="color-swatch">
-                    <div class="swatch" style="background: #556B2F;"></div>
-                    <span>Primario<br>#556B2F</span>
+                    <div class="swatch" style="background: #1E2614;"></div>
+                    <span>Fondo oscuro<br>#1E2614</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #2D3A1E;"></div>
+                    <span>Verde medio<br>#2D3A1E</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #4A5D23;"></div>
+                    <span>Oliva<br>#4A5D23</span>
                 </div>
                 <div class="color-swatch">
                     <div class="swatch" style="background: #6B8E23;"></div>
-                    <span>Secundario<br>#6B8E23</span>
+                    <span>Oliva claro<br>#6B8E23</span>
                 </div>
                 <div class="color-swatch">
                     <div class="swatch" style="background: #E8E4D9;"></div>
-                    <span>Fondo<br>#E8E4D9</span>
+                    <span>Crema<br>#E8E4D9</span>
                 </div>
                 <div class="color-swatch">
-                    <div class="swatch" style="background: #2A2D1E;"></div>
-                    <span>Texto<br>#2A2D1E</span>
+                    <div class="swatch" style="background: #C4A265;"></div>
+                    <span>Dorado (acento)<br>#C4A265</span>
                 </div>
                 <div class="color-swatch">
-                    <div class="swatch" style="background: #8B7355;"></div>
-                    <span>Bordes<br>#8B7355</span>
+                    <div class="swatch" style="background: #D4CDB5;"></div>
+                    <span>Khaki<br>#D4CDB5</span>
                 </div>
             </div>
 
@@ -1468,13 +1476,17 @@ if (!this.authService.hasRole('admin')) {
 
             <h3 class="mt-2">Características Visuales</h3>
             <ul class="feature-list">
-                <li>Gradientes militares sutiles en tarjetas y banners</li>
-                <li>Efecto de camuflaje sutil en pantalla de login</li>
-                <li>Bordes sólidos de 2-3px con colores militares</li>
+                <li>Fondo oscuro #1E2614 con patrón de camuflaje cruzado a 45°</li>
+                <li>Tarjetas glassmorphism con backdrop-filter: blur(12-16px)</li>
+                <li>Esquinas decorativas doradas en cards y CTA (efecto "insignia militar")</li>
+                <li>Escudo / emblema dentro de anillo dorado con animación pulse</li>
+                <li>Acentos dorados (#C4A265) en bordes, botones y badges</li>
+                <li>Inputs oscuros con texto crema y focus glow dorado</li>
+                <li>Botones dorados sólidos con hover a dorado oscuro (#A6884D)</li>
+                <li>Top bar sticky con bordes dorados semitransparentes</li>
                 <li>Badges diferenciados por tipo de acción</li>
                 <li>Hover effects con translateY(-2px) para interactividad</li>
                 <li>Scrollbar personalizado con tema militar</li>
-                <li>Cards con sombras y bordes militares</li>
                 <li>Modales overlay con backdrop difuminado</li>
             </ul>
 
@@ -1519,10 +1531,12 @@ if (!this.authService.hasRole('admin')) {
                         <li><strong>Mutua exclusión</strong>: authGuard y loginGuard validados como complementarios.</li>
                     </ul>
 
-                    <h5 class="mt-1">🎨 Consistencia visual</h5>
+                    <h5 class="mt-1">🎨 Tema oscuro militar completo</h5>
                     <ul>
-                        <li><strong>Register</strong>: reemplazado tema púrpura/indigo por el mismo esquema militar verde oliva del login.</li>
-                        <li><strong>Botón Volver</strong>: añadido en la esquina superior izquierda del registro, con estilo vítreo igual al del login.</li>
+                        <li><strong>Home</strong>: rediseño completo con fondo verde oscuro (#1E2614), emblema animado (escudo + anillo dorado), patrón de camuflaje cruzado, tarjetas con esquinas doradas, barra de stats, sección Misión, CTA con bordes decorativos.</li>
+                        <li><strong>Login</strong>: fondo oscuro #1E2614 con patrón camuflaje, tarjeta glassmorphism (blur 16px), escudo en anillo dorado, inputs oscuros con texto crema, botón dorado #C4A265, esquinas decorativas doradas.</li>
+                        <li><strong>Register</strong>: mismo tratamiento oscuro que Login, con escudo interior y estrella en emblema.</li>
+                        <li><strong>Paleta unificada</strong>: #1E2614, #2D3A1E, #4A5D23, #6B8E23 verdes; #E8E4D9, #F5F2E8 cremas; #C4A265, #A6884D dorados.</li>
                     </ul>
 
                     <h5 class="mt-1">🧪 Ampliación de tests (44 tests)</h5>
@@ -1533,6 +1547,13 @@ if (!this.authService.hasRole('admin')) {
                         <li><code>tests/frontend/chatbot.parser.spec.ts</code>: 7 tests del parser del chatbot.</li>
                         <li><code>tests/frontend/performance_extended.spec.ts</code>: 4 tests de rendimiento extendido.</li>
                         <li>Total: <strong>44 tests</strong> en 11 archivos.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🐛 Corrección: asignación de bases a operadores</h5>
+                    <ul>
+                        <li><strong>auth.service.ts</strong>: <code>loadAvailableBases()</code> llamaba a <code>getAvailableBasesDatos()</code> (bases NO asignadas, para modal de admin) en vez de <code>getUserBasesDatos()</code> (bases SÍ asignadas).</li>
+                        <li><strong>Impacto</strong>: operadores con base asignada veían pantalla "Sin Bases de Datos Asignadas".</li>
+                        <li><strong>Fix</strong>: cambio de una línea en <code>src/app/services/auth.service.ts:42</code>.</li>
                     </ul>
 
                     <h5 class="mt-1">🔧 Correcciones y compatibilidad</h5>
@@ -1766,7 +1787,7 @@ await this.tauriService.registerActivoVista(activoId, userId);</code></pre>
     <!-- Footer -->
     <footer>
         <p><strong>Gestor de Activos v1.4.0</strong></p>
-        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 15 de Julio 2026</p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 16 de Julio 2026</p>
     </footer>
 
 </body>

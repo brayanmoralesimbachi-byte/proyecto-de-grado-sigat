@@ -398,9 +398,9 @@ export class ActivosComponent implements OnInit {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       
-      // Validar tamaño (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('La imagen no debe superar los 5MB');
+      // Validar tamaño (máximo 40MB)
+      if (file.size > 40 * 1024 * 1024) {
+        alert('La imagen no debe superar los 40MB');
         return;
       }
 
@@ -509,7 +509,8 @@ export class ActivosComponent implements OnInit {
     if (percentage <= 40) return '#ff8c00'; // Naranja
     if (percentage <= 60) return '#ffa500'; // Amarillo anaranjado
     if (percentage <= 80) return '#9acd32'; // Verde amarillento
-    return '#32cd32'; // Verde
+    if (percentage <= 80) return '#32cd32'; // Verde amarillento
+    return '#0bd400'; // Verde
   }
 
   async updateFechaVencimiento(activoId: number, fechaVencimiento: string): Promise<void> {
