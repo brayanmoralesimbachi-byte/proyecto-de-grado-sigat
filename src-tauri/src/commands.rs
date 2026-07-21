@@ -1403,19 +1403,40 @@ pub async fn get_user_bases_datos(
     let db_lock = state.db.lock().await;
     let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
 
-    let rows = sqlx::query(
-        r#"
-        SELECT b.id, b.nombre, b.descripcion
-        FROM bases_datos b
-        INNER JOIN usuario_base_datos ub ON b.id = ub.base_datos_id
-        WHERE ub.usuario_id = ?
-        ORDER BY b.nombre
-        "#
-    )
-    .bind(target_user_id)
-    .fetch_all(db.pool())
-    .await
-    .map_err(|e| format!("Error al obtener bases de datos del usuario: {}", e))?;
+    // Si el usuario es administrador, retornar todas las bases de datos
+    let rol: String = sqlx::query_scalar("SELECT rol FROM usuarios WHERE id = ?")
+        .bind(target_user_id)
+        .fetch_optional(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener rol: {}", e))?
+        .ok_or("Usuario no encontrado")?;
+
+    let rows = if rol == "administrador" {
+        sqlx::query(
+            r#"
+            SELECT b.id, b.nombre, b.descripcion
+            FROM bases_datos b
+            ORDER BY b.nombre
+            "#
+        )
+        .fetch_all(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener bases de datos: {}", e))?
+    } else {
+        sqlx::query(
+            r#"
+            SELECT b.id, b.nombre, b.descripcion
+            FROM bases_datos b
+            INNER JOIN usuario_base_datos ub ON b.id = ub.base_datos_id
+            WHERE ub.usuario_id = ?
+            ORDER BY b.nombre
+            "#
+        )
+        .bind(target_user_id)
+        .fetch_all(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener bases de datos del usuario: {}", e))?
+    };
 
     let mut result = Vec::new();
     for row in rows {
