@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Activos - Centro de Investigación | Documentación</title>
+    <title>SIGAT — Sistema de Gestión Inteligente de Activos | Documentación</title>
     <style>
         /* ===== Variables y Reset ===== */
         :root {
@@ -543,8 +543,8 @@
 
     <!-- Header -->
     <header>
-        <h1>🛡️ Gestor de Activos</h1>
-        <p class="subtitle">Centro de Investigación - Escuela de Telecomunicaciones de Facatativá</p>
+        <h1>🛡️ SIGAT</h1>
+        <p class="subtitle">Sistema de Gestión Inteligente de Activos — Centro de Investigación · Escuela de Telecomunicaciones de Facatativá</p>
         <span class="version-badge">Versión 1.5.0 | Última actualización: 21 de Julio 2026</span>
     </header>
 
@@ -1542,13 +1542,39 @@ if (!this.authService.hasRole('admin')) {
                         <li><strong>Nuevos comandos Rust:</strong> <code>verify_admin_password</code>, <code>export_base_datos</code>, <code>import_base_datos</code>.</li>
                     </ul>
 
-                    <h5 class="mt-1">🎨 Tema oscuro militar completo</h5>
+                    <h5 class="mt-1">🎨 Home elegante con carrusel y animaciones</h5>
                     <ul>
-                        <li><strong>Home</strong>: rediseño completo con fondo verde oscuro (#1E2614), emblema animado (escudo + anillo dorado), patrón de camuflaje cruzado, tarjetas con esquinas doradas, barra de stats, sección Misión, CTA con bordes decorativos.</li>
-                        <li><strong>Login</strong>: fondo oscuro #1E2614 con patrón camuflaje, tarjeta glassmorphism (blur 16px), escudo en anillo dorado, inputs oscuros con texto crema, botón dorado #C4A265, esquinas decorativas doradas.</li>
-                        <li><strong>Register</strong>: mismo tratamiento oscuro que Login, con escudo interior y estrella en emblema.</li>
-                        <li><strong>Paleta unificada</strong>: #1E2614, #2D3A1E, #4A5D23, #6B8E23 verdes; #E8E4D9, #F5F2E8 cremas; #C4A265, #A6884D dorados.</li>
-                        <li><strong>Asignaciones</strong>: ahora también con tema oscuro militar, tabla con header dorado, botones de acción (export dorado, edit oliva, delete rojo), modales glassmorphism.</li>
+                        <li><strong>Carrusel de capacidades</strong>: 6 tarjetas navegables con flechas laterales y dots, tarjeta central activa con glow, laterales escaladas al 85% con opacidad reducida. Transiciones suaves con cubic-bezier.</li>
+                        <li><strong>Scroll fade-in</strong>: secciones Misión, Stats, Capacidades y CTA aparecen con fade-in-up al hacer scroll vía IntersectionObserver.</li>
+                        <li><strong>Partículas flotantes</strong>: esferas luminosas animadas en el hero con keyframes <code>floatParticle</code>.</li>
+                        <li><strong>Glow en emblema</strong>: nuevo <code>.emblem-ring-glow</code> con pulsación independiente de 3s.</li>
+                        <li><strong>Paleta refinada</strong>: verdes más profundos (#1a2110), dorados #C4A265 más presentes, glassmorphism en tarjetas, hover effects con elevación y brillo.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🔐 Login y Register con glassmorphism refinado</h5>
+                    <ul>
+                        <li><strong>Login</strong>: card con <code>backdrop-filter: blur(20px)</code>, gradiente radial dorado como fondo, emblema con <code>emblemPulse</code> y <code>ringGlow</code>, botón submit con overlay <code>::before</code> y hover glow, inputs con focus dorado y sombra interna, partícula flotante animada.</li>
+                        <li><strong>Register</strong>: mismo tratamiento visual que Login, emblema con estrella interior, partícula flotante en esquina inferior derecha, inputs con hint estilizado.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🎯 Paleta unificada sin azules ni morados</h5>
+                    <ul>
+                        <li><strong>Profile</strong>: botón "Actualizar Contraseña" cambiado de degradado azul/morado (#667eea → #764ba2) a verde oliva (<code>--military-primary</code>). Pestañas activas, inputs focus, info box e iconos cambiados a verde oliva/dorado.</li>
+                        <li><strong>Users</strong>: botón "Crear Usuario", checkbox de asignación, timeline marker, hover de items, botón submit en modal — todos cambiados de azul/morado a verde oliva con <code>var(--military-primary)</code> y <code>var(--military-dark)</code>.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🤖 Chatbot mejorado — consultas de auditoría</h5>
+                    <ul>
+                        <li><strong>Detección de fecha "hoy"/"ayer"</strong>: filtra registros de auditoría por el día actual o anterior. También soporta fechas específicas (YYYY-MM-DD).</li>
+                        <li><strong>Username mal capturado corregido</strong>: antes "de usuario de hoy" capturaba "de" como nombre. Ahora requiere mínimo 3 caracteres e ignora palabras vacías.</li>
+                        <li><strong>Último ingreso por usuario</strong>: al preguntar "último ingreso de usuario" sin especificar quién, muestra el último LOGIN de cada usuario en lugar de solo 1 registro.</li>
+                        <li><strong>Respuestas contextuales</strong>: responde con "🔐 Últimos inicios de sesión — 21 de julio de 2026: se encontraron 3 usuarios con actividad" en vez del mensaje genérico.</li>
+                        <li><strong>Welcome message actualizado</strong>: nuevos ejemplos "¿Cuál fue el último ingreso de usuario de hoy?", "Mostrar actividad de login de ayer".</li>
+                    </ul>
+
+                    <h5 class="mt-1">🏷️ Renombrado a SIGAT</h5>
+                    <ul>
+                        <li><strong>tauri.conf.json</strong>: <code>productName</code> cambiado a "SIGAT" (nombre del MSI), <code>app.windows[0].title</code> a "SIGAT" (título de ventana), <code>identifier</code> a "com.sigat.app". El código interno (paquetes, imports) se mantiene intacto.</li>
                     </ul>
 
                     <h5 class="mt-1">✅ Modales de confirmación para eliminaciones</h5>
@@ -1852,7 +1878,7 @@ await this.tauriService.registerActivoVista(activoId, userId);</code></pre>
 
     <!-- Footer -->
     <footer>
-        <p><strong>Gestor de Activos v1.5.0</strong></p>
+        <p><strong>SIGAT v1.5.0</strong></p>
         <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 21 de Julio 2026</p>
     </footer>
 

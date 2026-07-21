@@ -1,15 +1,52 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
+import { NgOptimizedImage } from '@angular/common';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule],
+  imports: [CommonModule, NgOptimizedImage],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent {
-  
+
+  currentSlide = 0;
+  visibleSections: Set<string> = new Set();
+
+  capabilities = [
+    {
+      icon: 'M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z',
+      title: 'Gestión de Activos',
+      desc: 'Registro, edición y control de todos los activos del centro de investigación con campos personalizables.'
+    },
+    {
+      icon: 'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z',
+      title: 'Control de Usuarios',
+      desc: 'Roles y permisos diferenciados: administrador, operador y auditor con acceso granular.'
+    },
+    {
+      icon: 'M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z',
+      title: 'Auditoría',
+      desc: 'Registro cronológico inmutable de todas las operaciones realizadas en el sistema.'
+    },
+    {
+      icon: 'M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12zM7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z',
+      title: 'Chatbot NLP',
+      desc: 'Búsqueda inteligente con procesamiento de lenguaje natural sobre los activos registrados.'
+    },
+    {
+      icon: 'M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z',
+      title: 'Base de Datos Cifrada',
+      desc: 'SQLCipher con cifrado AES-256, completamente local sin exposición a red externa.'
+    },
+    {
+      icon: 'M19.35 10.04C18.67 6.59 15.64 4 12 4c-1.48 0-2.85.43-4.01 1.17l1.46 1.46C10.21 6.23 11.08 6 12 6c3.04 0 5.5 2.46 5.5 5.5v.5H19c1.66 0 3 1.34 3 3 0 1.13-.64 2.11-1.56 2.62l1.45 1.45C23.16 18.16 24 16.68 24 15c0-2.64-2.05-4.78-4.65-4.96zM3 5.27l2.75 2.74C2.56 8.15 0 10.77 0 14c0 3.31 2.69 6 6 6h11.73l2 2L21 20.73 4.27 4 3 5.27z',
+      title: 'Sin Conexión',
+      desc: 'Operación offline total. No requiere servidores externos ni conexión a internet.'
+    }
+  ];
+
   constructor(private router: Router) {}
 
   goToLogin(): void {
@@ -18,5 +55,52 @@ export class HomeComponent {
 
   goToRegister(): void {
     this.router.navigate(['/register']);
+  }
+
+  get totalSlides(): number {
+    return this.capabilities.length;
+  }
+
+  get visibleCards(): number[] {
+    const indices: number[] = [];
+    for (let i = 0; i < 3; i++) {
+      indices.push((this.currentSlide + i) % this.totalSlides);
+    }
+    return indices;
+  }
+
+  nextSlide(): void {
+    this.currentSlide = (this.currentSlide + 1) % this.totalSlides;
+  }
+
+  prevSlide(): void {
+    this.currentSlide = (this.currentSlide - 1 + this.totalSlides) % this.totalSlides;
+  }
+
+  goToSlide(index: number): void {
+    this.currentSlide = index;
+  }
+
+  getCardTransform(i: number): string {
+    if (i === 0) return 'translateX(-105%) scale(0.85)';
+    if (i === 2) return 'translateX(105%) scale(0.85)';
+    return 'translateX(0) scale(1)';
+  }
+
+  getCardOpacity(i: number): string {
+    if (i === 1) return '1';
+    return '0.5';
+  }
+
+  @HostListener('window:scroll', [])
+  onScroll(): void {
+    const sections = document.querySelectorAll('.animate-on-scroll');
+    sections.forEach(section => {
+      const rect = section.getBoundingClientRect();
+      if (rect.top < window.innerHeight - 80) {
+        this.visibleSections.add(section.id || 'section');
+        section.classList.add('visible');
+      }
+    });
   }
 }

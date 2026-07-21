@@ -2,12 +2,10 @@
   <header class="top-bar">
     <div class="top-bar-inner">
       <div class="brand">
-        <div class="brand-shield">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
-          </svg>
+        <div class="brand-logo">
+          <img ngSrc="/sigat-emblem.png" width="128" height="128" alt="Logo SIGAT">
         </div>
-        <span class="brand-text">SGA</span>
+        <span class="brand-text">SIGAT</span>
         <span class="brand-divider">|</span>
         <span class="brand-sub">Centro de Investigaci&oacute;n</span>
       </div>
@@ -20,32 +18,30 @@
 
   <section class="hero">
     <div class="hero-overlay"></div>
+    <div class="hero-bg-particles"></div>
     <div class="hero-content">
       <div class="hero-emblem">
         <div class="emblem-ring">
-          <div class="emblem-star"></div>
+          <div class="emblem-ring-glow"></div>
           <div class="emblem-inner">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
-              <path d="M12 7l1.5 4.5H18l-3.5 2.5 1.5 4.5L12 16l-4 2.5 1.5-4.5L6 11.5h4.5z" fill="currentColor" opacity="0.3"/>
-            </svg>
+            <img ngSrc="/sigat-emblem.png" width="128" height="128" alt="SIGAT">
           </div>
         </div>
       </div>
-      <h1 class="hero-title">Sistema de Gesti&oacute;n de Activos</h1>
-      <p class="hero-subtitle">Escuela de Telecomunicaciones — Facatativ&aacute;</p>
+      <h1 class="hero-title">Sistema de Gesti&oacute;n Inteligente<br/>de Activos</h1>
+      <p class="hero-subtitle">SIGAT &mdash; Escuela de Telecomunicaciones · Facatativ&aacute;</p>
       <div class="hero-chevron">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
       </div>
     </div>
   </section>
 
-  <section class="mission">
+  <section class="mission animate-on-scroll" id="mission">
     <div class="section-badge">MISI&Oacute;N</div>
     <p class="mission-text">Garantizar la gesti&oacute;n segura, cifrada y trazable de los activos del centro de investigaci&oacute;n, bajo est&aacute;ndares m&aacute;ximos de seguridad operacional.</p>
   </section>
 
-  <section class="stats">
+  <section class="stats animate-on-scroll" id="stats">
     <div class="stat">
       <span class="stat-number">100%</span>
       <span class="stat-label">Local</span>
@@ -67,95 +63,52 @@
     </div>
   </section>
 
-  <section class="capabilities">
+  <section class="capabilities animate-on-scroll" id="capabilities">
     <div class="section-header">
       <div class="section-badge">CAPACIDADES</div>
       <h2>M&oacute;dulos del Sistema</h2>
     </div>
-    <div class="cards">
-      <div class="cap-card">
-        <div class="card-corner tl"></div>
-        <div class="card-corner tr"></div>
-        <div class="card-corner bl"></div>
-        <div class="card-corner br"></div>
-        <div class="cap-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-          </svg>
+
+    <div class="carousel-wrapper">
+      <button class="carousel-arrow carousel-arrow--left" (click)="prevSlide()" aria-label="Anterior">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+      </button>
+
+      <div class="carousel-track">
+        <div class="cap-card" *ngFor="let idx of visibleCards; let i = index"
+             [class.active]="i === 1"
+             [style.transform]="getCardTransform(i)"
+             [style.opacity]="getCardOpacity(i)">
+          <div class="card-corner tl"></div>
+          <div class="card-corner tr"></div>
+          <div class="card-corner bl"></div>
+          <div class="card-corner br"></div>
+          <div class="card-glow"></div>
+          <div class="cap-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path [attr.d]="capabilities[idx].icon"/>
+            </svg>
+          </div>
+          <h3>{{ capabilities[idx].title }}</h3>
+          <p>{{ capabilities[idx].desc }}</p>
         </div>
-        <h3>Gesti&oacute;n de Activos</h3>
-        <p>Registro, edici&oacute;n y control de todos los activos del centro de investigaci&oacute;n con campos personalizables.</p>
       </div>
-      <div class="cap-card">
-        <div class="card-corner tl"></div>
-        <div class="card-corner tr"></div>
-        <div class="card-corner bl"></div>
-        <div class="card-corner br"></div>
-        <div class="cap-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-          </svg>
-        </div>
-        <h3>Control de Usuarios</h3>
-        <p>Roles y permisos diferenciados: administrador, operador y auditor con acceso granular.</p>
-      </div>
-      <div class="cap-card">
-        <div class="card-corner tl"></div>
-        <div class="card-corner tr"></div>
-        <div class="card-corner bl"></div>
-        <div class="card-corner br"></div>
-        <div class="cap-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
-          </svg>
-        </div>
-        <h3>Auditor&iacute;a</h3>
-        <p>Registro cronol&oacute;gico inmutable de todas las operaciones realizadas en el sistema.</p>
-      </div>
-      <div class="cap-card">
-        <div class="card-corner tl"></div>
-        <div class="card-corner tr"></div>
-        <div class="card-corner bl"></div>
-        <div class="card-corner br"></div>
-        <div class="cap-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/>
-            <path d="M7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
-          </svg>
-        </div>
-        <h3>Chatbot NLP</h3>
-        <p>B&uacute;squeda inteligente con procesamiento de lenguaje natural sobre los activos registrados.</p>
-      </div>
-      <div class="cap-card">
-        <div class="card-corner tl"></div>
-        <div class="card-corner tr"></div>
-        <div class="card-corner bl"></div>
-        <div class="card-corner br"></div>
-        <div class="cap-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-          </svg>
-        </div>
-        <h3>Base de Datos Cifrada</h3>
-        <p>SQLCipher con cifrado AES-256, completamente local sin exposici&oacute;n a red externa.</p>
-      </div>
-      <div class="cap-card">
-        <div class="card-corner tl"></div>
-        <div class="card-corner tr"></div>
-        <div class="card-corner bl"></div>
-        <div class="card-corner br"></div>
-        <div class="cap-icon">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4c-1.48 0-2.85.43-4.01 1.17l1.46 1.46C10.21 6.23 11.08 6 12 6c3.04 0 5.5 2.46 5.5 5.5v.5H19c1.66 0 3 1.34 3 3 0 1.13-.64 2.11-1.56 2.62l1.45 1.45C23.16 18.16 24 16.68 24 15c0-2.64-2.05-4.78-4.65-4.96zM3 5.27l2.75 2.74C2.56 8.15 0 10.77 0 14c0 3.31 2.69 6 6 6h11.73l2 2L21 20.73 4.27 4 3 5.27z"/>
-          </svg>
-        </div>
-        <h3>Sin Conexi&oacute;n</h3>
-        <p>Operaci&oacute;n offline total. No requiere servidores externos ni conexi&oacute;n a internet.</p>
-      </div>
+
+      <button class="carousel-arrow carousel-arrow--right" (click)="nextSlide()" aria-label="Siguiente">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+      </button>
+    </div>
+
+    <div class="carousel-dots">
+      <button *ngFor="let cap of capabilities; let i = index"
+              class="dot"
+              [class.dot--active]="i === currentSlide"
+              (click)="goToSlide(i)"
+              [attr.aria-label]="'Ir a ' + cap.title"></button>
     </div>
   </section>
 
-  <section class="cta">
+  <section class="cta animate-on-scroll" id="cta">
     <div class="cta-box">
       <div class="cta-corner tl"></div>
       <div class="cta-corner tr"></div>
@@ -175,16 +128,12 @@
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-left">
-        <span class="footer-shield">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
-          </svg>
+        <span class="footer-logo">
+          <img ngSrc="/sigat-emblem.png" width="128" height="128" alt="Logo SIGAT">
         </span>
         <span></span>
       </div>
-      
       <div class="footer-center">
-        
         Centro de Investigaci&oacute;n &mdash; Escuela de Telecomunicaciones de Facatativ&aacute;
       </div>
       <div class="footer-right"></div>

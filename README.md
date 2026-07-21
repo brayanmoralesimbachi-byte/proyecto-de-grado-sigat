@@ -1,4 +1,4 @@
-# Gestor de Activos
+# SIGAT — Sistema de Gestión Inteligente de Activos
 
 Aplicación de escritorio para gestión segura de activos multi-base de datos con Angular + Tauri + Rust + SQLite.
 
@@ -17,6 +17,10 @@ Aplicación de escritorio para gestión segura de activos multi-base de datos co
 - CRUD completo de activos con imágenes e historial de vistas
 - Autenticación segura con roles (Administrador / Operador / Auditor)
 - **Bases de Datos lógicas (Asignaciones)**: segmentación de activos por unidad/departamento
+- **Home elegante**: carrusel de capacidades, partículas animadas, scroll fade-in, temática militar refinada
+- **Login/Register con glassmorphism**: fondos oscuros con efecto blur, emblemas animados, inputs con focus dorado
+- **Paleta militar unificada**: verdes oliva, dorados, crema — sin azules ni morados en ninguna pantalla
+- **Chatbot NLP mejorado**: detección de fechas ("hoy"/"ayer"), consultas de auditoría por usuario y fecha, respuestas contextuales
 - Chatbot NLP con búsqueda inteligente en español
 - Auditoría inmutable con exportación PDF/XML
 - Base de datos cifrada con AES-256 (SQLCipher)

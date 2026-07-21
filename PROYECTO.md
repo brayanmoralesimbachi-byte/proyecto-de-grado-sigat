@@ -1,4 +1,4 @@
-# Gestor de Activos - Centro de Investigación
+# SIGAT — Sistema de Gestión Inteligente de Activos
 
 Aplicación de escritorio para la gestión segura de activos del Centro de Investigación de la Escuela de Telecomunicaciones de Facatativá.
 

@@ -1,58 +1,59 @@
-$green-dark: #1E2614;
-$green-mid: #2D3A1E;
-$green-olive: #4A5D23;
-$green-olive-light: #6B8E23;
-$green-sage: #8B9A46;
-$cream: #E8E4D9;
-$cream-light: #F5F2E8;
-$cream-dark: #D4CDB5;
-$gold: #C4A265;
-$gold-dark: #A6884D;
-$text-light: rgba(255, 255, 255, 0.88);
+@use 'sass:color';
+
+$green-dark: #1a2110;
+$green-mid: #273317;
+$green-olive: #3f501e;
+$green-olive-light: #5c7a28;
+$green-sage: #7a8f3e;
+$cream: #e8e4d9;
+$cream-light: #f5f2e8;
+$cream-dark: #c9c2b0;
+$gold: #c4a265;
+$gold-light: #d4b87a;
+$gold-dark: #a6884d;
+$gold-glow: rgba($gold, 0.25);
+$text-light: rgba(255, 255, 255, 0.9);
 $text-muted: rgba(255, 255, 255, 0.55);
 
-@mixin corner-accent($pos) {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border-color: rgba($gold, 0.5);
-  #{$pos}: 0;
+$font-serif: 'Playfair Display', serif;
+$font-sans: 'Lato', sans-serif;
 
-  @if $pos == 'top' or $pos == 'bottom' {
-    @if $pos == 'top' { top: 0; }
-    @if $pos == 'bottom' { bottom: 0; }
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .military-home {
   min-height: 100vh;
   background: $green-dark;
-  font-family: 'Lato', sans-serif;
+  font-family: $font-sans;
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow-x: hidden;
 
   &::before {
     content: '';
     position: fixed;
     inset: 0;
     background-image:
-      radial-gradient(ellipse at 20% 10%, rgba($green-olive-light, 0.08) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 90%, rgba($green-sage, 0.06) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 50%, rgba($green-mid, 0.3) 0%, transparent 70%),
+      radial-gradient(ellipse at 20% 10%, rgba($green-olive-light, 0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba($green-sage, 0.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba($green-mid, 0.35) 0%, transparent 70%),
       repeating-linear-gradient(
         45deg,
         transparent,
         transparent 40px,
-        rgba($green-olive, 0.03) 40px,
-        rgba($green-olive, 0.03) 41px
+        rgba($green-olive, 0.04) 40px,
+        rgba($green-olive, 0.04) 41px
       ),
       repeating-linear-gradient(
         -45deg,
         transparent,
         transparent 40px,
-        rgba($green-olive, 0.03) 40px,
-        rgba($green-olive, 0.03) 41px
+        rgba($green-olive, 0.04) 40px,
+        rgba($green-olive, 0.04) 41px
       );
     pointer-events: none;
     z-index: 0;
@@ -65,13 +66,14 @@ $text-muted: rgba(255, 255, 255, 0.55);
 }
 
 .top-bar {
-  background: rgba($green-dark, 0.85);
-  backdrop-filter: blur(12px);
+  background: linear-gradient(180deg, rgba(#0d1108, 0.97), rgba($green-dark, 0.85));
+  backdrop-filter: blur(20px) saturate(130%);
   border-bottom: 1px solid rgba($gold, 0.15);
-  padding: 0 28px;
+  padding: 0 32px;
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: 0 0.75rem 2.5rem rgba(0, 0, 0, 0.3);
 
   .top-bar-inner {
     max-width: 1200px;
@@ -79,31 +81,42 @@ $text-muted: rgba(255, 255, 255, 0.55);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 60px;
+    height: 64px;
   }
 
   .brand {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 
-    .brand-shield {
-      width: 32px;
-      height: 32px;
-      color: $gold;
-      opacity: 0.9;
+    .brand-logo {
+      width: 2.2rem;
+      height: 2.2rem;
+      padding: 0.2rem;
+      border-radius: 0.6rem;
+      background: linear-gradient(135deg, rgba($cream, 0.06), rgba($gold, 0.1));
+      border: 1px solid rgba($gold, 0.25);
+      box-shadow: 0 0.6rem 1.4rem rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: contain;
+      }
     }
 
     .brand-text {
-      font-family: 'Playfair Display', serif;
-      font-size: 20px;
+      font-family: $font-serif;
+      font-size: 22px;
       font-weight: 700;
       color: $text-light;
-      letter-spacing: 3px;
+      letter-spacing: 4px;
     }
 
     .brand-divider {
-      color: rgba($gold, 0.4);
+      color: rgba($gold, 0.35);
       font-size: 18px;
       font-weight: 300;
     }
@@ -111,62 +124,96 @@ $text-muted: rgba(255, 255, 255, 0.55);
     .brand-sub {
       font-size: 12px;
       color: $text-muted;
-      letter-spacing: 1.2px;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
     }
   }
 
   .top-actions {
     display: flex;
-    gap: 12px;
+    gap: 14px;
   }
 }
 
 .btn-outline {
-  padding: 8px 22px;
+  padding: 9px 24px;
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
   background: transparent;
-  border: 1.5px solid rgba($cream, 0.3);
-  color: rgba($cream, 0.8);
+  border: 1px solid rgba($cream, 0.3);
+  color: rgba($cream, 0.88);
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s;
-  font-family: 'Lato', sans-serif;
+  transition: all 0.3s ease;
+  font-family: $font-sans;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba($cream, 0.05), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
 
   &:hover {
     background: rgba($cream, 0.08);
-    border-color: $gold;
+    border-color: rgba($gold, 0.8);
     color: $cream-light;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2), 0 0 1.5rem rgba($gold, 0.06);
+    transform: translateY(-2px);
+
+    &::before { opacity: 1; }
   }
+
+  &:active { transform: translateY(0); }
 }
 
 .btn-solid {
-  padding: 8px 22px;
+  padding: 9px 24px;
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  background: $gold;
-  border: 1.5px solid $gold;
+  background: linear-gradient(135deg, $gold 0%, $gold-dark 100%);
+  border: 1px solid rgba($cream-light, 0.5);
   color: $green-dark;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s;
-  font-family: 'Lato', sans-serif;
+  transition: all 0.3s ease;
+  font-family: $font-sans;
+  box-shadow: 0 0.65rem 1.6rem rgba($gold, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
 
   &:hover {
-    background: $gold-dark;
-    border-color: $gold-dark;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba($gold, 0.3);
+    background: linear-gradient(135deg, color.adjust($gold, $lightness: 5%) 0%, color.adjust($gold-dark, $lightness: -3%) 100%);
+    border-color: rgba($gold, 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 0.8rem 1.9rem rgba($gold, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 0 2rem rgba($gold, 0.08);
+
+    &::before { opacity: 1; }
   }
+
+  &:active { transform: translateY(0); }
 }
 
 .hero {
-  min-height: 85vh;
+  min-height: 90vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -179,8 +226,9 @@ $text-muted: rgba(255, 255, 255, 0.55);
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse at 50% 40%, rgba($green-olive-light, 0.12) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 20%, rgba($gold, 0.04) 0%, transparent 40%);
+      radial-gradient(ellipse at 50% 40%, rgba($green-olive-light, 0.18) 0%, transparent 58%),
+      radial-gradient(ellipse at 80% 20%, rgba($gold, 0.1) 0%, transparent 42%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 36%);
   }
 
   .hero-overlay {
@@ -191,121 +239,190 @@ $text-muted: rgba(255, 255, 255, 0.55);
         0deg,
         transparent,
         transparent 3px,
-        rgba($cream, 0.015) 3px,
-        rgba($cream, 0.015) 4px
+        rgba($cream, 0.012) 3px,
+        rgba($cream, 0.012) 4px
       );
     pointer-events: none;
   }
 
+  .hero-bg-particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba($gold, 0.04), transparent);
+      top: 15%;
+      left: 10%;
+      animation: floatParticle 8s ease-in-out infinite;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba($green-olive-light, 0.05), transparent);
+      bottom: 20%;
+      right: 15%;
+      animation: floatParticle 10s ease-in-out infinite reverse;
+    }
+  }
+
   .hero-content {
     text-align: center;
-    max-width: 800px;
+    max-width: 850px;
     position: relative;
+    padding: 1.5rem 1.25rem 0;
   }
 
   .hero-emblem {
-    margin-bottom: 32px;
+    margin-bottom: 2.5rem;
     display: inline-block;
+    position: relative;
 
     .emblem-ring {
-      width: 100px;
-      height: 100px;
-      border: 2.5px solid rgba($gold, 0.5);
+      width: 8rem;
+      height: 8rem;
+      border: 0.18rem solid rgba($gold, 0.5);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
+      background:
+        radial-gradient(circle at 30% 30%, rgba($cream, 0.1), rgba($gold, 0.04) 26%, rgba($green-dark, 0.15) 58%, rgba($green-dark, 0.25));
+      box-shadow: 0 1.75rem 3.5rem rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 3rem rgba($gold, 0.08);
       animation: emblemPulse 4s ease-in-out infinite;
 
       &::before {
         content: '';
         position: absolute;
-        inset: -8px;
+        inset: -0.55rem;
         border: 1px solid rgba($gold, 0.15);
         border-radius: 50%;
       }
 
-      .emblem-star {
+      .emblem-ring-glow {
         position: absolute;
-        top: -4px;
-        width: 10px;
-        height: 10px;
-        background: $gold;
-        clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-        opacity: 0.6;
+        inset: -0.3rem;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba($gold, 0.06), transparent 70%);
+        animation: ringGlow 3s ease-in-out infinite;
       }
 
       .emblem-inner {
-        width: 60px;
-        height: 60px;
-        color: $cream;
-        opacity: 0.9;
+        width: 4.8rem;
+        height: 4.8rem;
+        opacity: 0.92;
+        filter: drop-shadow(0 0.35rem 1rem rgba(0, 0, 0, 0.3));
+
+        img {
+          width: 100%;
+          height: 100%;
+          display: block;
+          object-fit: contain;
+        }
       }
     }
   }
 
   .hero-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 52px;
+    font-family: $font-serif;
+    font-size: 3.5rem;
     font-weight: 700;
-    color: $text-light;
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
-    margin: 0 0 12px;
+    color: $cream-light;
+    text-shadow: 0 0.2rem 1.1rem rgba(0, 0, 0, 0.45);
+    margin: 0 0 0.75rem;
     letter-spacing: 2px;
-    line-height: 1.15;
+    line-height: 1.2;
   }
 
   .hero-subtitle {
-    font-size: 16px;
-    color: rgba($cream, 0.6);
-    letter-spacing: 3px;
+    font-size: 1.05rem;
+    color: rgba($cream, 0.7);
+    letter-spacing: 0.25rem;
     text-transform: uppercase;
     font-weight: 400;
-    margin: 0 0 40px;
+    margin: 0 0 3rem;
   }
 
   .hero-chevron {
-    width: 32px;
-    height: 32px;
-    color: rgba($gold, 0.4);
+    width: 2.2rem;
+    height: 2.2rem;
+    color: rgba($gold, 0.55);
     margin: 0 auto;
     animation: bounceDown 2.5s ease-in-out infinite;
   }
 }
 
 @keyframes emblemPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba($gold, 0); }
-  50% { box-shadow: 0 0 30px 4px rgba($gold, 0.08); }
+  0%, 100% { box-shadow: 0 1.75rem 3.5rem rgba(0, 0, 0, 0.3), 0 0 0 0 $gold-glow; }
+  50% { box-shadow: 0 1.75rem 3.5rem rgba(0, 0, 0, 0.3), 0 0 2.5rem 0.4rem $gold-glow; }
+}
+
+@keyframes ringGlow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
 
 @keyframes bounceDown {
   0%, 100% { transform: translateY(0); opacity: 0.4; }
-  50% { transform: translateY(8px); opacity: 0.8; }
+  50% { transform: translateY(10px); opacity: 0.8; }
+}
+
+@keyframes floatParticle {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 15px) scale(0.95); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInCard {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .mission {
-  max-width: 750px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 60px 24px;
+  padding: 4.5rem 1.5rem;
   text-align: center;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+
+  &.visible { opacity: 1; transform: translateY(0); }
 
   .section-badge {
     display: inline-block;
-    font-size: 11px;
+    font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: 3px;
-    color: $gold;
+    letter-spacing: 3.5px;
+    color: $cream-light;
     border: 1px solid rgba($gold, 0.25);
-    padding: 5px 16px;
-    border-radius: 3px;
-    margin-bottom: 24px;
+    padding: 0.4rem 1.1rem;
+    border-radius: 999px;
+    background: rgba($gold, 0.04);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0.4rem 1.2rem rgba(0, 0, 0, 0.16);
+    margin-bottom: 28px;
   }
 
   .mission-text {
-    font-size: 18px;
-    line-height: 1.8;
-    color: rgba($cream, 0.75);
+    font-size: 1.2rem;
+    line-height: 1.9;
+    color: rgba($cream, 0.8);
     font-style: italic;
     font-weight: 300;
     margin: 0;
@@ -319,181 +436,306 @@ $text-muted: rgba(255, 255, 255, 0.55);
   gap: 0;
   max-width: 900px;
   margin: 0 auto;
-  padding: 40px 24px;
-  background: rgba($green-mid, 0.4);
-  border-top: 1px solid rgba($gold, 0.1);
-  border-bottom: 1px solid rgba($gold, 0.1);
+  padding: 2.5rem 1.5rem;
+  background: linear-gradient(180deg, rgba($green-mid, 0.45), rgba($green-dark, 0.3));
+  border-top: 1px solid rgba($gold, 0.12);
+  border-bottom: 1px solid rgba($gold, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 0.8rem 2rem rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
+
+  &.visible { opacity: 1; transform: translateY(0); }
 
   .stat {
     flex: 1;
     text-align: center;
     padding: 12px 8px;
+    border-radius: 0.75rem;
+    transition: transform 0.3s ease;
+
+    &:hover { transform: translateY(-4px); }
 
     .stat-number {
       display: block;
-      font-family: 'Playfair Display', serif;
-      font-size: 28px;
+      font-family: $font-serif;
+      font-size: 1.85rem;
       font-weight: 700;
-      color: $gold;
-      margin-bottom: 4px;
+      color: $cream-light;
+      margin-bottom: 6px;
     }
 
     .stat-label {
-      font-size: 11px;
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 2px;
-      color: $text-muted;
+      letter-spacing: 2.5px;
+      color: rgba($cream, 0.5);
     }
   }
 
   .stat-divider {
     width: 1px;
-    height: 40px;
-    background: rgba($gold, 0.15);
+    height: 44px;
+    background: linear-gradient(180deg, transparent, rgba($gold, 0.2), transparent);
   }
 }
 
 .capabilities {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 70px 24px;
+  padding: 5rem 1.5rem;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s;
+
+  &.visible { opacity: 1; transform: translateY(0); }
 
   .section-header {
-    text-align: center;
-    margin-bottom: 48px;
+    margin-bottom: 3.5rem;
 
     .section-badge {
       display: inline-block;
       font-size: 11px;
       font-weight: 700;
-      letter-spacing: 3px;
+      letter-spacing: 3.5px;
       color: $gold;
-      border: 1px solid rgba($gold, 0.25);
-      padding: 5px 16px;
+      border: 1px solid rgba($gold, 0.22);
+      padding: 5px 18px;
       border-radius: 3px;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
 
     h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 34px;
+      font-family: $font-serif;
+      font-size: 2rem;
       font-weight: 700;
-      color: $text-light;
-      margin: 0;
-      letter-spacing: 1.5px;
-    }
-  }
-
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-  }
-}
-
-.cap-card {
-  background: rgba($cream, 0.04);
-  border: 1px solid rgba($cream, 0.08);
-  border-radius: 10px;
-  padding: 36px 28px 32px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.4s;
-
-  &:hover {
-    background: rgba($cream, 0.08);
-    border-color: rgba($gold, 0.25);
-    transform: translateY(-5px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-
-    .cap-icon {
-      background: rgba($gold, 0.12);
-      border-color: rgba($gold, 0.35);
       color: $cream-light;
+      letter-spacing: 1px;
+      margin: 0;
     }
   }
 
-  .card-corner {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-
-    &.tl { top: 8px; left: 8px; border-top: 1.5px solid rgba($gold, 0.2); border-left: 1.5px solid rgba($gold, 0.2); }
-    &.tr { top: 8px; right: 8px; border-top: 1.5px solid rgba($gold, 0.2); border-right: 1.5px solid rgba($gold, 0.2); }
-    &.bl { bottom: 8px; left: 8px; border-bottom: 1.5px solid rgba($gold, 0.2); border-left: 1.5px solid rgba($gold, 0.2); }
-    &.br { bottom: 8px; right: 8px; border-bottom: 1.5px solid rgba($gold, 0.2); border-right: 1.5px solid rgba($gold, 0.2); }
-  }
-
-  .cap-icon {
-    width: 52px;
-    height: 52px;
-    margin: 0 auto 20px;
-    border: 1px solid rgba($cream, 0.12);
-    border-radius: 10px;
+  .carousel-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 12px;
+    position: relative;
+  }
+
+  .carousel-arrow {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba($gold, 0.2);
+    background: rgba($cream, 0.04);
     color: rgba($cream, 0.6);
-    padding: 12px;
-    transition: all 0.3s;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    backdrop-filter: blur(4px);
 
     svg {
-      width: 100%;
-      height: 100%;
+      width: 24px;
+      height: 24px;
+    }
+
+    &:hover {
+      background: rgba($gold, 0.12);
+      border-color: rgba($gold, 0.5);
+      color: $cream-light;
+      transform: scale(1.08);
+      box-shadow: 0 0 1.5rem rgba($gold, 0.1);
+    }
+
+    &:active { transform: scale(0.95); }
+  }
+
+  .carousel-track {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 340px;
+    height: 320px;
+  }
+
+  .cap-card {
+    position: absolute;
+    width: 320px;
+    padding: 2.5rem 1.75rem 2rem;
+    border-radius: 1rem;
+    border: 1px solid rgba($cream, 0.08);
+    background: linear-gradient(180deg, rgba($cream, 0.055), rgba($cream, 0.025));
+    box-shadow: 0 0.8rem 2.5rem rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    overflow: hidden;
+    cursor: pointer;
+
+    &.active {
+      border-color: rgba($gold, 0.15);
+      box-shadow: 0 0.8rem 2.5rem rgba(0, 0, 0, 0.2), 0 0 2rem rgba($gold, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+      .card-glow {
+        opacity: 1;
+      }
+    }
+
+    &:hover {
+      border-color: rgba($gold, 0.25);
+      box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.25), 0 0 2.5rem rgba($gold, 0.06);
+
+      .cap-icon {
+        background: rgba($gold, 0.12);
+        border-color: rgba($gold, 0.38);
+        color: $cream-light;
+        transform: scale(1.05);
+      }
+
+      h3 { color: $cream-light; }
+    }
+
+    .card-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 30%, rgba($gold, 0.04), transparent 70%);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+
+    .card-corner {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+
+      &.tl { top: 10px; left: 10px; border-top: 1.5px solid rgba($gold, 0.22); border-left: 1.5px solid rgba($gold, 0.22); }
+      &.tr { top: 10px; right: 10px; border-top: 1.5px solid rgba($gold, 0.22); border-right: 1.5px solid rgba($gold, 0.22); }
+      &.bl { bottom: 10px; left: 10px; border-bottom: 1.5px solid rgba($gold, 0.22); border-left: 1.5px solid rgba($gold, 0.22); }
+      &.br { bottom: 10px; right: 10px; border-bottom: 1.5px solid rgba($gold, 0.22); border-right: 1.5px solid rgba($gold, 0.22); }
+    }
+
+    .cap-icon {
+      width: 3.5rem;
+      height: 3.5rem;
+      margin: 0 auto 1.25rem;
+      border: 1px solid rgba($cream, 0.14);
+      border-radius: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba($cream, 0.68);
+      padding: 0.8rem;
+      transition: all 0.3s ease;
+      background: rgba($green-dark, 0.14);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+      svg {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    h3 {
+      font-family: $font-serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: rgba($cream-light, 0.85);
+      margin: 0 0 12px;
+      letter-spacing: 0.5px;
+      transition: color 0.3s ease;
+    }
+
+    p {
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: rgba($cream, 0.55);
+      margin: 0;
     }
   }
 
-  h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: $text-light;
-    margin: 0 0 10px;
-    letter-spacing: 0.5px;
-  }
+  .carousel-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 2rem;
 
-  p {
-    font-size: 13px;
-    line-height: 1.7;
-    color: $text-muted;
-    margin: 0;
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1px solid rgba($gold, 0.25);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 0;
+
+      &--active {
+        background: $gold;
+        border-color: $gold;
+        box-shadow: 0 0 0.75rem rgba($gold, 0.3);
+        width: 28px;
+        border-radius: 5px;
+      }
+
+      &:hover:not(&--active) {
+        background: rgba($gold, 0.15);
+        border-color: rgba($gold, 0.45);
+      }
+    }
   }
 }
 
 .cta {
   max-width: 700px;
   margin: 0 auto;
-  padding: 40px 24px 80px;
+  padding: 3rem 1.5rem 6rem;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.3s;
+
+  &.visible { opacity: 1; transform: translateY(0); }
 
   .cta-box {
-    background: linear-gradient(135deg, rgba($green-olive, 0.2), rgba($green-dark, 0.4));
+    background: linear-gradient(135deg, rgba($green-olive, 0.25), rgba($green-dark, 0.45));
     border: 1px solid rgba($gold, 0.15);
-    border-radius: 14px;
-    padding: 48px 40px;
+    border-radius: 1.25rem;
+    padding: 52px 44px;
     text-align: center;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 1.1rem 3.5rem rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    transition: box-shadow 0.4s ease;
+
+    &:hover {
+      box-shadow: 0 1.1rem 3.5rem rgba(0, 0, 0, 0.22), 0 0 3rem rgba($gold, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
 
     &::before {
       content: '';
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse at 30% 50%, rgba($green-olive-light, 0.06) 0%, transparent 60%),
-        radial-gradient(ellipse at 70% 50%, rgba($gold, 0.04) 0%, transparent 60%);
+        radial-gradient(ellipse at 30% 50%, rgba($green-olive-light, 0.07) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 50%, rgba($gold, 0.05) 0%, transparent 60%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 45%);
       pointer-events: none;
     }
 
     .cta-corner {
       position: absolute;
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
 
-      &.tl { top: 10px; left: 10px; border-top: 2px solid rgba($gold, 0.3); border-left: 2px solid rgba($gold, 0.3); }
-      &.tr { top: 10px; right: 10px; border-top: 2px solid rgba($gold, 0.3); border-right: 2px solid rgba($gold, 0.3); }
-      &.bl { bottom: 10px; left: 10px; border-bottom: 2px solid rgba($gold, 0.3); border-left: 2px solid rgba($gold, 0.3); }
-      &.br { bottom: 10px; right: 10px; border-bottom: 2px solid rgba($gold, 0.3); border-right: 2px solid rgba($gold, 0.3); }
+      &.tl { top: 12px; left: 12px; border-top: 2px solid rgba($gold, 0.25); border-left: 2px solid rgba($gold, 0.25); }
+      &.tr { top: 12px; right: 12px; border-top: 2px solid rgba($gold, 0.25); border-right: 2px solid rgba($gold, 0.25); }
+      &.bl { bottom: 12px; left: 12px; border-bottom: 2px solid rgba($gold, 0.25); border-left: 2px solid rgba($gold, 0.25); }
+      &.br { bottom: 12px; right: 12px; border-bottom: 2px solid rgba($gold, 0.25); border-right: 2px solid rgba($gold, 0.25); }
     }
 
     .cta-content {
@@ -502,33 +744,33 @@ $text-muted: rgba(255, 255, 255, 0.55);
     }
 
     h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: 30px;
+      font-family: $font-serif;
+      font-size: 2rem;
       font-weight: 700;
-      color: $text-light;
-      margin: 0 0 12px;
+      color: $cream-light;
+      margin: 0 0 14px;
       letter-spacing: 1px;
     }
 
     p {
-      font-size: 15px;
-      color: rgba($cream, 0.65);
-      margin: 0 0 32px;
+      font-size: 0.95rem;
+      color: rgba($cream, 0.72);
+      margin: 0 0 36px;
     }
 
     .cta-buttons {
       display: flex;
-      gap: 16px;
+      gap: 18px;
       justify-content: center;
 
       .btn-solid {
-        padding: 12px 36px;
-        font-size: 14px;
+        padding: 0.85rem 2.5rem;
+        font-size: 0.9rem;
       }
 
       .btn-outline {
-        padding: 12px 36px;
-        font-size: 14px;
+        padding: 0.85rem 2.5rem;
+        font-size: 0.9rem;
       }
     }
   }
@@ -537,12 +779,13 @@ $text-muted: rgba(255, 255, 255, 0.55);
 .footer {
   margin-top: auto;
   border-top: 1px solid rgba($gold, 0.08);
-  background: rgba(0, 0, 0, 0.2);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.15), rgba($green-dark, 0.3));
+  box-shadow: 0 -0.5rem 1.4rem rgba(0, 0, 0, 0.1);
 
   .footer-inner {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px 28px;
+    padding: 22px 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -550,27 +793,38 @@ $text-muted: rgba(255, 255, 255, 0.55);
     .footer-left {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 12px;
+      gap: 10px;
+      font-size: 0.75rem;
       color: $text-muted;
       letter-spacing: 1px;
 
-      .footer-shield {
-        width: 16px;
-        height: 16px;
-        color: rgba($gold, 0.5);
+      .footer-logo {
+        width: 1.35rem;
+        height: 1.35rem;
+        display: inline-flex;
+        border-radius: 0.35rem;
+        overflow: hidden;
+        opacity: 0.9;
+        box-shadow: 0 0.35rem 0.9rem rgba(0, 0, 0, 0.18);
+
+        img {
+          width: 100%;
+          height: 100%;
+          display: block;
+          object-fit: contain;
+        }
       }
     }
 
     .footer-center {
-      font-size: 11px;
-      color: rgba($text-muted, 0.7);
+      font-size: 0.7rem;
+      color: rgba($cream, 0.5);
       letter-spacing: 0.5px;
     }
 
     .footer-right {
-      font-size: 11px;
-      color: rgba($gold, 0.4);
+      font-size: 0.6875rem;
+      color: rgba($gold, 0.45);
       letter-spacing: 1.5px;
       text-transform: uppercase;
     }
@@ -578,30 +832,38 @@ $text-muted: rgba(255, 255, 255, 0.55);
 }
 
 @media (max-width: 900px) {
-  .capabilities .cards {
-    grid-template-columns: repeat(2, 1fr);
+  .hero-title {
+    font-size: 2.5rem !important;
   }
 
-  .hero-title {
-    font-size: 36px !important;
+  .hero-subtitle {
+    font-size: 0.85rem !important;
+    letter-spacing: 0.15rem !important;
+  }
+
+  .capabilities .carousel-track {
+    width: 280px;
+  }
+
+  .capabilities .cap-card {
+    width: 260px;
+    padding: 2rem 1.25rem 1.5rem;
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   .top-bar {
     padding: 0 12px;
 
-    .top-bar-inner {
-      height: 52px;
-    }
+    .top-bar-inner { height: 52px; }
 
     .brand {
-      .brand-sub { display: none; }
+      .brand-sub,
       .brand-divider { display: none; }
     }
 
     .top-actions {
-      gap: 6px;
+      gap: 8px;
 
       .btn-outline, .btn-solid {
         padding: 6px 14px;
@@ -611,14 +873,43 @@ $text-muted: rgba(255, 255, 255, 0.55);
   }
 
   .hero-title {
-    font-size: 26px !important;
+    font-size: 1.75rem !important;
   }
 
-  .capabilities .cards {
-    grid-template-columns: 1fr;
+  .hero-subtitle {
+    font-size: 0.75rem !important;
   }
 
-  .capabilities { padding: 40px 16px; }
+  .hero .hero-emblem .emblem-ring {
+    width: 6rem;
+    height: 6rem;
+
+    .emblem-inner {
+      width: 3.6rem;
+      height: 3.6rem;
+    }
+  }
+
+  .capabilities {
+    padding: 40px 12px;
+
+    .carousel-track {
+      width: 240px;
+      height: 280px;
+    }
+
+    .cap-card {
+      width: 220px;
+      padding: 1.5rem 1rem 1.25rem;
+    }
+
+    .carousel-arrow {
+      width: 36px;
+      height: 36px;
+
+      svg { width: 20px; height: 20px; }
+    }
+  }
 
   .stats {
     flex-wrap: wrap;
@@ -627,11 +918,11 @@ $text-muted: rgba(255, 255, 255, 0.55);
 
     .stat {
       min-width: 40%;
+
+      .stat-number { font-size: 1.4rem; }
     }
 
-    .stat-divider {
-      display: none;
-    }
+    .stat-divider { display: none; }
   }
 
   .cta .cta-box {
@@ -640,30 +931,24 @@ $text-muted: rgba(255, 255, 255, 0.55);
     .cta-buttons {
       flex-direction: column;
 
-      .btn-solid, .btn-outline {
-        width: 100%;
-      }
+      .btn-solid, .btn-outline { width: 100%; }
     }
   }
 
   .footer {
     .footer-inner {
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
       padding: 14px 16px;
       text-align: center;
     }
 
-    .footer-center {
-      font-size: 10px;
-    }
+    .footer-center { font-size: 10px; }
   }
 
   .mission {
     padding: 36px 16px;
 
-    .mission-text {
-      font-size: 15px;
-    }
+    .mission-text { font-size: 15px; }
   }
 }

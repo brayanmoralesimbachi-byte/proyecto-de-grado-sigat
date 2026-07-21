@@ -126,8 +126,8 @@
     }
 
     &.active {
-      color: #667eea;
-      border-bottom-color: #667eea;
+      color: var(--military-primary);
+      border-bottom-color: var(--military-primary);
     }
   }
 }
@@ -164,7 +164,7 @@
 
       &:focus {
         outline: none;
-        border-color: #667eea;
+        border-color: var(--military-primary);
       }
 
       &:disabled {
@@ -179,20 +179,20 @@
     display: flex;
     gap: 12px;
     padding: 16px;
-    background: #ebf4ff;
-    border: 1px solid #bee3f8;
+    background: rgba(85, 107, 47, 0.08);
+    border: 1px solid rgba(85, 107, 47, 0.2);
     border-radius: 8px;
     margin-bottom: 20px;
 
     svg {
       width: 24px;
       height: 24px;
-      fill: #4299e1;
+      fill: var(--military-primary);
       flex-shrink: 0;
     }
 
     span {
-      color: #2c5282;
+      color: var(--military-text);
       font-size: 14px;
       line-height: 1.5;
     }
@@ -201,7 +201,7 @@
   .btn-primary {
     width: 100%;
     padding: 14px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--military-primary) 0%, var(--military-dark) 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -212,7 +212,7 @@
 
     &:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 4px 12px rgba(85, 107, 47, 0.4);
     }
 
     &:disabled {
@@ -315,7 +315,7 @@
   }
 
   .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--military-primary) 0%, var(--military-dark) 100%);
     color: white;
 
     &:hover {

@@ -234,7 +234,7 @@ export class ChatbotService {
     };
 
     if (this.authService.hasRole('admin')) {
-      welcomeMessage.content += '\n\n**Como administrador también puedes preguntar:**\n- "¿Cuál fue el último ingreso de usuario?"\n- "Mostrar actividad de login de hoy"';
+      welcomeMessage.content += '\n\n**Como administrador también puedes preguntar:**\n- "¿Cuál fue el último ingreso de usuario de hoy?"\n- "Mostrar actividad de login de ayer"\n- "Últimos accesos al sistema"';
     }
 
     this.messages.set([welcomeMessage]);
@@ -544,10 +544,37 @@ export class ChatbotService {
         query.filters.accion = 'DELETE';
       }
 
-      // Extraer usuario
-      const usuarioMatch = lowerText.match(/(?:usuario|user)\s+["']?(\w+)["']?/i);
+      // Extraer usuario — evitar capturar "de", "del", "hoy", "ayer", etc.
+      const usuarioMatch = lowerText.match(/(?:usuario|user|del\s+user|del\s+usuario)\s+["']?([a-záéíóúñü]{3,})["']?/i);
       if (usuarioMatch) {
-        query.filters.usuario = usuarioMatch[1];
+        const palabrasIgnorar = ['de', 'del', 'hoy', 'ayer', 'que', 'con', 'para', 'por', 'una', 'uno'];
+        if (!palabrasIgnorar.includes(usuarioMatch[1].toLowerCase())) {
+          query.filters.usuario = usuarioMatch[1];
+        }
+      }
+
+      // Extraer fecha: hoy / ayer / fecha específica
+      const hoyMatch = lowerText.match(/\bhoy\b/i);
+      const ayerMatch = lowerText.match(/\bayer\b/i);
+      if (hoyMatch) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        query.filters.fecha_desde = today.toISOString();
+      } else if (ayerMatch) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setHours(0, 0, 0, 0);
+        query.filters.fecha_desde = yesterday.toISOString();
+        const todayEnd = new Date();
+        todayEnd.setDate(todayEnd.getDate() - 1);
+        todayEnd.setHours(23, 59, 59, 999);
+        query.filters.fecha_hasta = todayEnd.toISOString();
+      } else {
+        // Detectar fecha específica: YYYY-MM-DD o DD/MM/YYYY
+        const fechaMatch = lowerText.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+        if (fechaMatch) {
+          query.filters.fecha_desde = new Date(+fechaMatch[1], +fechaMatch[2] - 1, +fechaMatch[3]).toISOString();
+        }
       }
     }
 
@@ -939,10 +966,32 @@ export class ChatbotService {
       appliedFilters.push(`usuario: ${query.filters.usuario}`);
     }
 
-    // Buscar "último" o "más reciente"
+    // Filtrar por fecha
     const lowerText = query.originalText.toLowerCase();
-    if (lowerText.includes('último') || lowerText.includes('ultima') || lowerText.includes('más reciente') || lowerText.includes('reciente')) {
-      results = results.slice(0, 1);
+    if (query.filters.fecha_desde) {
+      const desde = new Date(query.filters.fecha_desde);
+      results = results.filter(a => new Date(a.timestamp) >= desde);
+      appliedFilters.push(desde.toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }));
+    }
+    if (query.filters.fecha_hasta) {
+      const hasta = new Date(query.filters.fecha_hasta);
+      results = results.filter(a => new Date(a.timestamp) <= hasta);
+    }
+
+    // Buscar "último" o "más reciente" — si no hay usuario específico, mostrar el último de cada usuario
+    if (lowerText.includes('último') || lowerText.includes('última') || lowerText.includes('ultimo') || lowerText.includes('ultima') || lowerText.includes('más reciente') || lowerText.includes('reciente')) {
+      if (!query.filters.usuario) {
+        const ultimosPorUsuario = new Map<string, typeof results[0]>();
+        for (const audit of results.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())) {
+          const key = audit.username || `user_${audit.user_id}`;
+          if (!ultimosPorUsuario.has(key)) {
+            ultimosPorUsuario.set(key, audit);
+          }
+        }
+        results = Array.from(ultimosPorUsuario.values());
+      } else {
+        results = results.slice(0, 1);
+      }
     }
 
     const searchResults: SearchResults = {
@@ -959,21 +1008,57 @@ export class ChatbotService {
   private generateAuditsResponse(results: SearchResults, appliedFilters: string[]): ChatMessage {
     let content = '';
     const count = results.totalCount;
+    const query = results.query;
+
+    // Contextualizar según la pregunta
+    const isLoginQuery = query.filters.accion === 'LOGIN' || query.originalText.toLowerCase().includes('ingreso') || query.originalText.toLowerCase().includes('acceso');
+    const isLastQuery = query.originalText.toLowerCase().includes('último') || query.originalText.toLowerCase().includes('ultima') || query.originalText.toLowerCase().includes('última') || query.originalText.toLowerCase().includes('reciente');
 
     if (count === 0) {
-      content = '📋 No encontré registros de auditoría con esos criterios.\n\n';
-      content += '¿Te gustaría buscar otro tipo de actividad?';
-    } else {
-      if (count === 1) {
-        content = `📋 Encontré **1 registro** de auditoría:`;
-      } else {
-        content = `📋 Encontré **${count} registros** de auditoría.`;
-        if (count > 10) {
-          content += `\n\nMostrando los primeros 10:`;
+      if (isLoginQuery) {
+        content = '📋 No se encontraron inicios de sesión';
+        if (appliedFilters.length > 0) {
+          content += ` ${appliedFilters.join(', ')}`;
         }
+        content += '.\n\n¿Deseas buscar actividad de otro tipo (registros, modificaciones, etc.)?';
+      } else {
+        content = '📋 No encontré registros de auditoría con esos criterios.\n\n';
+        content += '¿Te gustaría buscar otro tipo de actividad?';
       }
-      if (appliedFilters.length > 0) {
-        content += `\n_Filtros aplicados: ${appliedFilters.join(', ')}_`;
+    } else {
+      if (isLoginQuery && isLastQuery) {
+        content = `🔐 **Últimos inicios de sesión**`;
+        if (appliedFilters.length > 0) {
+          content += ` — ${appliedFilters.join(', ')}`;
+        }
+        content += `:\n\nSe encontraron **${count} usuario${count > 1 ? 's' : ''}** con actividad.`;
+      } else if (isLoginQuery) {
+        content = `🔐 **Inicios de sesión**`;
+        if (appliedFilters.length > 0) {
+          content += ` — ${appliedFilters.join(', ')}`;
+        }
+        content += `:\n\nSe encontraron **${count} registro${count > 1 ? 's' : ''}**.`;
+        if (count > 10) {
+          content += `\nMostrando los primeros 10:`;
+        }
+      } else if (isLastQuery) {
+        content = `🕐 **Últimos registros de actividad**`;
+        if (appliedFilters.length > 0) {
+          content += ` — ${appliedFilters.join(', ')}`;
+        }
+        content += `:\n\nSe encontraron **${count} registro${count > 1 ? 's' : ''}**.`;
+      } else {
+        if (count === 1) {
+          content = `📋 Encontré **1 registro** de auditoría:`;
+        } else {
+          content = `📋 Encontré **${count} registros** de auditoría.`;
+          if (count > 10) {
+            content += `\n\nMostrando los primeros 10:`;
+          }
+        }
+        if (appliedFilters.length > 0) {
+          content += `\n_Filtros aplicados: ${appliedFilters.join(', ')}_`;
+        }
       }
     }
 
