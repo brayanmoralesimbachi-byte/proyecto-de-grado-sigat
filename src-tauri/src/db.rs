@@ -318,57 +318,57 @@ impl Database {
         Ok(())
     }
 
-    /// Crea un usuario administrador por defecto si no existen usuarios.
+    /// Crea un usuario administrador por defecto si no hay ningún administrador en el sistema.
     /// Las credenciales se obtienen de (en orden de prioridad):
     /// 1. Variables de entorno en tiempo de ejecución (APP_DEFAULT_ADMIN_USERNAME/PASSWORD)
     /// 2. Variables de entorno en tiempo de compilación (mismo nombre, usando option_env!)
+    /// 3. Valores por defecto hardcodeados (admin / admin123)
     pub async fn create_default_admin_if_needed(&self) -> Result<(), String> {
-        let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM usuarios")
+        // Verificar si existe al menos un administrador
+        let admin_count: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM usuarios WHERE rol = 'administrador'"
+        )
             .fetch_one(self.pool())
             .await
-            .map_err(|e| format!("Error al contar usuarios: {}", e))?;
+            .map_err(|e| format!("Error al contar administradores: {}", e))?;
 
-        if count > 0 {
+        // Solo crear si no hay ningún administrador
+        if admin_count > 0 {
             return Ok(());
         }
 
+        // Intentar obtener credenciales: env runtime → compile-time → hardcodeadas
         let admin_username = std::env::var("APP_DEFAULT_ADMIN_USERNAME")
             .ok()
             .filter(|v| !v.trim().is_empty())
             .or_else(|| option_env!("APP_DEFAULT_ADMIN_USERNAME")
                 .map(|s| s.to_string())
-                .filter(|v| !v.trim().is_empty()));
+                .filter(|v| !v.trim().is_empty()))
+            .unwrap_or_else(|| "admin".to_string());
 
         let admin_password = std::env::var("APP_DEFAULT_ADMIN_PASSWORD")
             .ok()
             .filter(|v| !v.trim().is_empty())
             .or_else(|| option_env!("APP_DEFAULT_ADMIN_PASSWORD")
                 .map(|s| s.to_string())
-                .filter(|v| !v.trim().is_empty()));
+                .filter(|v| !v.trim().is_empty()))
+            .unwrap_or_else(|| "admin123".to_string());
 
-        match (admin_username, admin_password) {
-            (Some(username), Some(password)) => {
-                let (password_hash, salt) = hash_password(&password)?;
+        let (password_hash, salt) = hash_password(&admin_password)?;
 
-                sqlx::query(
-                    "INSERT INTO usuarios (username, password_hash, salt, rol) VALUES (?, ?, ?, ?)"
-                )
-                .bind(&username)
-                .bind(&password_hash)
-                .bind(&salt)
-                .bind("administrador")
-                .execute(self.pool())
-                .await
-                .map_err(|e| format!("Error al crear admin por defecto: {}", e))?;
+        sqlx::query(
+            "INSERT INTO usuarios (username, password_hash, salt, rol) VALUES (?, ?, ?, ?)"
+        )
+        .bind(&admin_username)
+        .bind(&password_hash)
+        .bind(&salt)
+        .bind("administrador")
+        .execute(self.pool())
+        .await
+        .map_err(|e| format!("Error al crear admin por defecto: {}", e))?;
 
-                println!("Usuario administrador por defecto creado: {}", username);
-                Ok(())
-            }
-            _ => {
-                println!("No se creó admin por defecto: faltan APP_DEFAULT_ADMIN_USERNAME/PASSWORD en .env o variables de compilación");
-                Ok(())
-            }
-        }
+        println!("Usuario administrador por defecto creado: {} / {}", admin_username, admin_password);
+        Ok(())
     }
 
     /// Inicializa las keywords base para el chatbot

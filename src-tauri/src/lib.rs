@@ -20,8 +20,9 @@ use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-  // Cargar variables de entorno desde .env cuando existe.
+  // Cargar variables de entorno desde .env
   let _ = dotenvy::dotenv();
+  let _ = dotenvy::from_path("src-tauri/.env");
 
   // Inicializar estado de la aplicación
   let app_state = AppState {

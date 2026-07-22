@@ -580,6 +580,24 @@ pub async fn delete_user(
         .await
         .map_err(|e| format!("Error al eliminar vistas de activos: {}", e))?;
 
+    sqlx::query("DELETE FROM username_history WHERE user_id = ?")
+        .bind(user_id)
+        .execute(db.pool())
+        .await
+        .map_err(|e| format!("Error al eliminar historial de nombres: {}", e))?;
+
+    sqlx::query("UPDATE activos SET responsable_id = NULL WHERE responsable_id = ?")
+        .bind(user_id)
+        .execute(db.pool())
+        .await
+        .map_err(|e| format!("Error al actualizar activos (responsable): {}", e))?;
+
+    sqlx::query("UPDATE activos SET created_by = NULL WHERE created_by = ?")
+        .bind(user_id)
+        .execute(db.pool())
+        .await
+        .map_err(|e| format!("Error al actualizar activos (created_by): {}", e))?;
+
     sqlx::query("DELETE FROM usuarios WHERE id = ?")
         .bind(user_id)
         .execute(db.pool())
