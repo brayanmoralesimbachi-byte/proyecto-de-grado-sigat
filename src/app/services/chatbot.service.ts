@@ -234,7 +234,7 @@ export class ChatbotService {
     };
 
     if (this.authService.hasRole('admin')) {
-      welcomeMessage.content += '\n\n**Como administrador también puedes preguntar:**\n- "¿Cuál fue el último ingreso de usuario de hoy?"\n- "Mostrar actividad de login de ayer"\n- "Últimos accesos al sistema"';
+      welcomeMessage.content += '\n- "¿Cuál fue el último ingreso de usuario de hoy?"\n- "Mostrar actividad de login de ayer"\n- "Últimos accesos al sistema"';
     }
 
     this.messages.set([welcomeMessage]);

@@ -17,6 +17,45 @@ $text-muted: rgba(255, 255, 255, 0.55);
 $font-serif: 'Playfair Display', serif;
 $font-sans: 'Lato', sans-serif;
 
+.hero-emblem {
+  margin: 0 auto 22px;
+  width: min(100%, 360px);
+  min-height: clamp(160px, 24vw, 240px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  border: 1px solid rgba($gold, 0.18);
+  background: linear-gradient(180deg, rgba($green-dark, 0.2), rgba($green-dark, 0.72));
+  box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba($green-dark, 0.82), rgba($green-dark, 0.18) 35%, rgba($green-dark, 0.18) 65%, rgba($green-dark, 0.82));
+  }
+
+  > .emblem-inner {
+    position: relative;
+    z-index: 1;
+    width: 128px;
+    height: 128px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 0.45rem 1rem rgba(0, 0, 0, 0.35)) drop-shadow(0 0 1.2rem rgba($gold, 0.08));
+
+    img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+  }
+}
 .register-container {
   display: flex;
   justify-content: center;
@@ -75,6 +114,11 @@ $font-sans: 'Lato', sans-serif;
 @keyframes ringGlow {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 1; }
+}
+
+@keyframes wallpaperDrift {
+  0% { transform: scale(1.06) translateX(-1%); background-position: 46% center; }
+  100% { transform: scale(1.1) translateX(1%); background-position: 54% center; }
 }
 
 .btn-back {
