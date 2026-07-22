@@ -545,7 +545,7 @@
     <header>
         <h1>🛡️ SIGAT</h1>
         <p class="subtitle">Sistema de Gestión Inteligente de Activos — Centro de Investigación · Escuela de Telecomunicaciones de Facatativá</p>
-        <span class="version-badge">Versión 1.5.0 | Última actualización: 21 de Julio 2026</span>
+        <span class="version-badge">Versión 1.5.0 | Última actualización: 22 de Julio 2026</span>
     </header>
 
     <!-- Navegación -->
@@ -1593,16 +1593,27 @@ if (!this.authService.hasRole('admin')) {
                         <li>Total: <strong>44 tests</strong> en 11 archivos.</li>
                     </ul>
 
+                    <h5 class="mt-1">📊 Exportación a Excel con selección de campos</h5>
+                    <ul>
+                        <li><strong>Nuevo comando Rust <code>export_base_datos_excel</code></strong>: genera archivo <code>.xlsx</code> con <strong>rust_xlsxwriter</strong> v0.64. Verifica contraseña de admin antes de exportar.</li>
+                        <li><strong>Hoja 1 — Activos</strong>: 11 campos seleccionables mediante checkboxes en un modal de paso doble (password → selección). Incluye formato de número <code>#,##0.00</code> en <code>valor_adquisicion</code> para evitar notación científica (E+).</li>
+                        <li><strong>Hoja 2 — Auditoría global</strong>: exporta TODOS los registros de auditoría de todas las bases de datos (no solo de la base seleccionada), ordenados por fecha descendente. Incluye acciones de creación de BD, usuarios, etc.</li>
+                        <li><strong>Modal exclusivo</strong>: botón verde "Excel" en cada fila de la tabla de bases de datos, modal con ancho ampliado (640px), diseño de cuadrícula para campos.</li>
+                    </ul>
+
                     <h5 class="mt-1">🐛 Correcciones</h5>
                     <ul>
                         <li><strong>auth.service.ts</strong>: <code>loadAvailableBases()</code> llamaba a <code>getAvailableBasesDatos()</code> (bases NO asignadas) en vez de <code>getUserBasesDatos()</code> (bases SÍ asignadas). Fix en <code>auth.service.ts:42</code>.</li>
                         <li><strong>Export SQL columnas incorrectas</strong>: columnas <code>user_id/action/entity_type/entity_id/old_value/new_value/created_at</code> no existen en tabla auditoria. Corregido a <code>usuario_id/accion/tabla/registro_id/datos_anteriores/datos_nuevos/timestamp</code>.</li>
-                        <li><strong>FK al eliminar usuario</strong>: no se limpiaban registros en <code>auditoria</code>, <code>activo_vistas</code> y <code>usuario_base_datos</code> antes de borrar el usuario. Causaba error 787.</li>
+                        <li><strong>FK al eliminar usuario</strong>: no se limpiaban registros en <code>auditoria</code>, <code>username_history</code>, ni se ponían <code>NULL</code> en <code>responsable_id</code>/<code>created_by</code> de activos antes de borrar el usuario. Causaba error 787.</li>
                         <li><strong>FK al eliminar base de datos</strong>: no se limpiaban registros en <code>auditoria</code> antes de borrar la base. Causaba error 787 incluso sin activos.</li>
                         <li><strong>Export no incluía imágenes</strong>: faltaba columna <code>imagen_base64</code> en SELECT de activos. También faltaba en INSERT de importación.</li>
                         <li><strong>Import LZMA2 error confuso</strong>: contraseña incorrecta mostraba "Corrupted input data (LZMA2:0)". Ahora traduce a "Contraseña de exportación incorrecta".</li>
                         <li><strong>Diálogo de guardado sin ruta por defecto</strong>: ahora usa <code>downloadDir()</code> de <code>@tauri-apps/api/path</code> para abrir en Descargas.</li>
                         <li><strong>Tauri version mismatch</strong>: Rust tauri v2.10.3 vs @tauri-apps/api v2.11.1. Actualizado Rust a v2.11.</li>
+                        <li><strong>Admin auto-creation</strong>: <code>build.rs</code> lee <code>src-tauri/.env</code> inyectando <code>APP_DEFAULT_ADMIN_USERNAME</code>/<code>PASSWORD</code> como <code>cargo:rustc-env</code>; <code>db.rs</code> verifica rol <code>administrador</code> y tiene fallback hardcoded. <code>dotenvy::from_path</code> agregado en <code>lib.rs</code>.</li>
+                        <li><strong>Formato numérico en Excel</strong>: <code>valor_adquisicion</code> ahora usa <code>write_number_with_format("#,##0.00")</code> para evitar que Excel muestre valores grandes/pequeños en notación científica (E+).</li>
+                        <li><strong>Auditoría incompleta en Excel</strong>: la consulta de auditoría en Excel solo filtraba por <code>base_datos_id</code>, perdiendo registros sin ese campo. Ahora se exportan <strong>todas</strong> las auditorías del sistema sin filtro de base.</li>
                     </ul>
 
                     <h5 class="mt-1">🔧 Compatibilidad y mantenimiento</h5>
@@ -1879,7 +1890,7 @@ await this.tauriService.registerActivoVista(activoId, userId);</code></pre>
     <!-- Footer -->
     <footer>
         <p><strong>SIGAT v1.5.0</strong></p>
-        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 21 de Julio 2026</p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 22 de Julio 2026</p>
     </footer>
 
 </body>
