@@ -1990,6 +1990,208 @@ pub async fn import_base_datos(
         data.get("activos").and_then(|v| v.as_array()).map(|a| a.len()).unwrap_or(0)))
 }
 
+#[tauri::command]
+pub async fn export_base_datos_excel(
+    admin_id: i64,
+    password: String,
+    base_datos_id: i64,
+    save_path: String,
+    selected_fields: Vec<String>,
+    include_audits: bool,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    let db_lock = state.db.lock().await;
+    let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
+
+    // Verificar admin
+    let user_rol: String = sqlx::query_scalar("SELECT rol FROM usuarios WHERE id = ?")
+        .bind(admin_id)
+        .fetch_optional(db.pool())
+        .await
+        .map_err(|e| format!("Error al verificar admin: {}", e))?
+        .ok_or("Usuario no encontrado")?;
+    if user_rol != "administrador" {
+        return Err("Se requieren permisos de administrador".to_string());
+    }
+    let stored_hash: String = sqlx::query_scalar("SELECT password_hash FROM usuarios WHERE id = ?")
+        .bind(admin_id)
+        .fetch_optional(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener hash: {}", e))?
+        .ok_or("Usuario no encontrado")?;
+    verify_password(&password, &stored_hash).map_err(|_| "Contraseña incorrecta".to_string())?;
+
+    // Obtener nombre de la base de datos
+    let base_nombre: String = sqlx::query_scalar("SELECT nombre FROM bases_datos WHERE id = ?")
+        .bind(base_datos_id)
+        .fetch_optional(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener base de datos: {}", e))?
+        .ok_or("Base de datos no encontrada".to_string())?;
+
+    // Query de activos
+    let activos = sqlx::query(
+        "SELECT id, codigo, nombre, descripcion, categoria, ubicacion, estado, \
+         valor_adquisicion, fecha_adquisicion, fecha_vencimiento, palabras_clave \
+         FROM activos WHERE base_datos_id = ? ORDER BY nombre"
+    )
+    .bind(base_datos_id)
+    .fetch_all(db.pool())
+    .await
+    .map_err(|e| format!("Error al obtener activos: {}", e))?;
+
+    use rust_xlsxwriter::*;
+
+    let mut workbook = Workbook::new();
+
+    // --- Hoja 1: Activos ---
+    let header_fmt = Format::new()
+        .set_bold()
+        .set_background_color(Color::RGB(0x4A5D23));
+
+    let mut sheet1 = workbook.add_worksheet();
+    sheet1.set_name("Activos").map_err(|e| format!("Error naming sheet: {}", e))?;
+
+    // Escribir headers según campos seleccionados
+    let col_headers: Vec<(&str, &str)> = vec![
+        ("codigo", "Código"),
+        ("nombre", "Nombre"),
+        ("descripcion", "Descripción"),
+        ("categoria", "Categoría"),
+        ("ubicacion", "Ubicación"),
+        ("estado", "Estado"),
+        ("valor_adquisicion", "Valor Adquisición"),
+        ("fecha_adquisicion", "Fecha Adquisición"),
+        ("fecha_vencimiento", "Fecha Vencimiento"),
+        ("palabras_clave", "Palabras Clave"),
+    ];
+
+    let visible_headers: Vec<&str> = col_headers.iter()
+        .filter(|(key, _)| selected_fields.contains(&key.to_string()))
+        .map(|(_, label)| *label)
+        .collect();
+
+    for (col, header) in visible_headers.iter().enumerate() {
+        sheet1.write_string_with_format(0, col as u16, *header, &header_fmt)
+            .map_err(|e| format!("Error writing header: {}", e))?;
+    }
+
+    for (row, row_data) in activos.iter().enumerate() {
+        let row_idx = (row + 1) as u32;
+        let mut col = 0u16;
+
+        if selected_fields.contains(&"codigo".to_string()) {
+            let v: String = row_data.try_get("codigo").unwrap_or_default();
+            sheet1.write_string(row_idx, col, &v).map_err(|e| format!("Error writing: {}", e))?;
+            col += 1;
+        }
+        if selected_fields.contains(&"nombre".to_string()) {
+            let v: String = row_data.try_get("nombre").unwrap_or_default();
+            sheet1.write_string(row_idx, col, &v).map_err(|e| format!("Error writing: {}", e))?;
+            col += 1;
+        }
+        if selected_fields.contains(&"descripcion".to_string()) {
+            let v: Option<String> = row_data.try_get("descripcion").ok().flatten();
+            sheet1.write_string(row_idx, col, &v.unwrap_or_default()).map_err(|e| format!("Error writing: {}", e))?;
+            col += 1;
+        }
+        if selected_fields.contains(&"categoria".to_string()) {
+            let v: String = row_data.try_get("categoria").unwrap_or_default();
+            sheet1.write_string(row_idx, col, &v).map_err(|e| format!("Error writing: {}", e))?;
+            col += 1;
+        }
+        if selected_fields.contains(&"ubicacion".to_string()) {
+            let v: Option<String> = row_data.try_get("ubicacion").ok().flatten();
+            sheet1.write_string(row_idx, col, &v.unwrap_or_default()).map_err(|e| format!("Error writing: {}", e))?;
+            col += 1;
+        }
+        if selected_fields.contains(&"estado".to_string()) {
+            let v: String = row_data.try_get("estado").unwrap_or_default();
+            sheet1.write_string(row_idx, col, &v).map_err(|e| format!("Error writing: {}", e))?;
+            col += 1;
+        }
+        if selected_fields.contains(&"valor_adquisicion".to_string()) {
+            let v: Option<f64> = row_data.try_get("valor_adquisicion").ok().flatten();
+            if let Some(val) = v {
+                let num_fmt = Format::new().set_num_format("#,##0.00");
+                sheet1.write_number_with_format(row_idx, col, val, &num_fmt)
+                    .map_err(|e| format!("Error writing: {}", e))?;
+            }
+            col += 1;
+        }
+        if selected_fields.contains(&"fecha_adquisicion".to_string()) {
+            let v: Option<String> = row_data.try_get("fecha_adquisicion").ok().flatten();
+            sheet1.write_string(row_idx, col, &v.unwrap_or_default()).map_err(|e| format!("Error writing: {}", e))?;
+            col += 1;
+        }
+        if selected_fields.contains(&"fecha_vencimiento".to_string()) {
+            let v: Option<String> = row_data.try_get("fecha_vencimiento").ok().flatten();
+            sheet1.write_string(row_idx, col, &v.unwrap_or_default()).map_err(|e| format!("Error writing: {}", e))?;
+            col += 1;
+        }
+        if selected_fields.contains(&"palabras_clave".to_string()) {
+            let v: Option<String> = row_data.try_get("palabras_clave").ok().flatten();
+            sheet1.write_string(row_idx, col, &v.unwrap_or_default()).map_err(|e| format!("Error writing: {}", e))?;
+            col += 1;
+        }
+    }
+
+    // --- Hoja 2: Auditoría (opcional) ---
+    if include_audits {
+        let audits = sqlx::query(
+            "SELECT a.id, a.usuario_id as user_id, u.username as username, \
+             a.accion as action, a.tabla as table_name, \
+             a.registro_id as record_id, a.datos_anteriores as old_value, \
+             a.datos_nuevos as new_value, a.timestamp \
+             FROM auditoria a \
+             LEFT JOIN usuarios u ON a.usuario_id = u.id \
+             ORDER BY a.timestamp DESC"
+        )
+        .fetch_all(db.pool())
+        .await
+        .map_err(|e| format!("Error al obtener auditorías: {}", e))?;
+
+        let mut sheet2 = workbook.add_worksheet();
+        sheet2.set_name("Auditoría").map_err(|e| format!("Error naming sheet: {}", e))?;
+
+        let audit_headers = ["ID", "Usuario", "Acción", "Tabla", "Registro ID", "Valor Anterior", "Valor Nuevo", "Fecha/Hora"];
+        for (col, header) in audit_headers.iter().enumerate() {
+            sheet2.write_string_with_format(0, col as u16, *header, &header_fmt)
+                .map_err(|e| format!("Error writing audit header: {}", e))?;
+        }
+
+        for (row, audit) in audits.iter().enumerate() {
+            let r = (row + 1) as u32;
+            let id: i64 = audit.try_get("id").unwrap_or(0);
+            sheet2.write_number(r, 0, id as f64).map_err(|e| format!("Error: {}", e))?;
+            let username: Option<String> = audit.try_get("username").ok().flatten();
+            sheet2.write_string(r, 1, &username.unwrap_or_default()).map_err(|e| format!("Error: {}", e))?;
+            let action: String = audit.try_get("action").unwrap_or_default();
+            sheet2.write_string(r, 2, &action).map_err(|e| format!("Error: {}", e))?;
+            let table: String = audit.try_get("table_name").unwrap_or_default();
+            sheet2.write_string(r, 3, &table).map_err(|e| format!("Error: {}", e))?;
+            let record_id: i64 = audit.try_get("record_id").unwrap_or(0);
+            sheet2.write_number(r, 4, record_id as f64).map_err(|e| format!("Error: {}", e))?;
+            let old_val: Option<String> = audit.try_get("old_value").ok().flatten();
+            sheet2.write_string(r, 5, &old_val.unwrap_or_default()).map_err(|e| format!("Error: {}", e))?;
+            let new_val: Option<String> = audit.try_get("new_value").ok().flatten();
+            sheet2.write_string(r, 6, &new_val.unwrap_or_default()).map_err(|e| format!("Error: {}", e))?;
+            let ts: String = audit.try_get("timestamp").unwrap_or_default();
+            sheet2.write_string(r, 7, &ts).map_err(|e| format!("Error: {}", e))?;
+        }
+    }
+
+    // Guardar archivo
+    workbook.save(&save_path).map_err(|e| format!("Error al guardar Excel: {}", e))?;
+
+    // Registrar auditoría
+    let accion_desc = if include_audits { format!("Exportación Excel de BD '{}' con activos y auditoría global", base_nombre) } else { format!("Exportación Excel de BD '{}' (solo activos)", base_nombre) };
+    db.log_audit(admin_id, "EXPORT_EXCEL", "bases_datos", base_datos_id, Some(&accion_desc), None, Some(base_datos_id)).await
+        .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
+
+    Ok(format!("Excel exportado exitosamente: {}", save_path))
+}
+
 /// Función auxiliar para normalizar keywords (quitar acentos, minúsculas)
 fn normalize_keyword(s: &str) -> String {
     s.to_lowercase()

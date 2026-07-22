@@ -12,7 +12,7 @@ use commands::{AppState, create_user, login, logout, can_close_app, force_logout
                get_keywords, create_keyword, delete_keyword,
                get_bases_datos, create_base_datos, update_base_datos, delete_base_datos,
                get_user_bases_datos, assign_user_to_base_datos, unassign_user_from_base_datos,
-               get_available_bases_datos, verify_admin_password, export_base_datos, import_base_datos};
+               get_available_bases_datos, verify_admin_password, export_base_datos, import_base_datos, export_base_datos_excel};
 use tokio::sync::Mutex;
 use std::sync::Mutex as StdMutex;
 use std::env;
@@ -164,7 +164,8 @@ pub fn run() {
       get_available_bases_datos,
       verify_admin_password,
       export_base_datos,
-      import_base_datos
+      import_base_datos,
+      export_base_datos_excel
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

@@ -405,6 +405,92 @@ $text-muted: rgba(255, 255, 255, 0.55);
   svg { width: 18px; height: 18px; fill: $green-olive-light; }
 }
 
+// ===== EXCEL EXPORT MODAL =====
+.modal-content.excel-modal {
+  max-width: 640px;
+}
+
+.excel-field-section {
+  margin-bottom: 18px;
+
+  .excel-field-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+
+    .excel-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: $gold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-toggle-all {
+      background: none;
+      border: 1px solid rgba($gold, 0.2);
+      border-radius: 5px;
+      padding: 3px 10px;
+      font-size: 11px;
+      color: rgba($cream, 0.6);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Lato', sans-serif;
+
+      &:hover {
+        color: $cream-light;
+        border-color: $gold;
+        background: rgba($gold, 0.08);
+      }
+    }
+  }
+}
+
+.excel-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 6px;
+}
+
+.excel-field-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba($cream, 0.04);
+  border: 1px solid rgba($cream, 0.08);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 13px;
+  color: rgba($cream, 0.7);
+
+  &:hover {
+    background: rgba($cream, 0.08);
+    border-color: rgba($gold, 0.2);
+  }
+
+  &.selected {
+    background: rgba($green-olive-light, 0.08);
+    border-color: rgba($green-olive-light, 0.2);
+    color: $cream-light;
+  }
+
+  input[type="checkbox"] {
+    accent-color: $gold;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+  }
+}
+
+.btn-excel {
+  background: rgba(#217346, 0.12);
+  color: #27ae60;
+  &:hover { background: rgba(#217346, 0.25); }
+}
+
 .success-badge {
   display: flex;
   align-items: center;

@@ -7,7 +7,13 @@ import { BaseDatos, TauriService } from '../../services/tauri.service';
 import { save, open } from '@tauri-apps/plugin-dialog';
 import { downloadDir } from '@tauri-apps/api/path';
 
-type ModalType = 'create' | 'export' | 'import' | null;
+type ModalType = 'create' | 'export' | 'import' | 'excel' | null;
+
+export interface ActivoField {
+  key: string;
+  label: string;
+  selected: boolean;
+}
 
 @Component({
   selector: 'app-asignaciones',
@@ -49,6 +55,27 @@ export class AsignacionesComponent implements OnInit {
   isImporting = signal(false);
   importDone = signal(false);
   importResult = signal('');
+
+  // Excel export state
+  excelPassword = signal('');
+  excelPasswordVerified = signal(false);
+  isExcelExporting = signal(false);
+  excelDone = signal(false);
+  excelResult = signal('');
+  includeAudits = signal(true);
+  selectedFields = signal<ActivoField[]>([
+    { key: 'codigo', label: 'Código', selected: true },
+    { key: 'nombre', label: 'Nombre', selected: true },
+    { key: 'descripcion', label: 'Descripción', selected: true },
+    { key: 'categoria', label: 'Categoría', selected: true },
+    { key: 'ubicacion', label: 'Ubicación', selected: true },
+    { key: 'responsable', label: 'Responsable', selected: true },
+    { key: 'estado', label: 'Estado', selected: true },
+    { key: 'valor_adquisicion', label: 'Valor Adquisición', selected: false },
+    { key: 'fecha_adquisicion', label: 'Fecha Adquisición', selected: false },
+    { key: 'fecha_vencimiento', label: 'Fecha Vencimiento', selected: false },
+    { key: 'palabras_clave', label: 'Palabras Clave', selected: false },
+  ]);
 
   constructor(
     private tauriService: TauriService,
@@ -126,6 +153,14 @@ export class AsignacionesComponent implements OnInit {
     this.importDone.set(false);
     this.importResult.set('');
     this.errorMessage.set('');
+    // Reset Excel state
+    this.excelPassword.set('');
+    this.excelPasswordVerified.set(false);
+    this.isExcelExporting.set(false);
+    this.excelDone.set(false);
+    this.excelResult.set('');
+    this.includeAudits.set(true);
+    for (const f of this.selectedFields()) f.selected = true;
   }
 
   // ========== EXPORT ==========
@@ -198,6 +233,86 @@ export class AsignacionesComponent implements OnInit {
       this.exportCopied.set(true);
       setTimeout(() => this.exportCopied.set(false), 2500);
     });
+  }
+
+  // ========== EXCEL EXPORT ==========
+
+  openExcelModal(bd: BaseDatos): void {
+    this.modalType.set('excel');
+    this.showModal.set(true);
+    this.exportBaseId.set(bd.id);
+    this.exportBaseName.set(bd.nombre);
+    this.excelPassword.set('');
+    this.excelPasswordVerified.set(false);
+    this.isExcelExporting.set(false);
+    this.excelDone.set(false);
+    this.excelResult.set('');
+    this.includeAudits.set(true);
+    for (const f of this.selectedFields()) f.selected = true;
+    this.errorMessage.set('');
+  }
+
+  async verifyExcelPassword(): Promise<void> {
+    const user = this.authService.currentUser();
+    if (!user) { this.errorMessage.set('Usuario no autenticado'); return; }
+    if (!this.excelPassword()) { this.errorMessage.set('Ingrese su contraseña'); return; }
+
+    try {
+      this.isLoading.set(true);
+      this.errorMessage.set('');
+      await this.tauriService.verifyAdminPassword(user.id, this.excelPassword());
+      this.excelPasswordVerified.set(true);
+    } catch (error: any) {
+      this.errorMessage.set(error.message || 'Contraseña incorrecta');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  toggleExcelField(key: string): void {
+    this.selectedFields.update(fields =>
+      fields.map(f => f.key === key ? { ...f, selected: !f.selected } : f)
+    );
+  }
+
+  toggleAllExcelFields(selected: boolean): void {
+    this.selectedFields.update(fields =>
+      fields.map(f => ({ ...f, selected }))
+    );
+  }
+
+  async doExportExcel(): Promise<void> {
+    const user = this.authService.currentUser();
+    if (!user || !this.exportBaseId()) return;
+
+    const activeFields = this.selectedFields().filter(f => f.selected);
+    if (activeFields.length === 0) {
+      this.errorMessage.set('Seleccione al menos un campo de Activos');
+      return;
+    }
+
+    const defaultName = `excel_${this.exportBaseName().replace(/\s+/g, '_')}.xlsx`;
+    const downloads = await downloadDir();
+    const savePath = await save({
+      defaultPath: `${downloads}\\${defaultName}`,
+      filters: [{ name: 'Excel Workbook', extensions: ['xlsx'] }]
+    });
+    if (!savePath) return;
+
+    try {
+      this.isExcelExporting.set(true);
+      this.errorMessage.set('');
+      const fieldKeys = activeFields.map(f => f.key);
+      const result = await this.tauriService.exportBaseDatosExcel(
+        user.id, this.excelPassword(), this.exportBaseId()!, savePath, fieldKeys, this.includeAudits()
+      );
+      this.excelResult.set(result);
+      this.excelDone.set(true);
+    } catch (error: any) {
+      this.errorMessage.set(error.message || 'Error al exportar a Excel');
+    } finally {
+      this.isExcelExporting.set(false);
+    }
   }
 
   // ========== IMPORT ==========

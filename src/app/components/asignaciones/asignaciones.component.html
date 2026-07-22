@@ -66,7 +66,13 @@
               <td>{{ bd.descripcion || '-' }}</td>
               <td>{{ formatDate(bd.created_at) }}</td>
               <td class="actions-cell">
-                <button class="btn-icon btn-export" (click)="openExportModal(bd)" title="Exportar">
+                <button class="btn-icon btn-excel" (click)="openExcelModal(bd)" title="Exportar a Excel">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/>
+                    <path d="M8 12h8v2H8zm0 4h5v2H8zm0-8h3v2H8z"/>
+                  </svg>
+                </button>
+                <button class="btn-icon btn-export" (click)="openExportModal(bd)" title="Exportar (.7z)">
                   <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
                   </svg>
@@ -92,7 +98,7 @@
   <!-- ===== MODAL GENERAL ===== -->
   @if (showModal()) {
     <div class="modal-overlay" (click)="closeModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-content" [class.excel-modal]="modalType() === 'excel'" (click)="$event.stopPropagation()">
 
         @if (modalType() === 'create') {
           <!-- === CREATE / EDIT === -->
@@ -196,6 +202,93 @@
                   </button>
                 </div>
                 <p class="pwd-danger">⚠️ Esta contrase&ntilde;a es su &uacute;nica forma de recuperar los datos. Si la pierde, su informaci&oacute;n exportada se perder&aacute; para siempre. Gu&aacute;rdela en un lugar seguro.</p>
+              </div>
+              <div class="modal-actions">
+                <button class="btn-primary" (click)="closeModal()">Cerrar</button>
+              </div>
+            }
+          </div>
+        }
+
+        @if (modalType() === 'excel') {
+          <!-- === EXCEL EXPORT === -->
+          <div class="modal-header">
+            <h2>Exportar a Excel</h2>
+          </div>
+          <div class="modal-body">
+
+            @if (!excelPasswordVerified()) {
+              <!-- Step 1: Verify password -->
+              <p class="modal-desc">Ingrese su contrase&ntilde;a de administrador para exportar <strong>{{ exportBaseName() }}</strong> a Excel.</p>
+              <div class="form-group">
+                <label>Contrase&ntilde;a de Administrador</label>
+                <input type="password" [(ngModel)]="excelPassword" placeholder="Ingrese su contrase&ntilde;a" (keyup.enter)="verifyExcelPassword()">
+              </div>
+              @if (errorMessage()) {
+                <div class="alert alert-error">{{ errorMessage() }}</div>
+              }
+              <div class="modal-actions">
+                <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+                <button class="btn-primary" (click)="verifyExcelPassword()" [disabled]="isLoading()">Verificar</button>
+              </div>
+            }
+
+            @if (excelPasswordVerified() && !excelDone()) {
+              <!-- Step 2: Field selection -->
+              <div class="verified-badge">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                Contrase&ntilde;a verificada
+              </div>
+              <p class="modal-desc">Seleccione los campos de activos a incluir en el Excel.</p>
+
+              <div class="excel-field-section">
+                <div class="excel-field-header">
+                  <label class="excel-section-title">Zona Activos</label>
+                  <button class="btn-toggle-all" (click)="toggleAllExcelFields(true)">Seleccionar todos</button>
+                  <button class="btn-toggle-all" (click)="toggleAllExcelFields(false)">Deseleccionar todos</button>
+                </div>
+                <div class="excel-field-grid">
+                  @for (field of selectedFields(); track field.key) {
+                    <label class="excel-field-item" [class.selected]="field.selected">
+                      <input type="checkbox" [checked]="field.selected" (change)="toggleExcelField(field.key)">
+                      <span>{{ field.label }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
+
+              <div class="excel-field-section">
+                <div class="excel-field-header">
+                  <label class="excel-section-title">Zona Auditor&iacute;as</label>
+                </div>
+                <label class="excel-field-item" [class.selected]="includeAudits()">
+                  <input type="checkbox" [checked]="includeAudits()" (change)="includeAudits.set(!includeAudits())">
+                  <span>Incluir registro de auditor&iacute;as (como hoja adicional)</span>
+                </label>
+              </div>
+
+              @if (errorMessage()) {
+                <div class="alert alert-error">{{ errorMessage() }}</div>
+              }
+              <div class="modal-actions">
+                <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+                <button class="btn-export-action" (click)="doExportExcel()" [disabled]="isExcelExporting()">
+                  @if (isExcelExporting()) {
+                    <span class="spinner"></span> Exportando...
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                      <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/>
+                    </svg>
+                    Exportar a Excel
+                  }
+                </button>
+              </div>
+            }
+
+            @if (excelDone()) {
+              <div class="success-badge">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                {{ excelResult() }}
               </div>
               <div class="modal-actions">
                 <button class="btn-primary" (click)="closeModal()">Cerrar</button>

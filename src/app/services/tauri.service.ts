@@ -582,6 +582,15 @@ export class TauriService {
       throw new Error(`Error al importar base de datos: ${error}`);
     }
   }
+
+  async exportBaseDatosExcel(adminId: number, password: string, baseDatosId: number, savePath: string, selectedFields: string[], includeAudits: boolean): Promise<string> {
+    try {
+      return await invoke<string>('export_base_datos_excel', { adminId, password, baseDatosId, savePath, selectedFields, includeAudits });
+    } catch (error) {
+      console.error('Error en exportBaseDatosExcel:', error);
+      throw new Error(`Error al exportar a Excel: ${error}`);
+    }
+  }
 }
 
 export interface BaseDatos {
