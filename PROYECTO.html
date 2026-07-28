@@ -545,7 +545,7 @@
     <header>
         <h1>🛡️ SIGAT</h1>
         <p class="subtitle">Sistema de Gestión Inteligente de Activos — Centro de Investigación · Escuela de Telecomunicaciones de Facatativá</p>
-        <span class="version-badge">Versión 1.5.0 | Última actualización: 22 de Julio 2026</span>
+        <span class="version-badge">Versión 1.6.0 | Última actualización: 28 de Julio 2026</span>
     </header>
 
     <!-- Navegación -->
@@ -573,11 +573,12 @@
             <div class="card mt-1" style="border-left: 4px solid var(--secondary); background: #fffef7;">
                 <h4>✅ Estado validado en esta versión</h4>
                 <ul>
-                    <li><strong>Frontend Security Suite:</strong> 44/44 PASS (11 archivos)</li>
+                    <li><strong>Frontend Security Suite:</strong> 76/76 PASS (12 archivos)</li>
                     <li><strong>Backend Security Suite:</strong> 5/5 PASS</li>
-                    <li><strong>Angular ng test:</strong> 1/1 PASS</li>
+                    <li><strong>Angular ng build:</strong> 1/1 PASS</li>
                     <li><strong>Security CI:</strong> PASS frontend + PASS backend</li>
-                    <li><strong>Versión documentada:</strong> 1.4.0</li>
+                    <li><strong>Cargo check:</strong> 0 warnings</li>
+                    <li><strong>Versión documentada:</strong> 1.6.0</li>
                 </ul>
             </div>
             
@@ -605,6 +606,22 @@
                 <div class="card">
                     <h4>👥 Control de Acceso RBAC</h4>
                     <p>Sistema de roles (Admin/Usuario) con permisos granulares para cada funcionalidad.</p>
+                </div>
+                <div class="card">
+                    <h4>⏱️ Rate Limiting + Bloqueo</h4>
+                    <p>5 intentos fallidos de login → bloqueo de <strong>5 minutos</strong>. Temporizador visible en la UI con cuenta regresiva.</p>
+                </div>
+                <div class="card">
+                    <h4>🚫 XSS Prevention</h4>
+                    <p>Sanitización HTML en el pipe <code>format-markdown</code>: escape de entidades, eliminación de etiquetas peligrosas y URLs <code>javascript:</code>.</p>
+                </div>
+                <div class="card">
+                    <h4>🔒 CSP Configurado</h4>
+                    <p>Content Security Policy estricto en <code>tauri.conf.json</code>: <code>default-src 'self'; script-src 'self'</code>.</p>
+                </div>
+                <div class="card">
+                    <h4>🖼️ Múltiples Imágenes por Activo</h4>
+                    <p>Hasta 15 imágenes por activo almacenadas como JSON en <code>imagen_base64</code>, carrusel con navegación y contador.</p>
                 </div>
             </div>
         </section>
@@ -1025,9 +1042,9 @@
                     <h4>Frontend Security Suite</h4>
                     <p><span class="badge badge-success">PASS</span></p>
                     <ul>
-                        <li><strong>44/44 tests</strong> aprobados (11 archivos)</li>
-                        <li>Cobertura de login, guards, auth service, chatbot parser, subida, routing, performance</li>
-                        <li>Ejecución estable en Vitest y ng test</li>
+                        <li><strong>76/76 tests</strong> aprobados (12 archivos)</li>
+                        <li>Cobertura de login, guards, auth service, chatbot parser, subida, routing, performance, multi-imagen, rate limiting, XSS, CSP, inactividad</li>
+                        <li>Ejecución estable en Vitest</li>
                     </ul>
                 </div>
                 <div class="card">
@@ -1127,8 +1144,9 @@ npm run test:security:ci</code></pre>
                     <ul>
                         <li>CRUD completo de activos</li>
                         <li>Búsqueda y filtros avanzados</li>
-                        <li>Paginación (40 items/página)</li>
-                        <li>Modal con imagen e historial</li>
+                        <li>Paginación (20 items/página)</li>
+                        <li>Modal con carrusel de imágenes e historial</li>
+                        <li>Hasta 15 imágenes por activo</li>
                         <li>Filtros por múltiples criterios</li>
                     </ul>
                 </div>
@@ -1181,6 +1199,9 @@ npm run test:security:ci</code></pre>
                     <ul>
                         <li>Autenticación segura</li>
                         <li>Diseño con efecto camuflaje</li>
+                        <li>Rate limiting: 5 intentos → 5 min bloqueo</li>
+                        <li>Cuenta regresiva visible del bloqueo</li>
+                        <li>Timeout de sesión por inactividad (15 min)</li>
                         <li>Validación de credenciales</li>
                     </ul>
                 </div>
@@ -1625,6 +1646,47 @@ if (!this.authService.hasRole('admin')) {
                 </div>
 
                 <div class="timeline-item">
+                    <h4>Versión 1.6.0 - 28 de Julio 2026</h4>
+
+                    <h5 class="mt-1">🖼️ Múltiples imágenes por activo</h5>
+                    <ul>
+                        <li><strong>Carga de hasta 15 imágenes</strong>: <code>onImagesSelect</code> reemplaza <code>onImageSelect</code>, acepta múltiples archivos, valida límite de 15.</li>
+                        <li><strong>Carrusel con navegación</strong>: flechas <code>prevImage</code>/<code>nextImage</code> con wrapping, contador "1/n", flechas ocultas si ≤1 imagen.</li>
+                        <li><strong>Backward compat</strong>: <code>parseImagenes</code> acepta JSON array o string base64 único (formato anterior).</li>
+                        <li><strong>Almacenamiento</strong>: imágenes guardadas como JSON array en columna <code>imagen_base64</code> (TEXT), sin archivos en disco.</li>
+                    </ul>
+
+                    <h5 class="mt-1">⏱️ Rate limiting: 5 intentos → bloqueo 5 minutos</h5>
+                    <ul>
+                        <li><strong>Backend (Rust)</strong>: nuevo struct <code>LoginAttemptInfo</code> con contador y <code>blocked_until</code>. Tras 5 intentos fallidos, bloqueo de 300s.</li>
+                        <li><strong>Frontend</strong>: señal <code>blockedUntil</code> en AuthService, temporizador con cuenta regresiva cada 1s, botón deshabilitado "Bloqueado".</li>
+                        <li><strong>Mensaje</strong>: "Demasiados intentos. Intente de nuevo en M:SS" con formato visible.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🔒 Seguridad: 5 mejoras</h5>
+                    <ul>
+                        <li><strong>Hardcoded creds eliminadas</strong>: <code>.env</code> y <code>db.rs</code> sin fallback hardcoded. Admin por defecto solo si env vars explícitas.</li>
+                        <li><strong>CSP en tauri.conf.json</strong>: <code>default-src 'self'; img-src 'self' data: blob: asset:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self' data:</code>.</li>
+                        <li><strong>XSS en format-markdown</strong>: escape HTML antes de conversión, sanitización (<code>&lt;script&gt;</code>, <code>&lt;iframe&gt;</code>, event attributes, <code>javascript:</code> URLs).</li>
+                        <li><strong>Session timeout</strong>: 15 min de inactividad con monitor de eventos (mousemove, keydown, click, scroll), auto-logout.</li>
+                        <li><strong>Rate limiting</strong>: 5 intentos fallidos → bloqueo 5 min (detallado arriba).</li>
+                    </ul>
+
+                    <h5 class="mt-1">🧪 Tests: 76 tests (12 archivos)</h5>
+                    <ul>
+                        <li><code>tests/frontend/security_enhancements.spec.ts</code>: 27 tests — rate limiting, session timeout, XSS, <code>parseImagenes</code>, carrusel, CSP.</li>
+                        <li><code>tests/frontend/auth.service.security.spec.ts</code>: 6 tests — +2 nuevos para <code>blockedUntil</code>.</li>
+                        <li>76 tests total, 12 archivos, 0 warnings Rust.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🔧 Correcciones</h5>
+                    <ul>
+                        <li><strong>activos.component.ts</strong>: <code>onImageSelect</code> renombrado a <code>onImagesSelect</code>, actualizados tests asociados.</li>
+                        <li><strong>Warnings Rust eliminados</strong>: <code>mut</code> innecesarios en <code>commands.rs:2120,2222</code>, y <code>col += 1</code> no leído.</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
                     <h4>Versión 1.4.0 - Julio 2026</h4>
 
                     <h5 class="mt-1">🖱️ Protección contra navegación atrás/adelante</h5>
@@ -1889,7 +1951,7 @@ await this.tauriService.registerActivoVista(activoId, userId);</code></pre>
 
     <!-- Footer -->
     <footer>
-        <p><strong>SIGAT v1.5.0</strong></p>
+        <p><strong>SIGAT v1.6.0</strong></p>
         <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 22 de Julio 2026</p>
     </footer>
 

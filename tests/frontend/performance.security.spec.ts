@@ -102,10 +102,10 @@ describe('Security performance thresholds', () => {
     const event = { target: { files: [file] } } as unknown as Event;
 
     const start = performance.now();
-    component.onImageSelect(event);
+    component.onImagesSelect(event);
     const elapsed = performance.now() - start;
 
     expect(elapsed).toBeLessThan(80);
-    expect(component.currentActivo().imagen_base64).toContain('data:image/png;base64');
+    expect(component.imagenes().length).toBeGreaterThan(0);
   });
 });

@@ -49,13 +49,21 @@
         />
       </div>
 
+      @if (isBlocked()) {
+        <div class="error-message">
+          Demasiados intentos. Intente de nuevo en {{ formatBlockTime(remainingBlockSeconds()) }}
+        </div>
+      }
+
       @if (errorMessage()) {
         <div class="error-message">{{ errorMessage() }}</div>
       }
 
-      <button type="submit" class="btn-submit" [disabled]="isLoading()">
+      <button type="submit" class="btn-submit" [disabled]="isLoading() || isBlocked()">
         @if (isLoading()) {
           <span>Iniciando sesi&oacute;n...</span>
+        } @else if (isBlocked()) {
+          <span>Bloqueado</span>
         } @else {
           <span>Iniciar Sesi&oacute;n</span>
         }

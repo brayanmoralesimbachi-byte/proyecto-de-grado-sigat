@@ -18,9 +18,16 @@ export class AuthService {
   availableBases = signal<BaseDatos[]>([]);
   selectedBaseDatosId = signal<number | null>(null);
   hasLoadedBases = signal(false);
+  blockedUntil = signal<string | null>(null);
+  remainingBlockSeconds = signal<number>(0);
+  private blockTimer: ReturnType<typeof setInterval> | null = null;
 
   currentUser = this.currentUserSignal.asReadonly();
   isAuthenticated = this.isAuthenticatedSignal.asReadonly();
+
+  private inactivityTimer: ReturnType<typeof setInterval> | null = null;
+  private lastActivity = Date.now();
+  private readonly SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutos
 
   constructor(private tauriService: TauriService) {
     this.loadUserFromStorage();
@@ -29,9 +36,38 @@ export class AuthService {
   private loadUserFromStorage(): void {
     const userData = sessionStorage.getItem('currentUser');
     if (userData) {
-      const user = JSON.parse(userData);
-      this.currentUserSignal.set(user);
-      this.isAuthenticatedSignal.set(true);
+      try {
+        const user = JSON.parse(userData);
+        this.currentUserSignal.set(user);
+        this.isAuthenticatedSignal.set(true);
+        this.startInactivityMonitor();
+      } catch {
+        sessionStorage.removeItem('currentUser');
+      }
+    }
+  }
+
+  private startInactivityMonitor(): void {
+    this.stopInactivityMonitor();
+    this.lastActivity = Date.now();
+
+    const resetActivity = () => { this.lastActivity = Date.now(); };
+    window.addEventListener('mousemove', resetActivity, { passive: true });
+    window.addEventListener('keydown', resetActivity, { passive: true });
+    window.addEventListener('click', resetActivity, { passive: true });
+    window.addEventListener('scroll', resetActivity, { passive: true });
+
+    this.inactivityTimer = setInterval(() => {
+      if (Date.now() - this.lastActivity > this.SESSION_TIMEOUT_MS) {
+        this.logout();
+      }
+    }, 60000); // verificar cada minuto
+  }
+
+  private stopInactivityMonitor(): void {
+    if (this.inactivityTimer) {
+      clearInterval(this.inactivityTimer);
+      this.inactivityTimer = null;
     }
   }
 
@@ -65,12 +101,52 @@ export class AuthService {
       this.currentUserSignal.set(user);
       this.isAuthenticatedSignal.set(true);
       sessionStorage.setItem('currentUser', JSON.stringify(user));
+      this.startInactivityMonitor();
+      this.clearBlocked();
+    } else if (response.blocked_until) {
+      this.blockedUntil.set(response.blocked_until);
+      this.startBlockTimer();
     }
 
     return response;
   }
 
+  private clearBlocked(): void {
+    this.blockedUntil.set(null);
+    this.remainingBlockSeconds.set(0);
+    if (this.blockTimer) {
+      clearInterval(this.blockTimer);
+      this.blockTimer = null;
+    }
+  }
+
+  private startBlockTimer(): void {
+    if (this.blockTimer) clearInterval(this.blockTimer);
+    this.updateRemainingSeconds();
+    this.blockTimer = setInterval(() => {
+      this.updateRemainingSeconds();
+    }, 1000);
+  }
+
+  private updateRemainingSeconds(): void {
+    const until = this.blockedUntil();
+    if (!until) return;
+    const diff = new Date(until).getTime() - Date.now();
+    if (diff <= 0) {
+      this.blockedUntil.set(null);
+      this.remainingBlockSeconds.set(0);
+      if (this.blockTimer) {
+        clearInterval(this.blockTimer);
+        this.blockTimer = null;
+      }
+      return;
+    }
+    this.remainingBlockSeconds.set(Math.ceil(diff / 1000));
+  }
+
   async logout(): Promise<void> {
+    this.stopInactivityMonitor();
+
     const user = this.currentUserSignal();
     if (user && user.loginTimestamp) {
       try {
@@ -101,7 +177,6 @@ export class AuthService {
     const currentRol = this.currentUserSignal()?.rol;
     if (!currentRol) return false;
     
-    // Normalizar roles: "admin" y "administrador" son equivalentes
     const normalizedCurrentRol = currentRol.toLowerCase();
     const normalizedCheckRol = rol.toLowerCase();
     

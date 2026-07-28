@@ -15,6 +15,7 @@ use commands::{AppState, create_user, login, logout, can_close_app, force_logout
                get_available_bases_datos, verify_admin_password, export_base_datos, import_base_datos, export_base_datos_excel};
 use tokio::sync::Mutex;
 use std::sync::Mutex as StdMutex;
+use std::collections::HashMap;
 use std::env;
 use tauri::Manager;
 
@@ -27,9 +28,10 @@ pub fn run() {
   // Inicializar estado de la aplicación
   let app_state = AppState {
     db: Mutex::new(None),
-    can_close_app: StdMutex::new(true), // Inicialmente se puede cerrar
+    can_close_app: StdMutex::new(true),
     active_user_id: StdMutex::new(None),
     login_timestamp: StdMutex::new(None),
+    login_attempts: StdMutex::new(HashMap::new()),
   };
 
   tauri::Builder::default()

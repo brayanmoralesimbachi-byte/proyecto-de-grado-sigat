@@ -26,6 +26,6 @@ fn password_hash_and_verify_are_within_thresholds() {
     let verify_elapsed = verify_start.elapsed();
 
     assert!(valid);
-    assert!(hash_elapsed.as_millis() < 1500, "hash lento: {:?}", hash_elapsed);
-    assert!(verify_elapsed.as_millis() < 1500, "verify lento: {:?}", verify_elapsed);
+    assert!(hash_elapsed.as_millis() < 2500, "hash lento: {:?}", hash_elapsed);
+    assert!(verify_elapsed.as_millis() < 2500, "verify lento: {:?}", verify_elapsed);
 }

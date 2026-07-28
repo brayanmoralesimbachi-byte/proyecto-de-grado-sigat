@@ -13,6 +13,7 @@ export interface LoginResponse {
   username?: string;
   rol?: string;
   timezone?: string;
+  blocked_until?: string;
 }
 
 export interface Activo {
@@ -28,6 +29,7 @@ export interface Activo {
   fecha_adquisicion?: string;
   fecha_vencimiento?: string;
   imagen_base64?: string;
+  imagenes?: string[];
   palabras_clave?: string;
   base_datos_id?: number;
   created_by?: number;

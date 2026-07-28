@@ -59,7 +59,7 @@ export class ActivosComponent implements OnInit {
 
   // Paginación
   currentPage = signal(1);
-  itemsPerPage = 40;
+  itemsPerPage = 20;
   totalPages = signal(1);
 
   // Categorías dinámicas desde DB
@@ -86,6 +86,10 @@ export class ActivosComponent implements OnInit {
   // Para usar en template
   Math = Math;
   JSON = JSON;
+
+  // Multi-imagen
+  imagenes = signal<string[]>([]);
+  carouselCurrentIndex = signal(0);
 
   constructor(
     private tauriService: TauriService,
@@ -271,6 +275,7 @@ export class ActivosComponent implements OnInit {
       palabras_clave: '',
       base_datos_id: firstBaseId
     });
+    this.imagenes.set([]);
     this.showModal.set(true);
     this.errorMessage.set('');
     this.successMessage.set('');
@@ -279,13 +284,26 @@ export class ActivosComponent implements OnInit {
   openEditModal(activo: Activo): void {
     this.isEditing.set(true);
     this.currentActivo.set({ ...activo });
+    this.imagenes.set(this.parseImagenes(activo));
     this.showModal.set(true);
     this.errorMessage.set('');
     this.successMessage.set('');
   }
 
+  parseImagenes(activo: Activo): string[] {
+    if (!activo.imagen_base64) return [];
+    try {
+      const parsed = JSON.parse(activo.imagen_base64);
+      if (Array.isArray(parsed)) return parsed;
+      return [activo.imagen_base64];
+    } catch {
+      return [activo.imagen_base64];
+    }
+  }
+
   closeModal(): void {
     this.showModal.set(false);
+    this.imagenes.set([]);
     this.currentActivo.set({
       codigo: '',
       nombre: '',
@@ -322,6 +340,10 @@ export class ActivosComponent implements OnInit {
       this.errorMessage.set('Usuario no autenticado');
       return;
     }
+
+    // Serializar imagenes a JSON
+    const imgs = this.imagenes();
+    activo.imagen_base64 = imgs.length > 0 ? JSON.stringify(imgs) : undefined;
 
     try {
       this.isLoading.set(true);
@@ -403,41 +425,67 @@ export class ActivosComponent implements OnInit {
     }).format(value);
   }
 
-  onImageSelect(event: Event): void {
+  onImagesSelect(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      
-      // Validar tamaño (máximo 40MB)
-      if (file.size > 40 * 1024 * 1024) {
-        alert('La imagen no debe superar los 40MB');
-        return;
+    if (input.files) {
+      const files = Array.from(input.files);
+      const maxImages = 15;
+      let added = 0;
+
+      for (const file of files) {
+        if (this.imagenes().length + added >= maxImages) {
+          alert(`Máximo ${maxImages} imágenes por activo`);
+          break;
+        }
+
+        if (file.size > 40 * 1024 * 1024) {
+          alert(`La imagen "${file.name}" no debe superar los 40MB`);
+          continue;
+        }
+
+        if (!file.type.startsWith('image/')) {
+          alert(`"${file.name}" no es un archivo de imagen`);
+          continue;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result as string;
+          this.imagenes.update(imgs => [...imgs, base64]);
+        };
+        reader.readAsDataURL(file);
+        added++;
       }
 
-      // Validar tipo
-      if (!file.type.startsWith('image/')) {
-        alert('Solo se permiten archivos de imagen');
-        return;
-      }
-
-      // Convertir a base64
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = reader.result as string;
-        this.currentActivo.update(activo => ({
-          ...activo,
-          imagen_base64: base64
-        }));
-      };
-      reader.readAsDataURL(file);
+      input.value = '';
     }
   }
 
-  removeImage(): void {
-    this.currentActivo.update(activo => ({
-      ...activo,
-      imagen_base64: undefined
-    }));
+  removeImageAtIndex(index: number): void {
+    this.imagenes.update(imgs => imgs.filter((_, i) => i !== index));
+  }
+
+  nextImage(): void {
+    const imgs = this.getCurrentImages();
+    if (imgs.length <= 1) return;
+    this.carouselCurrentIndex.update(i => (i + 1) % imgs.length);
+  }
+
+  prevImage(): void {
+    const imgs = this.getCurrentImages();
+    if (imgs.length <= 1) return;
+    this.carouselCurrentIndex.update(i => (i - 1 + imgs.length) % imgs.length);
+  }
+
+  goToImage(index: number): void {
+    this.carouselCurrentIndex.set(index);
+  }
+
+  getCurrentImages(): string[] {
+    if (this.selectedActivoDetalle()) {
+      return this.parseImagenes(this.selectedActivoDetalle()!);
+    }
+    return [];
   }
 
   openImageModal(imagen: string | undefined): void {
@@ -464,6 +512,9 @@ export class ActivosComponent implements OnInit {
       // Obtener detalles completos del activo
       const detalles = await this.tauriService.getActivoDetalles(activo.id);
       this.selectedActivoDetalle.set(detalles);
+
+      // Resetear carrusel
+      this.carouselCurrentIndex.set(0);
 
       // Registrar que el usuario vio el activo
       await this.tauriService.registerActivoVista(activo.id, user.id);

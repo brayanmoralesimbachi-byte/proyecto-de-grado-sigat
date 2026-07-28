@@ -186,10 +186,14 @@
             </td>
             <td>{{ formatCurrency(activo.valor_adquisicion) }}</td>
             <td class="image-cell">
-              @if (activo.imagen_base64) {
-                <button class="btn-thumbnail" (click)="openImageModal(activo.imagen_base64)" title="Ver imagen">
-                  <img [src]="activo.imagen_base64" alt="Miniatura">
+              @let imgs = parseImagenes(activo);
+              @if (imgs.length > 0) {
+                <button class="btn-thumbnail" (click)="openImageModal(imgs[0])" title="Ver imagen">
+                  <img [src]="imgs[0]" alt="Miniatura">
                 </button>
+                @if (imgs.length > 1) {
+                  <span class="multi-image-badge">+{{ imgs.length - 1 }}</span>
+                }
               } @else {
                 <span class="no-image">Sin imagen</span>
               }
@@ -371,20 +375,27 @@
           </div>
 
           <div class="form-group">
-            <label>Imagen del Activo</label>
+            <label>Imágenes del Activo (máx. 15)</label>
             <input 
               type="file" 
               accept="image/*" 
-              (change)="onImageSelect($event)"
-              #fileInput>
-            @if (currentActivo().imagen_base64) {
-              <div class="image-preview">
-                <img [src]="currentActivo().imagen_base64" alt="Preview">
-                <button type="button" class="btn-remove-image" (click)="removeImage()">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                  </svg>
-                </button>
+              multiple
+              (change)="onImagesSelect($event)"
+              #fileInput
+              [disabled]="imagenes().length >= 15">
+            <small class="hint">{{ imagenes().length }}/15 imágenes seleccionadas</small>
+            @if (imagenes().length > 0) {
+              <div class="multi-image-preview">
+                @for (img of imagenes(); track $index) {
+                  <div class="multi-image-item">
+                    <img [src]="img" alt="Preview {{ $index + 1 }}">
+                    <button type="button" class="btn-remove-image" (click)="removeImageAtIndex($index)">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                      </svg>
+                    </button>
+                  </div>
+                }
               </div>
             }
           </div>
@@ -430,10 +441,26 @@
         </div>
 
         <div class="detalles-body">
-          <!-- Imagen del activo -->
-          @if (selectedActivoDetalle()!.imagen_base64) {
-            <div class="detalles-image-container">
-              <img [src]="selectedActivoDetalle()!.imagen_base64" alt="Imagen del activo" class="detalles-image">
+          <!-- Imágenes del activo (carrusel) -->
+          @let currentImgs = getCurrentImages();
+          @if (currentImgs.length > 0) {
+            <div class="carousel-container">
+              <div class="carousel-viewport">
+                <img [src]="currentImgs[carouselCurrentIndex()]" alt="Imagen del activo" class="carousel-image" (click)="openImageModal(currentImgs[carouselCurrentIndex()])">
+                @if (currentImgs.length > 1) {
+                  <button class="carousel-btn carousel-prev" (click)="prevImage()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                    </svg>
+                  </button>
+                  <button class="carousel-btn carousel-next" (click)="nextImage()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                    </svg>
+                  </button>
+                  <div class="carousel-counter">{{ carouselCurrentIndex() + 1 }} / {{ currentImgs.length }}</div>
+                }
+              </div>
             </div>
           }
 

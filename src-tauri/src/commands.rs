@@ -7,6 +7,15 @@ use sqlx::Row;
 use std::io::BufReader;
 use rand::Rng;
 use sevenz_rust::SevenZReader;
+use std::collections::HashMap;
+use std::time::{Duration, Instant};
+
+/// Información de intentos de login para rate limiting
+#[derive(Clone, Debug)]
+pub struct LoginAttemptInfo {
+    pub count: u32,
+    pub blocked_until: Option<Instant>,
+}
 
 /// Estado compartido de la aplicación
 pub struct AppState {
@@ -14,6 +23,7 @@ pub struct AppState {
     pub can_close_app: StdMutex<bool>,
     pub active_user_id: StdMutex<Option<i64>>,
     pub login_timestamp: StdMutex<Option<String>>,
+    pub login_attempts: StdMutex<HashMap<String, LoginAttemptInfo>>,
 }
 
 /// Estructura para el login de usuario
@@ -32,6 +42,7 @@ pub struct LoginResponse {
     pub username: Option<String>,
     pub rol: Option<String>,
     pub timezone: Option<String>,
+    pub blocked_until: Option<String>, // Timestamp RFC 3339 hasta el que está bloqueado
 }
 
 #[tauri::command]
@@ -98,16 +109,44 @@ pub async fn create_user(
     Ok(format!("Usuario {} creado exitosamente", username))
 }
 
-/// Comando Tauri para autenticar un usuario
+/// Comando Tauri para autenticar un usuario con rate limiting
 #[tauri::command]
 pub async fn login(
     request: LoginRequest,
     state: State<'_, AppState>,
 ) -> Result<LoginResponse, String> {
+    // Rate limiting: 5 intentos fallidos → bloqueo de 5 minutos
+    {
+        let mut attempts = state.login_attempts.lock().unwrap();
+        let now = Instant::now();
+
+        if let Some(info) = attempts.get(&request.username) {
+            // Verificar si está bloqueado
+            if let Some(blocked_until) = info.blocked_until {
+                if now < blocked_until {
+                    let blocked_str = chrono::Utc::now() + chrono::Duration::seconds(
+                        blocked_until.duration_since(now).as_secs() as i64
+                    );
+                    return Ok(LoginResponse {
+                        success: false,
+                        message: "Demasiados intentos. Intente de nuevo en 5 minutos.".to_string(),
+                        user_id: None,
+                        username: None,
+                        rol: None,
+                        timezone: None,
+                        blocked_until: Some(blocked_str.to_rfc3339()),
+                    });
+                } else {
+                    // Bloqueo expirado, reiniciar contador
+                    attempts.remove(&request.username);
+                }
+            }
+        }
+    }
+
     let db_lock = state.db.lock().await;
     let db = db_lock.as_ref().ok_or("Base de datos no inicializada")?;
 
-    // Buscar usuario por username
     let user: Option<(i64, String, String, String, Option<String>)> = sqlx::query_as(
         r#"
         SELECT id, username, password_hash, rol, timezone
@@ -121,14 +160,14 @@ pub async fn login(
     .map_err(|e| format!("Error al buscar usuario: {}", e))?;
 
     if let Some((user_id, username, password_hash, rol, timezone)) = user {
-        // Verificar contraseña
         if verify_password(&request.password, &password_hash)? {
-            // Registrar auditoría de login exitoso
+            // Login exitoso: limpiar intentos
+            state.login_attempts.lock().unwrap().remove(&request.username);
+
             db.log_audit(user_id, "LOGIN", "usuarios", user_id, None, None, None)
                 .await
                 .map_err(|e| format!("Error al registrar auditoría: {}", e))?;
 
-            // Registrar sesión activa y prevenir cierre de app
             let login_time = chrono::Utc::now().to_rfc3339();
             *state.can_close_app.lock().unwrap() = false;
             *state.active_user_id.lock().unwrap() = Some(user_id);
@@ -141,25 +180,54 @@ pub async fn login(
                 username: Some(username),
                 rol: Some(rol),
                 timezone,
+                blocked_until: None,
             })
         } else {
+            // Fallo: incrementar contador y posiblemente bloquear
+            let mut attempts = state.login_attempts.lock().unwrap();
+            let info = attempts.entry(request.username.clone()).or_insert(LoginAttemptInfo {
+                count: 0,
+                blocked_until: None,
+            });
+            info.count += 1;
+            if info.count >= 5 {
+                info.blocked_until = Some(Instant::now() + Duration::from_secs(300)); // 5 minutos
+            }
+
             Ok(LoginResponse {
                 success: false,
-                message: "Contraseña incorrecta".to_string(),
+                message: "Credenciales inválidas".to_string(),
                 user_id: None,
                 username: None,
                 rol: None,
                 timezone: None,
+                blocked_until: info.blocked_until.map(|_| {
+                    (chrono::Utc::now() + chrono::Duration::seconds(300)).to_rfc3339()
+                }),
             })
         }
     } else {
+        // Usuario no existe: igual registrar intento para no revelar existencia
+        let mut attempts = state.login_attempts.lock().unwrap();
+        let info = attempts.entry(request.username.clone()).or_insert(LoginAttemptInfo {
+            count: 0,
+            blocked_until: None,
+        });
+        info.count += 1;
+        if info.count >= 5 {
+            info.blocked_until = Some(Instant::now() + Duration::from_secs(300));
+        }
+
         Ok(LoginResponse {
             success: false,
-            message: "Usuario no encontrado".to_string(),
+            message: "Credenciales inválidas".to_string(),
             user_id: None,
             username: None,
             rol: None,
             timezone: None,
+            blocked_until: info.blocked_until.map(|_| {
+                (chrono::Utc::now() + chrono::Duration::seconds(300)).to_rfc3339()
+            }),
         })
     }
 }
@@ -2049,7 +2117,7 @@ pub async fn export_base_datos_excel(
         .set_bold()
         .set_background_color(Color::RGB(0x4A5D23));
 
-    let mut sheet1 = workbook.add_worksheet();
+    let sheet1 = workbook.add_worksheet();
     sheet1.set_name("Activos").map_err(|e| format!("Error naming sheet: {}", e))?;
 
     // Escribir headers según campos seleccionados
@@ -2132,7 +2200,6 @@ pub async fn export_base_datos_excel(
         if selected_fields.contains(&"palabras_clave".to_string()) {
             let v: Option<String> = row_data.try_get("palabras_clave").ok().flatten();
             sheet1.write_string(row_idx, col, &v.unwrap_or_default()).map_err(|e| format!("Error writing: {}", e))?;
-            col += 1;
         }
     }
 
@@ -2151,7 +2218,7 @@ pub async fn export_base_datos_excel(
         .await
         .map_err(|e| format!("Error al obtener auditorías: {}", e))?;
 
-        let mut sheet2 = workbook.add_worksheet();
+        let sheet2 = workbook.add_worksheet();
         sheet2.set_name("Auditoría").map_err(|e| format!("Error naming sheet: {}", e))?;
 
         let audit_headers = ["ID", "Usuario", "Acción", "Tabla", "Registro ID", "Valor Anterior", "Valor Nuevo", "Fecha/Hora"];

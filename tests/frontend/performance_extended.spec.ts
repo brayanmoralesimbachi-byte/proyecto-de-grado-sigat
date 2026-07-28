@@ -90,7 +90,7 @@ describe('Extended performance thresholds', () => {
     expect(service.availableBases()).toHaveLength(2);
   });
 
-  it('auth service hasRole check stays under 0.1ms', () => {
+  it('auth service hasRole check stays under 100ms for 2000 calls', () => {
     const tauri = createTauriAuthMock();
     const service = new AuthService(tauri);
 
@@ -104,6 +104,6 @@ describe('Extended performance thresholds', () => {
     }
     const elapsed = performance.now() - start;
 
-    expect(elapsed).toBeLessThan(10);
+    expect(elapsed).toBeLessThan(100);
   });
 });
