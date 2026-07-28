@@ -11,7 +11,7 @@
     "test:security:backend": "cd src-tauri && cargo test --test security",
     "test:security": "vitest run --config vitest.config.ts",
     "test:security:ci": "node scripts/security-ci.mjs",
-    "build:installer": "npm run build && npm run tauri build",
+    "build:installer": "npm run tauri build",
     "tauri": "tauri",
     "dev": "tauri dev"
   },

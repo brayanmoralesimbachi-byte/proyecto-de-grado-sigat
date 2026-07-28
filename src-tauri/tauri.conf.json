@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "SIGAT",
   "version": "1.2.0",
-  "identifier": "com.sigat.app",
+  "identifier": "com.sigat.desktop",
   "build": {
     "frontendDist": "../dist/gestor-activos/browser",
     "devUrl": "http://localhost:4200",
@@ -20,7 +20,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data: blob: asset:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self' data:"
+      "csp": "default-src 'self'; img-src 'self' data: blob: asset:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self'; font-src 'self' data: https://fonts.gstatic.com"
     }
   },
   "bundle": {
