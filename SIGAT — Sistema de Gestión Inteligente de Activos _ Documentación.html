@@ -1,0 +1,1897 @@
+<!DOCTYPE html>
+<!-- saved from url=(0043)https://prior-coral-vzs8m2fjx5.edgeone.app/ -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGAT — Sistema de Gestión Inteligente de Activos | Documentación</title>
+    <style>
+        /* ===== Variables y Reset ===== */
+        :root {
+            --primary: #556B2F;
+            --secondary: #6B8E23;
+            --background: #E8E4D9;
+            --text: #2A2D1E;
+            --border: #8B7355;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --danger: #F44336;
+            --info: #2196F3;
+            --card-bg: #F5F2E8;
+            --code-bg: #2A2D1E;
+            --code-text: #E8E4D9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ===== Tipografía ===== */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Lato:wght@300;400;700&display=swap');
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5 {
+            font-family: 'Playfair Display', serif;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        /* ===== Layout Principal ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* ===== Header ===== */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-bottom: 4px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+
+        header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        header .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        header .version-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== Navegación ===== */
+        nav {
+            background: var(--card-bg);
+            border-bottom: 2px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        nav a {
+            color: var(--primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        nav a:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* ===== Secciones ===== */
+        section {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        section h2 {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        section h2 .icon {
+            font-size: 1.5rem;
+        }
+
+        /* ===== Cards Grid ===== */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+
+        .card h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .card p {
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        /* ===== Badges ===== */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 0.2rem;
+        }
+
+        .badge-success { background: #E8F5E9; color: #2E7D32; }
+        .badge-warning { background: #FFF3E0; color: #E65100; }
+        .badge-danger { background: #FFEBEE; color: #C62828; }
+        .badge-info { background: #E3F2FD; color: #1565C0; }
+        .badge-primary { background: #E8E4D9; color: var(--primary); border: 1px solid var(--primary); }
+
+        /* ===== Código ===== */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary);
+        }
+
+        code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+        }
+
+        :not(pre) > code {
+            background: rgba(85, 107, 47, 0.1);
+            color: var(--primary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        /* ===== Comandos ===== */
+        .command-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .command-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .command-header h4 {
+            color: white;
+            margin: 0;
+            font-family: 'Consolas', monospace;
+            font-weight: 600;
+        }
+
+        .command-body {
+            padding: 1.5rem;
+        }
+
+        .command-body p {
+            margin-bottom: 1rem;
+        }
+
+        .command-body pre {
+            margin: 0;
+        }
+
+        /* ===== Tabla ===== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            font-family: 'Playfair Display', serif;
+        }
+
+        tr:hover {
+            background: rgba(85, 107, 47, 0.05);
+        }
+
+        /* ===== Lista de Features ===== */
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: 0.75rem 0;
+            padding-left: 2rem;
+            position: relative;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* ===== Timeline ===== */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2rem;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            background: var(--secondary);
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            transform: translateX(-50%);
+        }
+
+        .timeline-item h4 {
+            margin-bottom: 0.5rem;
+        }
+
+        /* ===== Arquitectura Diagrama ===== */
+        .architecture-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+        }
+
+        .arch-box {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 150px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .arch-box h4 {
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .arch-arrow {
+            font-size: 2rem;
+            color: var(--border);
+        }
+
+        /* ===== Colores Preview ===== */
+        .color-palette {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .color-swatch {
+            width: 100px;
+            text-align: center;
+        }
+
+        .color-swatch .swatch {
+            height: 60px;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 2px solid var(--border);
+        }
+
+        .color-swatch span {
+            font-size: 0.75rem;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* ===== Estructura de Archivos ===== */
+        .file-tree {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .file-tree .folder { color: #FFD54F; }
+        .file-tree .file { color: #81D4FA; }
+        .file-tree .comment { color: #78909C; }
+
+        /* ===== Roles Section ===== */
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .role-card {
+            background: white;
+            border: 3px solid var(--primary);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .role-card .role-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 1.5rem;
+            text-align: center;
+        }
+
+        .role-card .role-header h4 {
+            color: white;
+            margin: 0;
+        }
+
+        .role-card ul {
+            list-style: none;
+            padding: 1.5rem;
+        }
+
+        .role-card li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .role-card li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        /* ===== Footer ===== */
+        footer {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        footer p {
+            opacity: 0.9;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            nav ul {
+                justify-content: flex-start;
+            }
+
+            .architecture-diagram {
+                flex-direction: column;
+            }
+
+            .arch-arrow {
+                transform: rotate(90deg);
+            }
+
+            section {
+                padding: 1.5rem;
+            }
+
+            .roles-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== Scrollbar Personalizado ===== */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+
+        /* ===== Utilidades ===== */
+        .text-center { text-align: center; }
+        .mt-1 { margin-top: 1rem; }
+        .mt-2 { margin-top: 2rem; }
+        .mb-1 { margin-bottom: 1rem; }
+        .mb-2 { margin-bottom: 2rem; }
+    </style>
+<style type="text/css">:root [href="https://adstub.net/cina777/"], :root [href="https://adstub.net/arab777/"], :root [href="https://adstub.net/judi89/"], :root [href^="//mage98rquewz.com/"], :root #hero a[download="Unicore.zip"], :root body > div[data-captcha-enable="true"] > div.cleanslate[id^="google-captcha-"] > div.captcha-box, :root html[data-scrapbook-source][data-scrapbook-create][data-scrapbook-title] > body.no-js > div.main-wrapper[role="main"] > div.main-content, :root html > body.body > div.container > div.content > form > table.optoutForm, :root html > body > div.container > form#unsubscribe-form[onsubmit="submitUnsubscribeForm(event)"], :root html[lang] > body:not([class]):not([id]):not([style]) > div.background-container > div.container > div.captcha-box, :root #ipBar + .main, :root #mainBtn[onclick="startVerify()"], :root #turnstile[onclick="handleClick()"], :root body > .page > .verify-row, :root body > .page > #mainVerifyRow, :root html[lang] > body.ishome > div.adult + main.main, :root .container a[title="AI Jerk OFF"][href][target="_blank"], :root body > #mdl-register.modal.anm-e.regnow, :root .flex a[href^="http://adpostup.com/"], :root #app-root ~ a[href][target="_blank"][style="position: fixed;top: 0;left: 0;width: 100%;height: 100%;display: block;z-index: 9999999;cursor: auto"], :root #wrapper ~ a[href][target="_blank"][style="position: fixed;top: 0;left: 0;width: 100%;height: 100%;display: block;z-index: 9999999;cursor: auto"], :root .header ~ div[style^="position:fixed;inset:0;z-index:2147483647;background:black;opacity:0.01;height:"], :root img[width="728"][height="90"], :root button.btn[data-openuri*="/4/"], :root #adbtm[onclick="badr();"], :root #teaser3[style^="width: 100%;height:0;text-align: center;display: scroll;position:fixed;"], :root a[href^="https://www.polybuzz.ai/"] img.responsive-image, :root .kln > a[href^="https://www.polybuzz.ai/"], :root html[lang][style^="--main-bg-color"] > body:not([class]):not([id]) > div#container[style="visibility: visible;"] > div#banner[style="opacity:0"] ~ main:not([class]):not([id]) > div#message, :root #donate > a[href][style][onclick="thank_you()"][target="_blank"][rel="nofollow"], :root .jwplayer ~ div[style="position:absolute;top:0;left:0;width: 100%;height: 100%;z-index:2147483647"], :root iframe.lazyloaded[data-src^="https://rcm-fe.amazon-adsystem.com/"], :root div[style^="position: fixed; inset: 0px; z-index: 2147483647; background: black; opacity: 0.01"], :root .skel-layers-fixed a[href*=".com/smartpop/"], :root [style^="position: fixed; inset: 0px; z-index: 2147483647; background-color: transparent; pointer-events: auto; cursor: auto; margin: 0px; padding: 0px; display: block;"], :root .ads-iframe:not([style="position: absolute; left: -10px; top: -10px;"]), :root .ad-content:not(:empty), :root div[style="position: fixed; display: block; width: 100%; height: 100%; inset: 0px; background-color: rgba(0, 0, 0, 0); z-index: 300000;"], :root #weatherad:not(:empty), :root #topbannerad:not(:empty), :root #topBannerAd:not(:empty), :root #ad_img:not(:empty), :root #adContext:not(:empty), :root .ad-300x250:not(.ads), :root [data-ad-width]:not([style$="left: -10000px !important; top: -1000px !important;"]):not(.adsbygoogle), :root .adunit:not(.text-ad), :root .adslot_1:not(.text-ad), :root [href="https://adstub.net/ratu89/"], :root #ads-footer:not([style^="position: absolute; left: -5000px"]), :root a.tdn[href^="https://landing.brazzersnetwork.com/"], :root #ads-1:not([style^="position: absolute; left: -5000px"]), :root #adframe:not(frameset):not([style^="position: absolute; left: -5000px"]), :root #ad_slot:not([style^="position: absolute; left: -5000px"]), :root #ad_big:not([style^="position: absolute; left: -5000px"]), :root #ad_area:not([style^="position: absolute; left: -5000px"]), :root #ad_300:not([style^="position: absolute; left: -5000px"]), :root a[dontfo=""][style$="position: absolute; z-index: 2147483647;"], :root [href^="https://join.enjoyx.com/track/"], :root a[href*=".click/?z="][href*="&n"], :root [href^="//taghaugh.com/"], :root div[class$="player-promo-col"], :root [href^="https://www.safestcontentgate.com/"], :root [href^="//cadsecs.com/"], :root [href^="//mellowads.com/"], :root [href^="https://fireads.online/"], :root html[lang="vi"] .sspp-area, :root html[lang="tr"] #aa-wp .container-ads-adjustment, :root #videojs ~ div[style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; z-index: 2147483646;"], :root .close-btn4[onclick="closeAd4()"], :root .close-btn3[onclick="closeAd3()"], :root .close-btn[onclick="closeAd()"], :root #go-to-top + div[id][class], :root .bb ~ main#container .containerAds, :root #midadd:not(:empty), :root #adzerk:not(:empty), :root [href^="//x4pollyxxpush.com/"], :root #advert-header:not(:empty), :root div.card > div#cbRow.checkbox-row[onclick="startVerify()"], :root #tongkatlol ~ script[src^="/shrinke/js/"] ~ .main-content-box > div[style="width:100%;height:110px"], :root body > div[style$="z-index: 2147483647; top: 0px; left: 0px; position: fixed; display: block;"], :root html > body > div.container.m-p > #checkbox-window.checkbox-window, :root .container a[href^="https://seduced.com"][href*="ref="], :root #kt_player .fp-brand, :root a[id][href="https://toolkitspro.com"][rel^="noopener noreferrer"], :root #kt_player #ads_iframe, :root .header-container a[href^="https://candyai.gg/"], :root [src^="//dombnrs.com/"], :root a[href*="/go.php?a_aid="], :root [href^="https://klsdee.com/"], :root [href^="//producebreed.com/"], :root #modern-player-root ~ div[id^="custom-invisible-overlay-"][class^="custom-popup-overlay-"], :root [href="//xxxrevpushclcdu.com/app.webp"], :root [href^="https://adult.xyz/"], :root [href^="https://popcash.net/"], :root a[href^="http://www.poweredbyliquidfire.mobi/"], :root [href^="https://t.mobtyb.com/"], :root [data-lnguri*="vipbox"], :root .reklama:not(.ads), :root a[href^="https://syndication.exdynsrv.com/splash.php"], :root [href*="/afu.php"], :root span[id^="ezoic-pub-ad-placeholder-"], :root ins.adsbygoogle[data-ad-slot], :root ins.adsbygoogle[data-ad-client], :root img[src^="https://s-img.adskeeper.com/"], :root #download a[download="Unicore.zip"], :root guj-ad, :root gpt-ad, :root div#spot-holder.spot-holder[style="display: block;"], :root div[ow-ad-unit-wrapper], :root div[id^="zergnet-widget"], :root html[lang] > body:not([class]):not([id]):not([style]) > div.container > div.recaptcha-box, :root div[id^="vuukle-ad-"], :root div[id^="taboola-stream-"], :root div[id^="sticky_ad_"], :root div[id^="st"][style^="z-index: 999999999;"], :root div[id^="rc-widget-"], :root html > body > div.content > dl > dd.dd1 > div.min_sider > form#form1[action="unsubscribe.php"], :root div[id^="mrec-leaderboard-"], :root div[id^="gpt_ad_"], :root div[id^="ezoic-pub-ad-"], :root div[id^="dfp-ad-"], :root div[id^="crt-"][style], :root div[id^="adspot-"], :root a[onclick="openAuc();"], :root ps-connatix-module, :root div[id^="ad_position_"], :root [data-ad-module]:not([style$="left: -10000px !important; top: -1000px !important;"]):not(.adsbygoogle), :root a[id][href="https://chpadblock.com/"][rel^="noopener noreferrer"], :root div[id^="ad-div-"], :root div[id*="ScriptRoot"], :root div[id*="MarketGid"], :root [href="https://adstub.net/rusia777/"], :root #banner468:not([style^="position: absolute; left: -5000px"]), :root div[data-id-advertdfpconf], :root div[data-dfp-id], :root div[style="top: 0px; left: 0px; width: 1287px; height: 500px; position: fixed; z-index: 2147483647;"], :root hl-adsense, :root div[data-contentexchange-widget], :root div[data-alias="300x250 Ad 2"], :root div[data-adzone], :root #buy-sell-ads:not(:empty), :root div[data-adunit-path], :root div[data-adname], :root div[data-ad-targeting], :root div[data-ad-region], :root div[data-ad-placeholder], :root div[aria-label="Ads"], :root .google-ad:not(.testAd), :root display-ads, :root #ad_space:not([style^="position: absolute; left: -5000px"]), :root display-ad-component, :root atf-ad-slot, :root aside[id^="adrotate_widgets-"], :root div[style^="position:fixed;inset:0px;z-index:2147483647;background:black;opacity:0.01"], :root aside[aria-label="retailmedia.complimentarySponsored"], :root html[lang] > body#body > * > div.cvh.BlockClicksActivityBusy, :root amp-fx-flying-carpet, :root amp-embed[type="taboola"], :root html[lang="tr"] #aa-wp .rnd-ads-adjustment, :root amp-connatix-player, :root div[id^="google_dfp_"], :root ad-slot, :root a[href^="https://www.purevpn.com/"][href*="&utm_source=aff-"], :root a[href^="https://www.onlineusershielder.com/"], :root html[lang="tr"] > body.has-footer-ad.has-pageskin-desktop a.pageskin-click-right, :root a[href^="https://financeads.net/tc.php?"], :root a[href^="https://www.mrskin.com/tour"], :root a[href^="https://www.infowarsstore.com/"] > img, :root a[href^="https://www.highperformancecpmgate.com/"], :root amp-ad, :root a[href^="https://www.highcpmrevenuenetwork.com/"], :root a[href^="https://www.get-express-vpn.com/offer/"], :root a[href^="https://lnkxt.bannerator.com/"], :root a[href^="https://www.geekbuying.com/dynamic-ads/"], :root #cmdTextDisplay ~ *, :root [href^="https://groorsoa.net/"], :root a[href^="https://www.financeads.net/tc.php?"], :root a[href^="https://www.effectiveratecpm.com/"], :root [href^="https://www.herbanomic.com/"] > img, :root a[href^="https://www.dql2clk.com/"], :root [data-template-type="nativead"], :root a[href^="https://www.adultempire.com/"][href*="?partner_id="], :root a[href^="https://www.nutaku.net/signup/landing/"], :root a[href^="https://www.dating-finder.com/signup/?ai_d="], :root a[href^="https://wolf-327b.com/"], :root body > .content-wrapper > .cf-wrap, :root [data-ad-manager-id]:not([style$="left: -10000px !important; top: -1000px !important;"]):not(.adsbygoogle), :root a[href^="https://voluum.prom-xcams.com/"], :root a[href^="https://twinrdsyte.com/"], :root .category-ads:not(html):not(body):not(.post), :root a[href^="https://twinrdsrv.com/"], :root [href="https://snvhost.com/"], :root a[href^="https://trk.nfl-online-streams.club/"], :root a[href^="https://tracking.avapartner.com/"], :root a[href^="https://track.wg-aff.com"], :root a[href^="https://track.ultravpn.com/"], :root a[href^="https://track.afcpatrk.com/"], :root [href="https://t.me/Russia_Vs_Ukraine_War3"], :root a[href^="https://track.adform.net/"], :root a[href^="https://torguard.net/aff.php"] > img, :root .menu-item a[href^="https://go.rmhfrtnd.com"], :root [data-identity="adhesive-ad"], :root a[href^="https://tc.tradetracker.net/"] > img, :root a[href^="https://tatrck.com/"], :root a[href^="https://click.candyoffers.com/"], :root [href^="https://zstacklife.com/"] img, :root a[href^="https://t.aslnk.link/"], :root .container a[href^="https://go.mavrtracktor.com/"], :root a[onmousedown^="this.href='https://paid.outbrain.com/network/redir?"], :root a[href^="https://t.ajump1.com/"], :root a[href^="https://t.adating.link/"], :root a[href^="https://go.trackitalltheway.com/"], :root [href^="https://track.fiverr.com/visit/"] > img, :root a[href^="https://syndication.exoclick.com/"], :root a[href^="https://syndication.dynsrvtbg.com/"], :root div[data-alias="300x250 Ad 1"], :root a[href^="https://syndicate.contentsserved.com/"], :root a[href^="https://svb-analytics.trackerrr.com/"], :root a[onmousedown^="this.href='https://paid.outbrain.com/network/redir?"] + .ob_source, :root a[href^="http://www.iyalc.com/"], :root a[href^="https://claring-loccelkin.com/"], :root a[href^="https://stardomcoit.com/"], :root a[href^="https://track.aftrk5.com/"], :root a[href^="https://slkmis.com/"], :root a[href^="https://myclick-2.com/"], :root a[href^="https://sexynearme.com/"], :root a[href^="https://s.zlinkt.com/"], :root [data-ad-manager-id], :root a[href^="https://s.zlinkr.com/"], :root bottomadblock, :root a[href^="https://s.zlinkd.com/"], :root [href="https://adstub.net/gaza88/"], :root a[href^="https://ad.doubleclick.net/"], :root a[href^="https://static.fleshlight.com/images/banners/"], :root a[href^="https://s.zlink7.com/"], :root a[href^="https://s.ma3ion.com/"], :root a[href^="https://www.privateinternetaccess.com/"] > img, :root a[href^="https://s.gentlefieldpattern.com/"], :root a[href^="https://s.eunow4u.com/"], :root a[href^="https://random-affiliate.atimaze.com/"], :root #downloadAd:not(:empty), :root #kt_player > div[style$="display: block;"][style*="inset: 0px;"], :root [href$="/sexdating.php"], :root a[href^="https://quotationfirearmrevision.com/"], :root a[href^="https://pubads.g.doubleclick.net/"], :root a[href^="https://prf.hn/click/"][href*="/camref:"] > img, :root a[href^="https://www.dating-finder.com/?ai_d="], :root a[href^="https://serve.awmdelivery.com/"], :root a[href^="https://prf.hn/click/"][href*="/adref:"] > img, :root app-ad, :root [href^="https://ap.octopuspop.com/click/"] > img, :root a[href^="https://postback1win.com/"], :root html[lang] > body#body > * > div.cv-xwrapper > div.cvc > div.cv-inner, :root a[href^="https://a.adtng.com/"], :root a[href^="https://playnano.online/offerwalls/?ref="], :root a[href^="https://mmwebhandler.aff-online.com/"], :root a[href^="https://www.bet365.com/"][href*="affiliate="], :root a[href^="https://pb-track.com/"], :root a[href^="https://pb-front.com/"], :root a[href^="https://paid.outbrain.com/network/redir?"], :root a[href^="https://streamate.com/landing/click/"], :root div[class^="Adstyled__AdWrapper-"], :root a[href^="https://osfultrbriolenai.info/"], :root a[href^="https://upsups.click/"], :root .ad-placeholder:not(#detect, #detect_ad_empire, #filter_ads_by_classname, .adsbox), :root a[href^="https://ndt5.net/"], :root a[href^="https://natour.naughtyamerica.com/track/"], :root a.poly-title[href^="https://www.polybuzz.ai/"], :root a[href^="https://mediaserver.entainpartners.com/renderBanner.do?"], :root [data-ad-name], :root a[href^="https://loboclick.com/"], :root a[href^="https://lead1.pl/"], :root .cta-button[onclick="openUpdateModal()"], :root a[href^="https://landing.brazzersnetwork.com/"], :root a[href^="https://join.bannedsextapes.com/track/"], :root [href^="https://exi8ef83z9.com/"], :root a[href^="https://jaxofuna.com/"], :root a[href^="https://italarizege.xyz/"], :root .category-ad:not(html):not(body):not(.post), :root a[href^="https://s.happyleafmotion.com/"], :root a[href^="https://identicaldrench.com/"], :root a[href^="https://helmethomicidal.com/"], :root #adsquare:not([style^="position: absolute; left: -5000px"]), :root a[href^="https://golinks.work/"], :root a[href^="https://go.xxxjmp.com"], :root [class^="div-gpt-ad"]:not([style^="width: 1px; height: 1px; position: absolute; left: -10000px; top: -"]), :root a[href^="https://zirdough.net/"], :root [class^="tile-picker__CitrusBannerContainer-sc-"], :root a[href^="https://go.xxxiijmp.com"], :root .ad-link:not(.adsbox), :root a[href^="https://go.xtbaffiliates.com/"], :root [data-role="tile-ads-module"], :root a[href^="https://go.xlviirdr.com"], :root div[class$="-adlabel"], :root a[href^="https://go.xlviiirdr.com"], :root a[href^="https://go.xlivrdr.com"], :root a[href^="https://ismlks.com/"], :root [href^="https://www.mypillow.com/"] > img, :root a[href^="https://go.xlirdr.com"], :root [data-css-class="dfp-inarticle"], :root a[href^="https://go.tmrjmp.com"], :root a[href^="https://go.markets.com/visit/?bta="], :root a[href^="https://billing.purevpn.com/aff.php"] > img, :root a[href^="https://go.hpyrdr.com/"], :root [data-lnguri^="https://s3.amazonaws.com"], :root a[href^="https://lijavaxa.com/"], :root a[href^="https://go.goaserv.com/"], :root a[href^="https://go.etoro.com/"] > img, :root a[href^="https://go.dmzjmp.com"], :root a[href^="https://www.bang.com/?aff="], :root #mgb-container > #mgb, :root a[href^="https://go.admjmp.com"], :root a[href^="https://get.surfshark.net/aff_c?"][href*="&aff_id="] > img, :root a[href^="https://datewhisper.life/"], :root a[href^="https://click.linksynergy.com/fs-bin/"] > img, :root a[href^="https://get-link.xyz/"], :root a[href^="https://www.mrskin.com/account/"], :root a[id][href="https://hamrocsit.com"][rel^="noopener noreferrer"], :root a[href^="https://www.adskeeper.com"], :root #vidcloud-player > #overlay-container, :root a[data-redirect^="https://paid.outbrain.com/network/redir?"], :root [href^="https://clicks.affstrack.com/"] > img, :root a[href^="https://engine.phn.doublepimp.com/"], :root a[href^="https://dl-protect.net/"], :root a[href*=".foxqck.com/"], :root a[href^="https://ctosrd.com/"], :root a[href^="https://clixtrac.com/"], :root a[href^="https://clicks.pipaffiliates.com/"], :root #ad_footer:not([style^="position: absolute; left: -5000px"]), :root app-advertisement, :root a[href^="https://getmatchedlocally.com/"], :root a[href^="https://clickins.slixa.com/"], :root a[href^="https://combodef.com/"], :root a[href^="https://click.hoolig.app/"], :root a[href^="https://track.totalav.com/"], :root a[href^="https://ctrdwm.com/"], :root img[src^="https://images.purevpnaffiliates.com"], :root a[href^="https://porntubemate.com/"], :root a[href^="https://clickadilla.com/"], :root a[href^="https://click.dtiserv2.com/"], :root a[href^="https://www.adxsrve.com/"], :root a[href^="https://click.Ggpickaff.com/"], :root a[href^="https://go.awdeliverynet.com/"], :root a[href^="https://go.xlvirdr.com"], :root a[href^="https://cam4com.go2cloud.org/"], :root a[onclick^="window.location.replace('https://random-affiliate.atimaze.com/"], :root a[href^="https://bongacams2.com/track?"], :root a[href^="https://t.ajrkm1.com/"], :root #main-content a[href^="https://hub.buzzaffiliates.com/"], :root a[href^="https://bongacams10.com/track?"], :root [href*="passtechusa.com"], :root a[href^="https://www.sheetmusicplus.com/"][href*="?aff_id="], :root a[href^="https://bngpt.com/"], :root a[href^="//hoodingluster.com/"], :root a[href^="https://black77854.com/"], :root a[href^="https://rixofa.com/"], :root a[href^="https://best-experience-cool.com/"], :root [data-taboola-options], :root a[href^="https://believessway.com/"], :root a[href^="https://Click.ggpickaff.com/"], :root a[href^="https://banners.livepartners.com/"], :root a[href^="http://revolvemockerycopper.com/"], :root a[href^="https://awptjmp.com/"], :root a[href^="https://join.sexworld3d.com/track/"], :root a[href^="https://track.cam4tracking.com/"], :root a[href^="https://aweptjmp.com/"], :root a[href^="https://ausoafab.net/"], :root #tabVideo > .rmedia, :root a[href^="https://aj1070.online/"], :root a[href^="https://ads.planetwin365affiliate.com/"], :root a[href^="https://ads.leovegas.com/"], :root a[href^="https://a.medfoodhome.com/"], :root .nya-slot[style], :root a[href^="https://a.bestcontentweb.top/"], :root a[href^="https://adultfriendfinder.com/go/"], :root a[href^="https://a.bestcontentoperation.top/"], :root a[href^="https://a2.adform.net/"], :root a[href^="https://a.candyai.love/"], :root .banner-img > .pbl, :root [data-m-ad-id], :root a[href^="https://a-ads.com/"], :root [data-testid^="section-AdRowBillboard"], :root .ad-placeholder:not(#filter_ads_by_classname):not(#detect_ad_empire):not(#detect):not(.adsbox), :root broadstreet-zone-container, :root a[href^="https://ak.psaltauw.net/"], :root a[href^="https://1winpb.com/"], :root a[href^="https://chaturbate.com/in/?"], :root a[href^="https://prf.hn/click/"][href*="/creativeref:"] > img, :root a[href*="&maxads="], :root a[href^="http://www.adultempire.com/unlimited/promo?"][href*="&partner_id="], :root a[href^="https://1betandgonow.com/"], :root div[id^="optidigital-adslot"], :root [href^="https://wsup.ai/"], :root a[href^="https://123-stream.org/"], :root a[href^="https://in.rabbtrk.com/"], :root a[href^="http://www.h4trck.com/"], :root [href^="https://a.acebet.com/api/click?"], :root #video_player ~ div[id] div[style^="position:fixed;inset:0px;z-index:"], :root a[href^="http://www.friendlyduck.com/AF_"], :root .btn-primary[onclick="showVerification()"], :root a[href^="http://partners.etoro.com/"], :root [href="https://chaturbate.jjgirls.com/"] > img, :root a[href^="http://cam4com.go2cloud.org/aff_c?"], :root a[href^="https://ads.betfair.com/redirect.aspx?"], :root #leader_ad:not(:empty), :root amp-ad-custom, :root [href^="http://referrer.website/"], :root a[href^="http://trk.globwo.online/"], :root a-ad, :root a[href^="https://offhandpump.com/"], :root a[href^="http://stickingrepute.com/"], :root #slashboxes > .deals-rail, :root [href^="http://mypillow.com/"] > img, :root a[href^="http://bongacams.com/track?"], :root .fp-ui > a[href][target="_blank"][style^="position: absolute; inset: 0px;"], :root a[href^="//startgaming.net/tienda/" i], :root a[href^="https://a.medfoodsafety.com/"], :root a[href^="//go.eabids.com/"], :root a[href^=" https://www.friendlyduck.com/AF_"], :root [data-cl-spot-id], :root a[href*="/jump/next.php?r="], :root a[href^="https://go.nordvpn.net/aff"] > img, :root #tongkatlol ~ script[src^="/shrinke/js/"] ~ .main-content-box + .content-box > div[id][style^="position: fixed; display: block; width: 100%;"], :root .\[\&_\.gdprAdTransparencyCogWheelButton\]\:\!pjra-z-\[5\], :root [href^="http://clicks.totemcash.com/"], :root a[href^="https://ad.zanox.com/ppc/"] > img, :root [data-d-ad-id], :root a[href*=".engine.adglare.net/"], :root #banner728x90:not([style^="position: absolute; left: -5000px"]), :root div[id^="lazyad-"], :root a[href^="http://com-1.pro/"], :root [href^="https://www.profitablegatecpm.com/"], :root a[href*=".cfm?domain="][href*="&fp="], :root [id^="section-ad-banner"], :root [id^="ad_slider"], :root html#html[sti][vic][lang] > body#allbody, :root [href^="https://www.onclickperformance.com/"], :root a[href^="https://www.goldenfrog.com/vyprvpn?offer_id="][href*="&aff_id="], :root a[href^="https://wmctjd.com/"], :root a[href*="//jjgirls.com/sex/Chaturbate"], :root [id^="ad-wrap-"], :root a[href^="http://sarcasmadvisor.com/"], :root .ad-slot:not(.adsbox):not(.adsbygoogle), :root #adframe:not(frameset), :root [href^="https://www.restoro.com/"], :root [href^="https://www.targetingpartner.com/"], :root .close-btn2[onclick="closeAd2()"], :root a[href^="https://join.virtuallust3d.com/"], :root .section-subheader > .section-hotel-prices-header, :root [href^="https://www.hostg.xyz/"] > img, :root a[href^="http://adultfriendfinder.com/go/"], :root a[href^="https://fastestvpn.com/lifetime-special-deal?a_aid="], :root a[href^="https://tour.mrskin.com/"], :root a[href^="https://s.zlink3.com/"], :root a[href^="http://sneakyadministration.com/"], :root [href^="https://www.brighteonstore.com/products/"] img, :root citrus-ad-wrapper, :root a[href^="https://go.grinsbest.com/"], :root [href^="https://www.avantlink.com/click.php"] img, :root html.canvas > body.wp-singular + div[popover="manual"], :root a[href^="https://t.acam.link/"], :root a[href^="https://go.strpjmp.com/"], :root [href^="https://url.totaladblock.com/"], :root div[id^="ad-position-"], :root a[href^="https://www.toprevenuegate.com/"], :root a[href^="https://bc.game/"], :root a[href^="https://bngprm.com/"], :root [href^="https://shiftnetwork.infusionsoft.com/go/"] > img, :root a[href^="https://trk.softonixs.xyz/"], :root [href^="https://wct.link/click?"], :root [href^="//look.utndln.com/offer"], :root div[data-adunit], :root app-large-ad, :root [href^="https://turtlebids.irauctions.com/"] img, :root a[href^="https://iqbroker.com/"][href*="?aff="], :root .p-post-ad:not(html):not(body), :root [href^="https://rpwmct.com/"], :root a[href^="https://go.cmtaffiliates.com/"], :root [href^="https://mylead.global/stl/"] > img, :root [data-testid="adBanner-wrapper"], :root [href^="https://optimizedelite.com/"] > img, :root [data-uri^="https://s3.amazonaws.com"], :root [href^="https://mypatriotsupply.com/"] > img, :root a[href^="https://go.bbrdbr.com"], :root a[href^="https://fc.lc/ref/"], :root a[href^="https://pb-imc.com/"], :root a[href^="https://www8.smartadserver.com/"], :root topadblock, :root a[href^="//s.zlinkd.com/"], :root a[href^="https://go.xxxijmp.com"], :root [href^="https://istlnkcl.com/"], :root a[href^="https://go.rmishe.com/"], :root [href^="https://ilovemyfreedoms.com/landing-"], :root a[href^="https://www.brazzersnetwork.com/landing/"], :root a[href^="https://explore-site.com/"], :root .AdBody:not(body), :root [href="https://adstub.net/indo666/"], :root [href^="https://glersakr.com/"], :root a[href^="https://tm-offers.gamingadult.com/"], :root [href^="https://charmingdatings.life/"], :root [data-id^="div-gpt-ad"], :root a[href^="https://tracker.loropartners.com/"], :root [href^="https://awbbjmp.com/"], :root a[href^="https://go.bushheel.com/"], :root a[href^="https://ctjdwm.com/"], :root a[href^="https://camfapr.com/landing/click/"], :root div[data-ad-wrapper], :root .gnt_em_vp_c[data-g-s="vp_dk"], :root [href="//sexcams.plus/"], :root [href^="http://www.mypillow.com/"] > img, :root a[href^="https://join.virtualtaboo.com/track/"], :root [id^="ad_sky"], :root [name^="google_ads_iframe"], :root .ad_unit:not(.text-ad, .adsbox), :root [href="https://clickaine.com"], :root #playerOverlay[style="position:absolute; z-index:3"], :root a[href^="https://www.liquidfire.mobi/"], :root .grid > .container > #aside-promotion, :root DFP-AD, :root a[href^="http://join.brokestraightboys.com/track/"], :root div[id^="div-ads-"], :root [href^="https://rapidgator.net/article/premium/ref/"], :root a[href^="https://track.aftrk3.com/"], :root [href^="https://join3.bannedsextapes.com"], :root [href^="https://join.girlsoutwest.com/"], :root a[href^="https://activate-game.com/"], :root #player div[style$="cursor: pointer; position: absolute; width: 100%; height: 100%; padding: 1rem; z-index: 2147483647;"], :root div[style="position: fixed; inset: 0px; z-index: 2147483647; pointer-events: auto;"], :root .scroll-fixable.rail-right > .deals-rail, :root [data-wpas-zoneid], :root html[lang="tr"] > body.has-footer-ad.has-pageskin-desktop a.pageskin-desktop-wrapper, :root [data-type="ad-vertical"], :root [href^="https://go.xlrdr.com"], :root [href*="uselnk.com/"], :root a[href^="https://s.cant3am.com/"], :root .nav-item[href^="https://candyai.gg/"], :root [data-testid^="taboola-"], :root a[href^="https://track.1234sd123.com/"], :root zeus-ad, :root [data-testid="prism-ad-wrapper"], :root [href^="https://antiagingbed.com/discount/"] > img, :root a[href*=".adsrv.eacdn.com/"], :root #teaser1[style^="width:autopx;"], :root [href^="https://www.cloudways.com/en/?id"], :root #modal[doskip][prclck], :root a[href^="https://t.ajrkm3.com/"], :root in-page-message[doskip], :root [href^="https://aads.com/campaigns/"], :root a[href^="https://juicyads.in/"], :root #ad_728:not([style^="position: absolute; left: -5000px"]), :root div[id^="apn_native_ad_slot_"], :root .adhesion:not(body), :root a[href^="https://bodelen.com/"], :root a[href*=".g2afse.com/"], :root a[href^="https://go.hpyjmp.com"], :root iframe[scrolling="no"][sandbox*="allow-popups allow-modals"][style^="width: 100%; height: 100%; border: none;"], :root [href^="https://mystore.com/"] > img, :root html[lang] > body.startnew > div#sections > section#section_uname, :root span[data-ez-ph-id], :root [href^="https://track.aftrk1.com/"], :root html[lang] > body:not([style]) > div.captchaBody, :root #adheader:not([style^="position: absolute; left: -5000px"]), :root div[id^="adngin-"], :root [data-rc-widget], :root a[href^="https://stellarcashflow.net/trck/"], :root [data-mobile-ad-id], :root [href^="https://join.playboyplus.com/track/"], :root html > #bw-cf-root, :root [href^="https://go.smljmp.com/"], :root a[href^="https://gamingadlt.com/?offer="], :root a[href^="https://adclick.g.doubleclick.net/"], :root [data-freestar-ad][id], :root [data-dynamic-ads], :root [data-desktop-ad-id], :root [href^="https://track.wg-aff.com/click"], :root a[href^="https://go.rmhfrtnd.com"], :root [data-asg-ins], :root [data-block-type="ad"], :root [data-ad-width], :root [onclick*="content.ad/"], :root [href^="https://go.rdrjmp.com/"], :root a[href^="https://snowdayonline.xyz/"], :root a[href^="https://join.dreamsexworld.com/"], :root html > body.hold-transition.theme-primary.bg-img[style^="background-image"][style*="wallpaperaccess.com"][style*="background-repeat"][style*="background-size"], :root AMP-AD, :root [data-ad-cls], :root .ad-box:not(#ad-banner):not(:empty), :root [data-ez-name], :root a[style="width:100%;height:100%;z-index:10000000000000000;position:absolute;top:0;left:0;"], :root [id^="div-gpt-ad"], :root .ob_container .item-container-obpd, :root #ads_top:not(a), :root a[href^="https://go.mnaspm.com/"], :root a[href^="https://service.bv-aff-trx.com/"], :root .ad_slot:not(.text-ad), :root #st-ami + div[id][class*=" "], :root a[href^="https://6-partner.com/"], :root [class^="s2nPlayer"], :root a[href^="https://traffdaq.com/"], :root [data-testid="ad_testID"], :root [href^="https://ad.admitad.com/"], :root [href^="https://mypillow.com/"] > img, :root [data-testid="commercial-label-taboola"], :root [class^="div-gpt-ad"], :root a[href^="http://tc.tradetracker.net/"] > img, :root [class^="amp-ad-"], :root #hero + div.marquee-wrap + section#games + section#features + #download, :root #ads-banner:not([style^="position: absolute; left: -5000px"]), :root AD-SLOT, :root a[href^="https://www.googleadservices.com/pagead/aclk?"] > img, :root [data-ad-module], :root body > .security-container[style="opacity: 1; transform: translateY(0px);"], :root a[href^="https://a.bestcontentfood.top/"], :root #kt_player > a[target="_blank"], :root [href^="https://zone.gotrackier.com/"], :root .ad-area:not(.text-ad), :root a[href^="https://ab.advertiserurl.com/aff/"], :root #adSpecial:not(:empty), :root a[data-oburl^="https://paid.outbrain.com/network/redir?"], :root .sidebar-ad:not(.adsbygoogle), :root a[href^="https://s.zlinkn.com/"], :root a[href^="https://go.xxxvjmp.com/"], :root .ads_container:not(.text-ad), :root [class^="adDisplay-module"], :root div[style^="z-index: 999999; background-image: url(\"data:image/gif;base64,"][style$="position: absolute;"], :root [href^="https://affiliate.fastcomet.com/"] > img, :root body > div.captcha-container > div.captcha-card, :root ad-shield-ads, :root a[href^="https://hot-growngames.life/"], :root .ad_box:not(.text-ad), :root [href^="https://wap4dollar.com/ad/nonadult/serve.php"], :root [href="https://jdrucker.com/gold"] > img, :root .fp-player > div[style="position: absolute; inset: 0px; overflow: hidden; z-index: 160; background: transparent; display: block;"], :root .ad-wrap:not(#google_ads_iframe_checktag), :root a[href^="https://www.friendlyduck.com/AF_"], :root html[lang="tr"] #aa-wp + .fixed-footer .footer-ad-container, :root [href^="https://ad1.adfarm1.adition.com/"], :root #teaser3[style^="width:autopx;"], :root div[id^="div-gpt-"], :root a[href^="https://gml-grp.com/"], :root .ob_dual_right > .ob_ads_header ~ .odb_div, :root a[href^="https://wittered-mainging.com/"], :root div[id][style^="position: fixed; inset: 0px; z-index: 2147483647; background: black"][style*="opacity: 0.01"], :root #teaser3[style="width: 100%;text-align: center;display: scroll;position:fixed;bottom: 0;margin: 0 auto;z-index: 103;"], :root html[lang="tr"] > body.has-footer-ad.has-pageskin-desktop a.pageskin-click-left, :root [data-revive-zoneid], :root a[href^="https://go.skinstrip.net"][href*="?campaignId="], :root figure.movie-detail-banner div[style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; z-index: 999; cursor: pointer;"], :root #teaser2[style^="width:autopx;"], :root a[href^="https://losingoldfry.com/"], :root div[id^="adrotate_widgets-"], :root .Ad-Container:not(.adsbygoogle) { display: none !important; }</style></head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <h1>🛡️ SIGAT</h1>
+        <p class="subtitle">Sistema de Gestión Inteligente de Activos — Centro de Investigación · Escuela de Telecomunicaciones de Facatativá</p>
+        <span class="version-badge">Versión 1.5.0 | Última actualización: 22 de Julio 2026</span>
+    </header>
+
+    <!-- Navegación -->
+    <nav>
+        <ul>
+            <li><a href="https://prior-coral-vzs8m2fjx5.edgeone.app/#seguridad">🔐 Seguridad</a></li>
+            <li><a href="https://prior-coral-vzs8m2fjx5.edgeone.app/#arquitectura">🏗️ Arquitectura</a></li>
+            <li><a href="https://prior-coral-vzs8m2fjx5.edgeone.app/#estructura">📁 Estructura</a></li>
+            <li><a href="https://prior-coral-vzs8m2fjx5.edgeone.app/#comandos">🚀 Comandos</a></li>
+            <li><a href="https://prior-coral-vzs8m2fjx5.edgeone.app/#testing">🧪 Testing</a></li>
+            <li><a href="https://prior-coral-vzs8m2fjx5.edgeone.app/#modulos">📋 Módulos</a></li>
+            <li><a href="https://prior-coral-vzs8m2fjx5.edgeone.app/#asignaciones">🗂️ Asignaciones</a></li>
+            <li><a href="https://prior-coral-vzs8m2fjx5.edgeone.app/#roles">🔒 Roles</a></li>
+            <li><a href="https://prior-coral-vzs8m2fjx5.edgeone.app/#diseno">🎨 Diseño</a></li>
+            <li><a href="https://prior-coral-vzs8m2fjx5.edgeone.app/#changelog">📝 Changelog</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+
+        <!-- ===== CARACTERÍSTICAS DE SEGURIDAD ===== -->
+        <section id="seguridad">
+            <h2><span class="icon">🔐</span> Características de Seguridad</h2>
+            <p>Aplicación de escritorio para la gestión segura de activos con múltiples capas de protección:</p>
+            <div class="card mt-1" style="border-left: 4px solid var(--secondary); background: #fffef7;">
+                <h4>✅ Estado validado en esta versión</h4>
+                <ul>
+                    <li><strong>Frontend Security Suite:</strong> 44/44 PASS (11 archivos)</li>
+                    <li><strong>Backend Security Suite:</strong> 5/5 PASS</li>
+                    <li><strong>Angular ng test:</strong> 1/1 PASS</li>
+                    <li><strong>Security CI:</strong> PASS frontend + PASS backend</li>
+                    <li><strong>Versión documentada:</strong> 1.4.0</li>
+                </ul>
+            </div>
+            
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>🗄️ Base de Datos Cifrada</h4>
+                    <p>SQLite + SQLCipher con cifrado <strong>AES-256</strong> para proteger todos los datos en reposo.</p>
+                </div>
+                <div class="card">
+                    <h4>🔑 Hash Seguro de Contraseñas</h4>
+                    <p><strong>Argon2id</strong> - ganador del Password Hashing Competition. Las contraseñas nunca se almacenan en texto plano.</p>
+                </div>
+                <div class="card">
+                    <h4>🌐 Sin Exposición de Red</h4>
+                    <p>Aplicación 100% local, sin servidores HTTP ni APIs expuestas. No abre puertos ni expone servicios.</p>
+                </div>
+                <div class="card">
+                    <h4>📜 Auditoría Inmutable</h4>
+                    <p>Registro completo e inalterable de todas las operaciones del sistema para trazabilidad total.</p>
+                </div>
+                <div class="card">
+                    <h4>🔗 Comunicación Interna Segura</h4>
+                    <p>Angular ↔ Rust mediante invocación controlada de Tauri con separación estricta de responsabilidades.</p>
+                </div>
+                <div class="card">
+                    <h4>👥 Control de Acceso RBAC</h4>
+                    <p>Sistema de roles (Admin/Usuario) con permisos granulares para cada funcionalidad.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== ARQUITECTURA ===== -->
+        <section id="arquitectura">
+            <h2><span class="icon">🏗️</span> Arquitectura del Sistema</h2>
+            <p>Stack tecnológico moderno con separación clara de responsabilidades:</p>
+
+            <div class="architecture-diagram mt-2">
+                <div class="arch-box">
+                    <h4>Frontend</h4>
+                    <p>Angular 21</p>
+                    <small>Interfaz Gráfica</small>
+                </div>
+                <span class="arch-arrow">⟷</span>
+                <div class="arch-box">
+                    <h4>Backend</h4>
+                    <p>Rust + Tauri 2</p>
+                    <small>Lógica &amp; Seguridad</small>
+                </div>
+                <span class="arch-arrow">⟷</span>
+                <div class="arch-box">
+                    <h4>Base de Datos</h4>
+                    <p>SQLite + SQLCipher</p>
+                    <small>Datos Cifrados</small>
+                </div>
+            </div>
+
+            <table class="mt-2">
+                <thead>
+                    <tr>
+                        <th>Capa</th>
+                        <th>Tecnología</th>
+                        <th>Responsabilidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Frontend</strong></td>
+                        <td>Angular 21</td>
+                        <td>Interfaz gráfica de usuario, UX/UI</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Backend</strong></td>
+                        <td>Rust + Tauri 2</td>
+                        <td>Lógica crítica, seguridad, acceso a recursos del sistema</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Base de Datos</strong></td>
+                        <td>SQLite + SQLCipher</td>
+                        <td>Almacenamiento cifrado con AES-256</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Criptografía</strong></td>
+                        <td>Argon2id</td>
+                        <td>Hash seguro de contraseñas</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ===== ESTRUCTURA DEL PROYECTO ===== -->
+        <section id="estructura">
+            <h2><span class="icon">📁</span> Estructura del Proyecto</h2>
+            <p>Organización del código fuente con separación clara entre frontend y backend:</p>
+
+            <div class="file-tree mt-2">
+<span class="folder">gestor-activos/</span>
+├── <span class="folder">src/</span>                    <span class="comment"># Código Angular (frontend)</span>
+│   ├── <span class="folder">app/</span>
+│   │   ├── <span class="folder">components/</span>
+│   │   │   ├── <span class="folder">activos/</span>       <span class="comment"># CRUD de activos</span>
+│   │   │   ├── <span class="folder">audit/</span>         <span class="comment"># Timeline de auditoría</span>
+│   │   │   ├── <span class="folder">dashboard/</span>     <span class="comment"># Vista principal</span>
+│   │   │   ├── <span class="folder">home/</span>          <span class="comment"># Página inicial</span>
+│   │   │   ├── <span class="folder">login/</span>         <span class="comment"># Autenticación</span>
+│   │   │   ├── <span class="folder">profile/</span>       <span class="comment"># Perfil de usuario</span>
+│   │   │   ├── <span class="folder">register/</span>      <span class="comment"># Registro</span>
+│   │   ├── <span class="folder">asignaciones/</span>  <span class="comment"># Gestión de bases de datos (admin)</span>
+│   │   └── <span class="folder">users/</span>         <span class="comment"># Gestión usuarios (admin)</span>
+│   │   ├── <span class="folder">guards/</span>
+│   │   │   ├── <span class="file">auth.guard.ts</span>   <span class="comment"># Protección de rutas</span>
+│   │   └── <span class="file">login.guard.ts</span>  <span class="comment"># Redirección si ya logueado</span>
+│   │   └── <span class="folder">services/</span>
+│   │       ├── <span class="file">auth.service.ts</span>  <span class="comment"># Servicio de autenticación</span>
+│   │       └── <span class="file">tauri.service.ts</span> <span class="comment"># Comunicación con Rust</span>
+│   └── <span class="file">styles.scss</span>             <span class="comment"># Estilos globales</span>
+│
+├── <span class="folder">src-tauri/</span>              <span class="comment"># Código Rust (backend)</span>
+│   ├── <span class="folder">src/</span>
+│   │   ├── <span class="file">lib.rs</span>           <span class="comment"># Punto de entrada principal</span>
+│   │   ├── <span class="file">db.rs</span>            <span class="comment"># Módulo de base de datos</span>
+│   │   ├── <span class="file">crypto.rs</span>        <span class="comment"># Módulo de criptografía</span>
+│   │   └── <span class="file">commands.rs</span>      <span class="comment"># Comandos Tauri (API interna)</span>
+│   └── <span class="file">Cargo.toml</span>          <span class="comment"># Dependencias Rust</span>
+│
+├── <span class="file">angular.json</span>            <span class="comment"># Configuración Angular</span>
+├── <span class="file">package.json</span>            <span class="comment"># Dependencias Node.js</span>
+└── <span class="file">PROYECTO.md</span>             <span class="comment"># Documentación</span>
+            </div>
+        </section>
+
+        <!-- ===== COMANDOS DE DESARROLLO ===== -->
+        <section id="comandos">
+            <h2><span class="icon">🚀</span> Comandos de Desarrollo</h2>
+            <p>Guía completa de comandos disponibles para el desarrollo y despliegue de la aplicación:</p>
+
+            <!-- Comando: npm install -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>📦</span>
+                    <h4>npm install</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Instalar todas las dependencias del proyecto.</p>
+                    <p><strong>¿Qué hace?</strong> Lee el archivo <code>package.json</code> y descarga todas las librerías necesarias (Angular, TypeScript, herramientas de desarrollo, etc.) al directorio <code>node_modules/</code>. Debe ejecutarse al clonar el proyecto por primera vez o cuando se actualice el <code>package.json</code>.</p>
+                    <p><strong>Cuándo usarlo:</strong> Primera vez que configuras el proyecto o después de un <code>git pull</code> que incluya cambios en dependencias.</p>
+                    <pre><code>npm install</code></pre>
+                </div>
+            </div>
+
+            <!-- Comando: npm run dev -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>🔧</span>
+                    <h4>npm run dev</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Ejecutar la aplicación en modo desarrollo.</p>
+                    <p><strong>¿Qué hace?</strong> Inicia el servidor de desarrollo de Angular con recarga automática (hot-reload). Cualquier cambio que hagas en el código se reflejará instantáneamente sin necesidad de reiniciar. El frontend se conecta al backend Rust para desarrollo.</p>
+                    <p><strong>Características:</strong></p>
+                    <ul>
+                        <li>Hot-reload automático para cambios en frontend</li>
+                        <li>Mapas de código fuente para debugging</li>
+                        <li>Mensajes de error detallados en consola</li>
+                        <li>No optimizado (más rápido de compilar)</li>
+                    </ul>
+                    <pre><code>npm run dev</code></pre>
+                </div>
+            </div>
+
+            <!-- Comando: npm start -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>▶️</span>
+                    <h4>npm start</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Iniciar la aplicación Angular.</p>
+                    <p><strong>¿Qué hace?</strong> Ejecuta el servidor de desarrollo de Angular. Similar a <code>npm run dev</code> pero con la configuración estándar de Angular CLI.</p>
+                    <p><strong>Puerto por defecto:</strong> <code>http://localhost:4200</code></p>
+                    <pre><code>npm start</code></pre>
+                </div>
+            </div>
+
+            <!-- Comando: npm run tauri dev -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>🦀</span>
+                    <h4>npm run tauri dev</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Ejecutar la aplicación completa en modo desarrollo (Frontend + Backend).</p>
+                    <p><strong>¿Qué hace?</strong> Inicia simultáneamente:</p>
+                    <ol>
+                        <li>El servidor de desarrollo de Angular (frontend)</li>
+                        <li>Compila y ejecuta el backend Rust con Tauri</li>
+                        <li>Abre la ventana de la aplicación de escritorio</li>
+                    </ol>
+                    <p><strong>Características:</strong></p>
+                    <ul>
+                        <li>Hot-reload completo (frontend y backend)</li>
+                        <li>DevTools disponibles en la ventana</li>
+                        <li>Logs de Rust visibles en terminal</li>
+                        <li>Comunicación en tiempo real Angular ↔ Rust</li>
+                    </ul>
+                    <p><strong>Nota:</strong> Requiere Rust instalado y configurado correctamente.</p>
+                    <pre><code>npm run tauri dev</code></pre>
+                </div>
+            </div>
+
+            <!-- Comando: npm run tauri build -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>📦</span>
+                    <h4>npm run tauri build</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Compilar la aplicación para producción.</p>
+                    <p><strong>¿Qué hace?</strong> Realiza una compilación completa optimizada:</p>
+                    <ol>
+                        <li>Compila Angular en modo producción (minificado, tree-shaking)</li>
+                        <li>Compila Rust en modo release (optimizaciones máximas)</li>
+                        <li>Empaqueta todo en un ejecutable nativo</li>
+                        <li>Genera instaladores para el sistema operativo</li>
+                    </ol>
+                    <p><strong>Salida (Windows):</strong></p>
+                    <ul>
+                        <li>Ejecutable: <code>src-tauri/target/release/gestor-activos.exe</code></li>
+                        <li>Instalador MSI: <code>src-tauri/target/release/bundle/msi/</code></li>
+                    </ul>
+                    <p><strong>Tiempo aproximado:</strong> 3-10 minutos dependiendo del hardware.</p>
+                    <pre><code>npm run tauri build</code></pre>
+                </div>
+            </div>
+
+            <!-- Comando: npm test -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>🧪</span>
+                    <h4>npm test</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Ejecutar las pruebas unitarias del proyecto.</p>
+                    <p><strong>¿Qué hace?</strong> Ejecuta el framework de testing (Karma/Jasmine por defecto en Angular) para correr todos los archivos <code>*.spec.ts</code>. Valida que los componentes y servicios funcionen correctamente.</p>
+                    <p><strong>Archivos de test:</strong> <code>src/app/**/*.spec.ts</code></p>
+                    <pre><code>npm test</code></pre>
+                </div>
+            </div>
+
+            <!-- Comando: npm run test:security:frontend -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>🛡️</span>
+                    <h4>npm run test:security:frontend</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Ejecutar la suite de seguridad del frontend (Angular + Vitest).</p>
+                    <p><strong>¿Qué hace?</strong> Corre pruebas de autenticación, control de acceso por guard, chatbot, validaciones de subida de archivos y umbrales de rendimiento en frontend.</p>
+                    <p><strong>Archivos de test:</strong> <code>tests/frontend/**/*.spec.ts</code></p>
+                    <pre><code>npm run test:security:frontend</code></pre>
+                </div>
+            </div>
+
+            <!-- Comando: npm run test:security:backend -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>🦀</span>
+                    <h4>npm run test:security:backend</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Ejecutar la suite de seguridad del backend Rust.</p>
+                    <p><strong>¿Qué hace?</strong> Ejecuta pruebas de criptografía, gestión de clave local, inicialización segura de base de datos/auditoría y límites de rendimiento en operaciones críticas.</p>
+                    <p><strong>Comando interno:</strong> <code>cargo test --test security</code> dentro de <code>src-tauri/</code>.</p>
+                    <pre><code>npm run test:security:backend</code></pre>
+                </div>
+            </div>
+
+            <!-- Comando: npm run test:security:ci -->
+            <div class="command-card">
+                <div class="command-header">
+                    <span>📊</span>
+                    <h4>npm run test:security:ci</h4>
+                </div>
+                <div class="command-body">
+                    <p><strong>Propósito:</strong> Ejecutar frontend + backend de seguridad en cadena con resumen final para CI/CD.</p>
+                    <p><strong>¿Qué hace?</strong> Lanza ambas suites, mide tiempo por bloque y muestra estado <code>PASS/FAIL</code> de cada una en un resumen consolidado.</p>
+                    <p><strong>Script:</strong> <code>scripts/security-ci.mjs</code></p>
+                    <pre><code>npm run test:security:ci</code></pre>
+                </div>
+            </div>
+
+            <!-- Resumen de comandos -->
+            <h3 class="mt-2">📋 Resumen Rápido</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Comando</th>
+                        <th>Uso</th>
+                        <th>Entorno</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>npm install</code></td>
+                        <td>Instalar dependencias</td>
+                        <td>Inicial</td>
+                    </tr>
+                    <tr>
+                        <td><code>npm run dev</code></td>
+                        <td>Desarrollo frontend</td>
+                        <td>Desarrollo</td>
+                    </tr>
+                    <tr>
+                        <td><code>npm start</code></td>
+                        <td>Iniciar Angular</td>
+                        <td>Desarrollo</td>
+                    </tr>
+                    <tr>
+                        <td><code>npm run tauri dev</code></td>
+                        <td>App completa (Angular + Rust)</td>
+                        <td>Desarrollo</td>
+                    </tr>
+                    <tr>
+                        <td><code>npm run tauri build</code></td>
+                        <td>Compilar para distribución</td>
+                        <td>Producción</td>
+                    </tr>
+                    <tr>
+                        <td><code>npm test</code></td>
+                        <td>Ejecutar pruebas</td>
+                        <td>Testing</td>
+                    </tr>
+                    <tr>
+                        <td><code>npm run test:security:frontend</code></td>
+                        <td>Suite de seguridad frontend</td>
+                        <td>Testing Seguridad</td>
+                    </tr>
+                    <tr>
+                        <td><code>npm run test:security:backend</code></td>
+                        <td>Suite de seguridad backend</td>
+                        <td>Testing Seguridad</td>
+                    </tr>
+                    <tr>
+                        <td><code>npm run test:security:ci</code></td>
+                        <td>Resumen consolidado (frontend + backend)</td>
+                        <td>CI/CD</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ===== ZONA DE TESTING ===== -->
+        <section id="testing">
+            <h2><span class="icon">🧪</span> Zona de Testing de Seguridad</h2>
+            <p>Esta sección documenta de forma detallada qué se mide en cada suite, dónde están las pruebas y el resultado validado más reciente.</p>
+
+            <h3 class="mt-2">🎯 Qué se está midiendo</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bloque</th>
+                        <th>Qué valida</th>
+                        <th>Archivo(s)</th>
+                        <th>Métrica / Criterio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Login y sesión (Frontend)</strong></td>
+                        <td>Persistencia de sesión solo en login exitoso, limpieza en logout, rechazo de credenciales inválidas.</td>
+                        <td><code>tests/frontend/auth.service.security.spec.ts</code></td>
+                        <td>Sin fuga de contraseña en sessionStorage y flujo consistente de autenticación.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Control de acceso (Frontend)</strong></td>
+                        <td>El guard bloquea usuarios no autenticados y redirige a login.</td>
+                        <td><code>tests/frontend/auth.guard.security.spec.ts</code></td>
+                        <td>Acceso permitido solo con usuario activo en contexto.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Chatbot (Frontend)</strong></td>
+                        <td>Restricción de auditorías para no-admin y respuesta válida del bot a búsquedas.</td>
+                        <td><code>tests/frontend/chatbot.service.security.spec.ts</code></td>
+                        <td>Sin acceso a auditoría por rol no autorizado + respuesta funcional.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Subida de archivos (Frontend)</strong></td>
+                        <td>Bloqueo de archivos &gt;5MB, bloqueo de tipos no imagen y conversión segura a base64.</td>
+                        <td><code>tests/frontend/activos.upload.security.spec.ts</code></td>
+                        <td>Validación previa estricta antes de guardar contenido en estado.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Control de acceso login (Frontend)</strong></td>
+                        <td>loginGuard redirige a dashboard si ya hay sesión activa.</td>
+                        <td><code>tests/frontend/login.guard.spec.ts</code></td>
+                        <td>Acceso a /login solo sin sesión activa.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>AuthService (Frontend)</strong></td>
+                        <td>hasRole, carga de bases, timezone, logout, normalización admin/administrador.</td>
+                        <td><code>tests/frontend/auth.service.spec.ts</code></td>
+                        <td>6 tests cubriendo todos los métodos públicos.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Integración de guards (Frontend)</strong></td>
+                        <td>authGuard + loginGuard son mutuamente excluyentes.</td>
+                        <td><code>tests/frontend/routing.security.spec.ts</code></td>
+                        <td>Comportamiento combinado validado.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Parser del Chatbot (Frontend)</strong></td>
+                        <td>Extracción de filtros: categoría, estado, marca, pulgadas, precio, auditoría.</td>
+                        <td><code>tests/frontend/chatbot.parser.spec.ts</code></td>
+                        <td>7 tests cubriendo cada tipo de filtro.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rendimiento extendido (Frontend)</strong></td>
+                        <td>100 login concurrentes, 50 búsquedas chatbot, bases_datos, hasRole.</td>
+                        <td><code>tests/frontend/performance_extended.spec.ts</code></td>
+                        <td>Umbrales: 100 login &lt; 500ms, 50 chatbot &lt; 1000ms.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rendimiento Frontend</strong></td>
+                        <td>Tiempos de respuesta de login, chatbot y transformación de imagen.</td>
+                        <td><code>tests/frontend/performance.security.spec.ts</code></td>
+                        <td>Umbrales: login &lt; 80ms, chatbot &lt; 250ms, upload base64 &lt; 80ms.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Criptografía y DB (Backend)</strong></td>
+                        <td>Hash/verify de contraseña, generación/reutilización de clave local, inicialización DB y auditoría.</td>
+                        <td><code>src-tauri/tests/security/*.rs</code></td>
+                        <td>Integridad de seguridad y funcionamiento de rutas críticas.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rendimiento Backend</strong></td>
+                        <td>Tiempo de generación de clave y tiempo de hash/verify.</td>
+                        <td><code>src-tauri/tests/security/performance.rs</code></td>
+                        <td>Umbrales: clave &lt; 300ms, hash/verify &lt; 1500ms.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 class="mt-2">✅ Resultados de la última ejecución validada</h3>
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>Frontend Security Suite</h4>
+                    <p><span class="badge badge-success">PASS</span></p>
+                    <ul>
+                        <li><strong>44/44 tests</strong> aprobados (11 archivos)</li>
+                        <li>Cobertura de login, guards, auth service, chatbot parser, subida, routing, performance</li>
+                        <li>Ejecución estable en Vitest y ng test</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Backend Security Suite</h4>
+                    <p><span class="badge badge-success">PASS</span></p>
+                    <ul>
+                        <li><strong>5/5 tests</strong> aprobados</li>
+                        <li>Cripto, clave local, DB/auditoría y performance</li>
+                        <li>Sin errores de integración</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Resumen CI de Seguridad</h4>
+                    <p><span class="badge badge-success">PASS</span></p>
+                    <ul>
+                        <li>Frontend: PASS</li>
+                        <li>Backend: PASS</li>
+                        <li>Script consolidado: <code>scripts/security-ci.mjs</code></li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="mt-2">▶️ Cómo correr cada suite</h3>
+            <pre><code># Frontend (seguridad + performance)
+npm run test:security:frontend
+
+# Backend (seguridad + performance)
+npm run test:security:backend
+
+# Ambas suites + resumen para CI
+npm run test:security:ci</code></pre>
+        </section>
+
+        <!-- ===== MÓDULOS IMPLEMENTADOS ===== -->
+        <section id="modulos">
+            <h2><span class="icon">📋</span> Módulos Implementados</h2>
+
+            <h3 class="mt-2">Backend (Rust)</h3>
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>🗄️ db.rs - Base de Datos</h4>
+                    <ul>
+                        <li>Conexión segura a SQLite cifrado</li>
+                        <li>Inicialización de tablas (usuarios, activos, auditoría)</li>
+                        <li>Sistema de auditoría inmutable</li>
+                        <li>Historial de visualizaciones de activos</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🔐 crypto.rs - Criptografía</h4>
+                    <ul>
+                        <li>Hash de contraseñas con Argon2id</li>
+                        <li>Verificación de contraseñas</li>
+                        <li>Parámetros seguros y validación de credenciales</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🔑 security.rs - Gestión de Clave</h4>
+                    <ul>
+                        <li>Generación de clave local por instalación</li>
+                        <li>Persistencia de <code>db.key</code> en directorio de app</li>
+                        <li>Reutilización de clave para acceso consistente a datos cifrados</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>⚡ commands.rs - Comandos Tauri</h4>
+                    <ul>
+                        <li><code>create_user</code>: Crear usuarios con contraseñas hasheadas</li>
+                        <li><code>login</code>/<code>logout</code>: Autenticación segura</li>
+                        <li><code>get_activos</code>: Consultar activos (filtrados por base de datos)</li>
+                        <li><code>get_activo_detalles</code>: Detalles completos con base de datos</li>
+                        <li><code>register_activo_vista</code>: Registrar visualización</li>
+                        <li><code>get_audit_log</code>: Obtener logs de auditoría (filtrados por base de datos)</li>
+                        <li><code>get_bases_datos</code>/<code>create_base_datos</code>/<code>update_base_datos</code>/<code>delete_base_datos</code>: CRUD de bases de datos lógicas</li>
+                        <li><code>get_user_bases_datos</code>/<code>assign_user_to_base_datos</code>/<code>unassign_user_from_base_datos</code>: Asignación usuario-BD</li>
+                        <li><code>get_available_bases_datos</code>: Bases disponibles para asignar</li>
+                        <li><code>verify_admin_password</code>: Verifica contraseña de administrador para exportar/importar</li>
+                        <li><code>export_base_datos</code>: Exporta base de datos completa a ZIP cifrado con AES-256</li>
+                        <li><code>import_base_datos</code>: Importa base de datos desde ZIP cifrado (crea nueva BD + activos + re-asigna usuarios)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="mt-2">Frontend (Angular)</h3>
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>📊 Dashboard</h4>
+                    <ul>
+                        <li>Vista principal con estadísticas</li>
+                        <li>Listado de activos recientes (últimos 5)</li>
+                        <li>Modal interactivo de detalles</li>
+                        <li>Sidebar de navegación</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>📦 Activos</h4>
+                    <ul>
+                        <li>CRUD completo de activos</li>
+                        <li>Búsqueda y filtros avanzados</li>
+                        <li>Paginación (40 items/página)</li>
+                        <li>Modal con imagen e historial</li>
+                        <li>Filtros por múltiples criterios</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>📜 Auditoría</h4>
+                    <ul>
+                        <li>Timeline visual de eventos</li>
+                        <li>Filtros por acción (CREATE, UPDATE, DELETE)</li>
+                        <li>Logs LOGIN/LOGOUT (solo admin)</li>
+                        <li>Agrupación por fecha</li>
+                        <li>Iconos diferenciados por tipo</li>
+                        <li><strong>Exportación a PDF/XML</strong> con filtros:
+                            <ul>
+                                <li>Todos los datos o solo resultados visibles</li>
+                                <li>Filtrar por rango de fechas</li>
+                                <li>Filtrar por categorías</li>
+                                <li>Respeta filtros de usuario y acción</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>👥 Usuarios (Admin)</h4>
+                    <ul>
+                        <li>Gestión de usuarios del sistema</li>
+                        <li>Asignación de roles (admin/operador/auditor)</li>
+                        <li>Configuración de zonas horarias</li>
+                        <li>Asignación de bases de datos al crear usuario</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🗂️ Asignaciones (Admin)</h4>
+                    <ul>
+                        <li>CRUD de bases de datos lógicas (por unidad/departamento)</li>
+                        <li>Asignación de usuarios a bases de datos</li>
+                        <li>Bloqueo de eliminación si hay activos asociados</li>
+                        <li>Sidebar con enlace directo</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>👤 Perfil</h4>
+                    <ul>
+                        <li>Visualización y edición de datos</li>
+                        <li>Cambio de contraseña seguro</li>
+                        <li>Configuración de zona horaria</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🔐 Login</h4>
+                    <ul>
+                        <li>Autenticación segura</li>
+                        <li>Diseño con efecto camuflaje</li>
+                        <li>Validación de credenciales</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🤖 Chatbot NLP</h4>
+                    <ul>
+                        <li>Asistente virtual con procesamiento de lenguaje natural</li>
+                        <li>Búsqueda de activos por múltiples filtros</li>
+                        <li>Búsqueda de auditorías (admin)</li>
+                        <li>Exportación de registros a PDF/XML</li>
+                        <li>Navegación directa con "Ir al activo"</li>
+                        <li>Respuestas contextuales inteligentes</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CHATBOT NLP ===== -->
+        <section id="chatbot">
+            <h2><span class="icon">🤖</span> Chatbot NLP - Asistente Virtual Inteligente</h2>
+            <p>Sistema de búsqueda inteligente mediante lenguaje natural en español, con extracción automática de filtros y respuestas contextuales.</p>
+
+            <h3 class="mt-2">Búsqueda de Activos</h3>
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>🔍 Filtros Soportados</h4>
+                    <ul>
+                        <li><strong>Código</strong>: Búsqueda exacta con prioridad máxima</li>
+                        <li><strong>Marca</strong>: LG, Samsung, Dell, HP, Lenovo, Apple, etc.</li>
+                        <li><strong>Categoría</strong>: Equipos, telecomunicaciones, mobiliario, herramientas, software</li>
+                        <li><strong>Estado</strong>: Operativo, en mantenimiento, fuera de servicio, en reparación</li>
+                        <li><strong>Ubicación</strong>: Facatativá, Bogotá, Medellín, Cali, etc.</li>
+                        <li><strong>Precio</strong>: Más de, menos de, entre (ej: "menos de 50000")</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>📏 Medidas Específicas por Categoría</h4>
+                    <ul>
+                        <li><strong>Pulgadas</strong>: Para monitores y TV (ej: "monitor de 24 pulgadas")</li>
+                        <li><strong>Calibre</strong>: Para armas (ej: "arma de 9mm", ".45")</li>
+                        <li><strong>Litros</strong>: Para líquidos (ej: "leche de 2 litros", "500ml")</li>
+                        <li><strong>Peso</strong>: Para alimentos (ej: "arroz de 5 kg", "2 libras", "500 gramos")</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🧠 Inteligencia de Filtrado</h4>
+                    <ul>
+                        <li>Filtros se aplican <strong>siempre</strong>, incluso con 0 resultados</li>
+                        <li>Detección de búsquedas vagas (&lt; 4 caracteres)</li>
+                        <li>Stopwords ignoradas: el, la, un, de, en, con, etc.</li>
+                        <li>Prioridad: código &gt; marca/categoría/estado &gt; keywords</li>
+                        <li>Prevención de falsos positivos con word boundaries</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="mt-2">Búsqueda de Auditorías (Admin)</h3>
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>👤 Por Usuario</h4>
+                    <p>Filtrar registros por nombre de usuario:</p>
+                    <ul>
+                        <li>"registros de admin"</li>
+                        <li>"actividades de jose"</li>
+                        <li>"dame todos los registros del usuario admin"</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>⚡ Por Acción</h4>
+                    <p>Filtrar por tipo de evento:</p>
+                    <ul>
+                        <li>LOGIN / LOGOUT</li>
+                        <li>CREATE / UPDATE / DELETE</li>
+                        <li>"muestra los logins de admin"</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>📤 Exportación Inteligente</h4>
+                    <p>Exportar registros con filtros aplicados:</p>
+                    <ul>
+                        <li>Todos los datos o solo resultados visibles</li>
+                        <li>Filtrar por rango de fechas</li>
+                        <li>Filtrar por categorías (LOGIN, LOGOUT, etc.)</li>
+                        <li>Respeta filtros de usuario y acción de la búsqueda</li>
+                        <li>Formatos: PDF y XML</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="mt-2">Ejemplos de Consultas</h3>
+            <div class="code-example">
+                <pre><code>
+✅ "busco un monitor LG de 24 pulgadas en Facatativá"
+   Filtros aplicados: marca=LG, pulgadas=24, ubicacion=Facatativá
+
+✅ "femb de menos de 50000 en operativo"
+   Filtros aplicados: keywords=femb, precio_max=50000, estado=operativo
+
+✅ "arma de 9mm en Bogotá"
+   Filtros aplicados: calibre=9mm, ubicacion=Bogotá
+
+✅ "arroz de 5 kg"
+   Filtros aplicados: keywords=arroz, peso=5, unidad_peso=kg
+
+✅ "código 123456"
+   Búsqueda exacta por código (prioridad máxima)
+
+✅ "registros de admin" (admin only)
+   Filtros aplicados: usuario=admin
+
+❌ "lg" (búsqueda vaga, &lt; 4 caracteres)
+   Respuesta: "Tu búsqueda es muy vaga..."
+
+❌ "código 999999" (no existe)
+   Respuesta: "No tenemos el código 999999 en nuestro inventario"
+                </code></pre>
+            </div>
+
+            <h3 class="mt-2">Casos Especiales</h3>
+            <div class="warning-box">
+                <h4>⚠️ Manejo de Excepciones</h4>
+                <ul>
+                    <li><strong>Código inexistente</strong>: Mensaje específico indicando que no existe</li>
+                    <li><strong>Búsqueda vaga</strong>: Solicita keywords más específicos (min 4 caracteres)</li>
+                    <li><strong>Sin coincidencias</strong>: Sugiere ampliar criterios o verificar ortografía</li>
+                    <li><strong>Prevención de falsos positivos</strong>: "alguno" NO detecta marca "LG" (word boundaries)</li>
+                    <li><strong>Orden de extracción</strong>: "2 kg" NO se detecta como "2 g" (kg antes de g)</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ===== ASIGNACIONES DE BASES DE DATOS ===== -->
+        <section id="asignaciones">
+            <h2><span class="icon">🗂️</span> Asignaciones - Bases de Datos Lógicas</h2>
+            <p>Sistema de segmentación de activos por bases de datos lógicas, permitiendo que cada unidad/departamento gestione sus propios activos de forma aislada dentro de la misma aplicación.</p>
+
+            <h3 class="mt-2">📋 Gestión de Bases de Datos</h3>
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>➕ Crear Base de Datos</h4>
+                    <p>El administrador puede crear bases de datos lógicas con nombre y descripción, representando unidades, departamentos o sedes.</p>
+                </div>
+                <div class="card">
+                    <h4>👥 Asignar Usuarios</h4>
+                    <p>Cada usuario (operador/auditor) puede ser asignado a una o varias bases de datos. Los administradores ven todas.</p>
+                </div>
+                <div class="card">
+                    <h4>🔒 Aislamiento de Datos</h4>
+                    <p>Los usuarios no administradores solo ven activos, auditorías y logs de las bases de datos a las que están asignados.</p>
+                </div>
+                <div class="card">
+                    <h4>⛔ Sin Base Asignada</h4>
+                    <p>Si un usuario no tiene bases asignadas, se le muestra una pantalla informativa bloqueando el acceso hasta que el administrador lo asigne.</p>
+                </div>
+                <div class="card">
+                    <h4>🛡️ Protección al Eliminar</h4>
+                    <p>No se puede eliminar una base de datos que tenga activos asociados. El sistema muestra un mensaje con la cantidad de activos bloqueantes.</p>
+                </div>
+                <div class="card">
+                    <h4>📤 Exportar / Importar</h4>
+                    <p>Exporta cualquier base de datos a un archivo ZIP cifrado con AES-256. Se genera una contraseña aleatoria de 30 caracteres que se muestra al usuario con opción de copiar. Importa desde ZIP: verifica admin password, selecciona archivo, ingresa la contraseña de exportación, y crea una nueva base de datos con todos los activos y re-asignación de usuarios.</p>
+                </div>
+                <div class="card">
+                    <h4>📊 Filtro por Base</h4>
+                    <p>Los usuarios con múltiples bases pueden filtrar activos y auditorías por base de datos mediante un dropdown.</p>
+                </div>
+            </div>
+
+            <h3 class="mt-2">🔧 Implementación Técnica</h3>
+            <pre><code>-- Tablas del sistema
+bases_datos (id, nombre, descripcion, created_at)
+usuario_base_datos (usuario_id, base_datos_id)
+
+-- Columnas agregadas
+ALTER TABLE activos ADD COLUMN base_datos_id INTEGER REFERENCES bases_datos(id);
+ALTER TABLE auditoria ADD COLUMN base_datos_id INTEGER REFERENCES bases_datos(id);
+
+-- Filtrado en backend (Rust)
+let base_ids = db.get_user_base_datos_ids(user_id).await?;
+// Admin: todas las bases. Operador/Auditor: solo las asignadas.
+
+-- Auditoría con contexto
+db.log_audit(user_id, "CREATE", "activos", activo_id,
+             None, Some(&amp;activo.nombre), Some(activo.base_datos_id)).await?;</code></pre>
+        </section>
+
+        <!-- ===== CONTROL DE ACCESO ===== -->
+        <section id="roles">
+            <h2><span class="icon">🔒</span> Control de Acceso Basado en Roles (RBAC)</h2>
+            <p>Sistema de permisos granular que define qué puede hacer cada tipo de usuario:</p>
+
+            <div class="roles-grid mt-2">
+                <div class="role-card">
+                    <div class="role-header">
+                        <h4>👑 Administradores</h4>
+                    </div>
+                    <ul>
+                        <li><strong>Ver historial de visualizaciones</strong> - Quién y cuándo vio cada activo</li>
+                        <li><strong>Ver logs de LOGIN/LOGOUT</strong> - Eventos de autenticación completos</li>
+                        <li><strong>Filtrar por LOGIN/LOGOUT</strong> - Filtros especiales en auditoría</li>
+                        <li><strong>Gestionar usuarios</strong> - Crear, modificar y eliminar</li>
+                        <li><strong>Asignar roles</strong> - Promover o degradar usuarios</li>
+                        <li><strong>Acceso completo</strong> - Todas las funcionalidades</li>
+                    </ul>
+                </div>
+                <div class="role-card">
+                    <div class="role-header">
+                        <h4>👤 Usuarios Regulares (Operador / Auditor)</h4>
+                    </div>
+                    <ul>
+                        <li><strong>CRUD de activos</strong> - Crear, leer, actualizar, eliminar</li>
+                        <li><strong>Ver auditoría limitada</strong> - Solo CREATE, UPDATE, DELETE</li>
+                        <li><strong>Gestionar su perfil</strong> - Cambiar contraseña, zona horaria</li>
+                        <li><strong>Búsqueda y filtros</strong> - Acceso completo a búsquedas</li>
+                        <li><strong>Dashboard</strong> - Estadísticas y vista de activos</li>
+                        <li><strong>Segmentación por base de datos</strong> - Solo acceden a activos y auditoría de sus bases asignadas</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="mt-2">🔧 Implementación Técnica</h3>
+            <pre><code>// En componentes con restricciones
+isAdmin(): boolean {
+  return this.authService.hasRole('admin');
+}
+
+// En templates Angular
+@if (isAdmin()) {
+  &lt;!-- Contenido exclusivo para admin --&gt;
+}
+
+// Filtrado automático de logs
+if (!this.authService.hasRole('admin')) {
+  logsParaAgrupar = logsParaAgrupar.filter(log =&gt; 
+    log.action !== 'LOGIN' &amp;&amp; log.action !== 'LOGOUT'
+  );
+}</code></pre>
+        </section>
+
+        <!-- ===== DISEÑO DE INTERFAZ ===== -->
+        <section id="diseno">
+            <h2><span class="icon">🎨</span> Diseño de Interfaz</h2>
+
+            <h3>Tema Oscuro Militar</h3>
+            <p>Paleta de colores oscura premium inspirada en equipamiento táctico militar:</p>
+
+            <div class="color-palette">
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #1E2614;"></div>
+                    <span>Fondo oscuro<br>#1E2614</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #2D3A1E;"></div>
+                    <span>Verde medio<br>#2D3A1E</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #4A5D23;"></div>
+                    <span>Oliva<br>#4A5D23</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #6B8E23;"></div>
+                    <span>Oliva claro<br>#6B8E23</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #E8E4D9;"></div>
+                    <span>Crema<br>#E8E4D9</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #C4A265;"></div>
+                    <span>Dorado (acento)<br>#C4A265</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #D4CDB5;"></div>
+                    <span>Khaki<br>#D4CDB5</span>
+                </div>
+            </div>
+
+            <h3 class="mt-2">Tipografía</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Uso</th>
+                        <th>Fuente</th>
+                        <th>Característica</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Títulos</td>
+                        <td>Playfair Display</td>
+                        <td>Serif elegante, peso 400-800</td>
+                    </tr>
+                    <tr>
+                        <td>Cuerpo</td>
+                        <td>Lato</td>
+                        <td>Sans-serif moderna, peso 300-700</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 class="mt-2">Características Visuales</h3>
+            <ul class="feature-list">
+                <li>Fondo oscuro #1E2614 con patrón de camuflaje cruzado a 45°</li>
+                <li>Tarjetas glassmorphism con backdrop-filter: blur(12-16px)</li>
+                <li>Esquinas decorativas doradas en cards y CTA (efecto "insignia militar")</li>
+                <li>Escudo / emblema dentro de anillo dorado con animación pulse</li>
+                <li>Acentos dorados (#C4A265) en bordes, botones y badges</li>
+                <li>Inputs oscuros con texto crema y focus glow dorado</li>
+                <li>Botones dorados sólidos con hover a dorado oscuro (#A6884D)</li>
+                <li>Top bar sticky con bordes dorados semitransparentes</li>
+                <li>Badges diferenciados por tipo de acción</li>
+                <li>Hover effects con translateY(-2px) para interactividad</li>
+                <li>Scrollbar personalizado con tema militar</li>
+                <li>Modales overlay con backdrop difuminado</li>
+            </ul>
+
+            <h3 class="mt-2">Sistema de Badges</h3>
+            <p>
+                <span class="badge badge-success">CREATE (Éxito)</span>
+                <span class="badge badge-warning">UPDATE (Advertencia)</span>
+                <span class="badge badge-danger">DELETE (Peligro)</span>
+                <span class="badge badge-info">LOGIN/LOGOUT (Info)</span>
+            </p>
+        </section>
+
+        <!-- ===== CUMPLIMIENTO DE REQUISITOS ===== -->
+        <section id="cumplimiento">
+            <h2><span class="icon">🛡️</span> Cumplimiento de Requisitos</h2>
+            <ul class="feature-list">
+                <li>Aplicación de escritorio sin dependencia de internet</li>
+                <li>Sin exposición de puertos ni servicios de red</li>
+                <li>Base de datos SQLite cifrada con SQLCipher (AES-256)</li>
+                <li>Hash seguro de contraseñas con Argon2id</li>
+                <li>Sistema de auditoría inmutable</li>
+                <li>Separación frontend/backend con control estricto de permisos</li>
+                <li>Instalador y desinstalador nativos (MSI para Windows)</li>
+                <li>Control de acceso basado en roles (RBAC)</li>
+                <li>Segmentación lógica de datos por bases de datos (multi-departamento)</li>
+                <li>Exportación/Importación de bases de datos con cifrado AES-256 vía ZIP</li>
+                <li>Interfaz de usuario con diseño militar elegante</li>
+            </ul>
+        </section>
+
+        <!-- ===== HISTORIAL DE CAMBIOS ===== -->
+        <section id="changelog">
+            <h2><span class="icon">📝</span> Historial de Cambios</h2>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>Versión 1.5.0 - Julio 2026</h4>
+
+                    <h5 class="mt-1">📤 Exportación e Importación de Bases de Datos</h5>
+                    <ul>
+                        <li><strong>Exportar BD</strong>: verifica contraseña de admin, diálogo nativo con ruta por defecto en Descargas, exporta todos los activos (con imágenes) + auditoría como JSON a un archivo <code>.7z</code> cifrado con AES-256 (LZMA2), genera contraseña aleatoria de 30 caracteres con advertencia roja de seguridad.</li>
+                        <li><strong>Importar BD</strong>: verifica contraseña de admin, selecciona archivo <code>.7z</code>, ingresa contraseña de exportación, Rust descifra con <code>sevenz-rust</code>, crea nueva base de datos, inserta todos los activos (con imágenes), preserva nombre de base original en descripción de cada activo, re-asigna usuarios existentes.</li>
+                        <li><strong>Manejo de errores claro</strong>: errores LZMA2/contraseña incorrecta traducidos a "Contraseña de exportación incorrecta".</li>
+                        <li><strong>Seguridad:</strong> <code>sevenz-rust</code> v0.6 con feature <code>aes256</code>, contraseña con <code>rand::thread_rng().sample_iter(Alphanumeric).take(30)</code>.</li>
+                        <li><strong>Plugins Tauri:</strong> <code>tauri-plugin-dialog</code> (save/open), <code>tauri-plugin-fs</code>. Permisos <code>dialog:default</code> y <code>fs:default</code> agregados en capabilities.</li>
+                        <li><strong>Nuevos comandos Rust:</strong> <code>verify_admin_password</code>, <code>export_base_datos</code>, <code>import_base_datos</code>.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🎨 Home elegante con carrusel y animaciones</h5>
+                    <ul>
+                        <li><strong>Carrusel de capacidades</strong>: 6 tarjetas navegables con flechas laterales y dots, tarjeta central activa con glow, laterales escaladas al 85% con opacidad reducida. Transiciones suaves con cubic-bezier.</li>
+                        <li><strong>Scroll fade-in</strong>: secciones Misión, Stats, Capacidades y CTA aparecen con fade-in-up al hacer scroll vía IntersectionObserver.</li>
+                        <li><strong>Partículas flotantes</strong>: esferas luminosas animadas en el hero con keyframes <code>floatParticle</code>.</li>
+                        <li><strong>Glow en emblema</strong>: nuevo <code>.emblem-ring-glow</code> con pulsación independiente de 3s.</li>
+                        <li><strong>Paleta refinada</strong>: verdes más profundos (#1a2110), dorados #C4A265 más presentes, glassmorphism en tarjetas, hover effects con elevación y brillo.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🔐 Login y Register con glassmorphism refinado</h5>
+                    <ul>
+                        <li><strong>Login</strong>: card con <code>backdrop-filter: blur(20px)</code>, gradiente radial dorado como fondo, emblema con <code>emblemPulse</code> y <code>ringGlow</code>, botón submit con overlay <code>::before</code> y hover glow, inputs con focus dorado y sombra interna, partícula flotante animada.</li>
+                        <li><strong>Register</strong>: mismo tratamiento visual que Login, emblema con estrella interior, partícula flotante en esquina inferior derecha, inputs con hint estilizado.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🎯 Paleta unificada sin azules ni morados</h5>
+                    <ul>
+                        <li><strong>Profile</strong>: botón "Actualizar Contraseña" cambiado de degradado azul/morado (#667eea → #764ba2) a verde oliva (<code>--military-primary</code>). Pestañas activas, inputs focus, info box e iconos cambiados a verde oliva/dorado.</li>
+                        <li><strong>Users</strong>: botón "Crear Usuario", checkbox de asignación, timeline marker, hover de items, botón submit en modal — todos cambiados de azul/morado a verde oliva con <code>var(--military-primary)</code> y <code>var(--military-dark)</code>.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🤖 Chatbot mejorado — consultas de auditoría</h5>
+                    <ul>
+                        <li><strong>Detección de fecha "hoy"/"ayer"</strong>: filtra registros de auditoría por el día actual o anterior. También soporta fechas específicas (YYYY-MM-DD).</li>
+                        <li><strong>Username mal capturado corregido</strong>: antes "de usuario de hoy" capturaba "de" como nombre. Ahora requiere mínimo 3 caracteres e ignora palabras vacías.</li>
+                        <li><strong>Último ingreso por usuario</strong>: al preguntar "último ingreso de usuario" sin especificar quién, muestra el último LOGIN de cada usuario en lugar de solo 1 registro.</li>
+                        <li><strong>Respuestas contextuales</strong>: responde con "🔐 Últimos inicios de sesión — 21 de julio de 2026: se encontraron 3 usuarios con actividad" en vez del mensaje genérico.</li>
+                        <li><strong>Welcome message actualizado</strong>: nuevos ejemplos "¿Cuál fue el último ingreso de usuario de hoy?", "Mostrar actividad de login de ayer".</li>
+                    </ul>
+
+                    <h5 class="mt-1">🏷️ Renombrado a SIGAT</h5>
+                    <ul>
+                        <li><strong>tauri.conf.json</strong>: <code>productName</code> cambiado a "SIGAT" (nombre del MSI), <code>app.windows[0].title</code> a "SIGAT" (título de ventana), <code>identifier</code> a "com.sigat.app". El código interno (paquetes, imports) se mantiene intacto.</li>
+                    </ul>
+
+                    <h5 class="mt-1">✅ Modales de confirmación para eliminaciones</h5>
+                    <ul>
+                        <li><strong>Activos</strong>, <strong>Usuarios</strong> y <strong>Bases de Datos</strong>: reemplazo de <code>confirm()</code> nativo por modal propio con diseño militar, icono de advertencia naranja, texto en negrita, botón Cancelar y Eliminar (rojo).</li>
+                        <li>Estilos globales <code>.btn-danger</code> y <code>.confirm-modal</code> en <code>styles.scss</code>.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🧪 Ampliación de tests (44 tests)</h5>
+                    <ul>
+                        <li><code>tests/frontend/login.guard.spec.ts</code>: 2 tests para el nuevo loginGuard.</li>
+                        <li><code>tests/frontend/routing.security.spec.ts</code>: 2 tests de integración de guards.</li>
+                        <li><code>tests/frontend/auth.service.spec.ts</code>: 6 tests de AuthService (hasRole, bases, timezone, logout).</li>
+                        <li><code>tests/frontend/chatbot.parser.spec.ts</code>: 7 tests del parser del chatbot.</li>
+                        <li><code>tests/frontend/performance_extended.spec.ts</code>: 4 tests de rendimiento extendido.</li>
+                        <li>Total: <strong>44 tests</strong> en 11 archivos.</li>
+                    </ul>
+
+                    <h5 class="mt-1">📊 Exportación a Excel con selección de campos</h5>
+                    <ul>
+                        <li><strong>Nuevo comando Rust <code>export_base_datos_excel</code></strong>: genera archivo <code>.xlsx</code> con <strong>rust_xlsxwriter</strong> v0.64. Verifica contraseña de admin antes de exportar.</li>
+                        <li><strong>Hoja 1 — Activos</strong>: 11 campos seleccionables mediante checkboxes en un modal de paso doble (password → selección). Incluye formato de número <code>#,##0.00</code> en <code>valor_adquisicion</code> para evitar notación científica (E+).</li>
+                        <li><strong>Hoja 2 — Auditoría global</strong>: exporta TODOS los registros de auditoría de todas las bases de datos (no solo de la base seleccionada), ordenados por fecha descendente. Incluye acciones de creación de BD, usuarios, etc.</li>
+                        <li><strong>Modal exclusivo</strong>: botón verde "Excel" en cada fila de la tabla de bases de datos, modal con ancho ampliado (640px), diseño de cuadrícula para campos.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🐛 Correcciones</h5>
+                    <ul>
+                        <li><strong>auth.service.ts</strong>: <code>loadAvailableBases()</code> llamaba a <code>getAvailableBasesDatos()</code> (bases NO asignadas) en vez de <code>getUserBasesDatos()</code> (bases SÍ asignadas). Fix en <code>auth.service.ts:42</code>.</li>
+                        <li><strong>Export SQL columnas incorrectas</strong>: columnas <code>user_id/action/entity_type/entity_id/old_value/new_value/created_at</code> no existen en tabla auditoria. Corregido a <code>usuario_id/accion/tabla/registro_id/datos_anteriores/datos_nuevos/timestamp</code>.</li>
+                        <li><strong>FK al eliminar usuario</strong>: no se limpiaban registros en <code>auditoria</code>, <code>username_history</code>, ni se ponían <code>NULL</code> en <code>responsable_id</code>/<code>created_by</code> de activos antes de borrar el usuario. Causaba error 787.</li>
+                        <li><strong>FK al eliminar base de datos</strong>: no se limpiaban registros en <code>auditoria</code> antes de borrar la base. Causaba error 787 incluso sin activos.</li>
+                        <li><strong>Export no incluía imágenes</strong>: faltaba columna <code>imagen_base64</code> en SELECT de activos. También faltaba en INSERT de importación.</li>
+                        <li><strong>Import LZMA2 error confuso</strong>: contraseña incorrecta mostraba "Corrupted input data (LZMA2:0)". Ahora traduce a "Contraseña de exportación incorrecta".</li>
+                        <li><strong>Diálogo de guardado sin ruta por defecto</strong>: ahora usa <code>downloadDir()</code> de <code>@tauri-apps/api/path</code> para abrir en Descargas.</li>
+                        <li><strong>Tauri version mismatch</strong>: Rust tauri v2.10.3 vs @tauri-apps/api v2.11.1. Actualizado Rust a v2.11.</li>
+                        <li><strong>Admin auto-creation</strong>: <code>build.rs</code> lee <code>src-tauri/.env</code> inyectando <code>APP_DEFAULT_ADMIN_USERNAME</code>/<code>PASSWORD</code> como <code>cargo:rustc-env</code>; <code>db.rs</code> verifica rol <code>administrador</code> y tiene fallback hardcoded. <code>dotenvy::from_path</code> agregado en <code>lib.rs</code>.</li>
+                        <li><strong>Formato numérico en Excel</strong>: <code>valor_adquisicion</code> ahora usa <code>write_number_with_format("#,##0.00")</code> para evitar que Excel muestre valores grandes/pequeños en notación científica (E+).</li>
+                        <li><strong>Auditoría incompleta en Excel</strong>: la consulta de auditoría en Excel solo filtraba por <code>base_datos_id</code>, perdiendo registros sin ese campo. Ahora se exportan <strong>todas</strong> las auditorías del sistema sin filtro de base.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🔧 Compatibilidad y mantenimiento</h5>
+                    <ul>
+                        <li><strong>Angular 21</strong>: tests migrados de <code>createEnvironmentInjector</code> a <code>TestBed</code> y <code>runInInjectionContext</code>.</li>
+                        <li><strong>ng test</strong>: arreglado para que pase correctamente con Angular 21.</li>
+                        <li><strong>app.spec.ts</strong>: test actualizado para reflejar template actual (router-outlet).</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Versión 1.4.0 - Julio 2026</h4>
+
+                    <h5 class="mt-1">🖱️ Protección contra navegación atrás/adelante</h5>
+                    <ul>
+                        <li><strong>loginGuard</strong>: nuevo guard en <code>/login</code> que redirige a dashboard si el usuario ya tiene sesión activa.</li>
+                        <li><strong>Popstate listener</strong>: intercepta los botones atrás/adelante del mouse, re-push la ruta actual si hay sesión activa.</li>
+                        <li><strong>Mutua exclusión</strong>: authGuard y loginGuard validados como complementarios.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🎨 Tema oscuro militar completo</h5>
+                    <ul>
+                        <li><strong>Home</strong>: rediseño completo con fondo verde oscuro (#1E2614), emblema animado (escudo + anillo dorado), patrón de camuflaje cruzado, tarjetas con esquinas doradas, barra de stats, sección Misión, CTA con bordes decorativos.</li>
+                        <li><strong>Login</strong>: fondo oscuro #1E2614 con patrón camuflaje, tarjeta glassmorphism (blur 16px), escudo en anillo dorado, inputs oscuros con texto crema, botón dorado #C4A265, esquinas decorativas doradas.</li>
+                        <li><strong>Register</strong>: mismo tratamiento oscuro que Login, con escudo interior y estrella en emblema.</li>
+                        <li><strong>Paleta unificada</strong>: #1E2614, #2D3A1E, #4A5D23, #6B8E23 verdes; #E8E4D9, #F5F2E8 cremas; #C4A265, #A6884D dorados.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🧪 Ampliación de tests (44 tests)</h5>
+                    <ul>
+                        <li><code>tests/frontend/login.guard.spec.ts</code>: 2 tests para el nuevo loginGuard.</li>
+                        <li><code>tests/frontend/routing.security.spec.ts</code>: 2 tests de integración de guards.</li>
+                        <li><code>tests/frontend/auth.service.spec.ts</code>: 6 tests de AuthService (hasRole, bases, timezone, logout).</li>
+                        <li><code>tests/frontend/chatbot.parser.spec.ts</code>: 7 tests del parser del chatbot.</li>
+                        <li><code>tests/frontend/performance_extended.spec.ts</code>: 4 tests de rendimiento extendido.</li>
+                        <li>Total: <strong>44 tests</strong> en 11 archivos.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🐛 Corrección: asignación de bases a operadores</h5>
+                    <ul>
+                        <li><strong>auth.service.ts</strong>: <code>loadAvailableBases()</code> llamaba a <code>getAvailableBasesDatos()</code> (bases NO asignadas, para modal de admin) en vez de <code>getUserBasesDatos()</code> (bases SÍ asignadas).</li>
+                        <li><strong>Impacto</strong>: operadores con base asignada veían pantalla "Sin Bases de Datos Asignadas".</li>
+                        <li><strong>Fix</strong>: cambio de una línea en <code>src/app/services/auth.service.ts:42</code>.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🔧 Correcciones y compatibilidad</h5>
+                    <ul>
+                        <li><strong>Angular 21</strong>: tests migrados de <code>createEnvironmentInjector</code> a <code>TestBed</code> y <code>runInInjectionContext</code>.</li>
+                        <li><strong>ng test</strong>: arreglado para que pase correctamente con Angular 21.</li>
+                        <li><strong>app.spec.ts</strong>: test actualizado para reflejar template actual (router-outlet).</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Versión 1.3.0 - Julio 2026</h4>
+
+                    <h5 class="mt-1">🗂️ Multi-Base de Datos (Asignaciones)</h5>
+                    <ul>
+                        <li><strong>Nuevo sistema de bases de datos lógicas</strong>: tablas <code>bases_datos</code> y <code>usuario_base_datos</code> con migración automática.</li>
+                        <li><strong>CRUD completo de bases de datos</strong>: crear, editar, eliminar con protección de activos asociados.</li>
+                        <li><strong>Asignación de usuarios a bases</strong>: administradores asignan operadores/auditores a una o varias bases.</li>
+                        <li><strong>Aislamiento por base</strong>: cada usuario no-admin solo ve activos y auditoría de sus bases asignadas.</li>
+                        <li><strong>Filtro por base de datos</strong>: dropdown en activos y auditoría para usuarios con múltiples bases.</li>
+                        <li><strong>Pantalla "Sin Bases Asignadas"</strong>: bloqueo informativo para usuarios sin asignación.</li>
+                        <li><strong>Auditoría con contexto de base</strong>: cada log de activo incluye <code>base_datos_id</code> para filtrado preciso.</li>
+                        <li><strong>Creación de usuarios con asignación</strong>: seleccionar bases al momento de crear un usuario.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🔧 Mejoras técnicas</h5>
+                    <ul>
+                        <li>9 nuevos comandos Rust para gestión de bases de datos.</li>
+                        <li>8 nuevos métodos en <code>TauriService</code> de Angular.</li>
+                        <li><code>get_activos</code> y <code>get_audit_log</code> filtran automáticamente por rol y bases asignadas.</li>
+                        <li><code>create_user</code> acepta asignación opcional de bases al crear.</li>
+                        <li><code>get_activo_detalles</code> incluye <code>base_datos_nombre</code>.</li>
+                        <li>Nuevo componente <code>AsignacionesComponent</code> con tabla CRUD y modales.</li>
+                        <li>Ruta <code>/asignaciones</code> y enlace en sidebar para administradores.</li>
+                        <li>Parámetros opcionales (<code>Option</code>) en Rust para compatibilidad con llamadas sin usuario (chatbot).</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Versión 1.2.0 - Abril 2026</h4>
+
+                    <h5 class="mt-1">🔐 Seguridad y endurecimiento</h5>
+                    <ul>
+                        <li><strong>Eliminación de secretos en .env</strong>: se retiró la clave de cifrado de la configuración de entorno.</li>
+                        <li><strong>Nueva gestión de clave local</strong>: generación y reutilización de <code>db.key</code> por instalación desde <code>security.rs</code>.</li>
+                        <li><strong>Corrección de conexión SQLite cifrada</strong>: la clave se pasa correctamente citada en pragma <code>key</code>.</li>
+                        <li><strong>Limpieza de código muerto</strong>: se removió lógica no usada de derivación de clave en <code>crypto.rs</code>.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🧪 Testing y calidad</h5>
+                    <ul>
+                        <li>Nueva carpeta de pruebas frontend: <code>tests/frontend/</code>.</li>
+                        <li>Nueva suite backend de seguridad: <code>src-tauri/tests/security/</code>.</li>
+                        <li>Pruebas agregadas para login, control de acceso, chatbot, subida de archivos y performance.</li>
+                        <li>Script de resumen para CI: <code>scripts/security-ci.mjs</code>.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🛠️ Configuración y mantenimiento</h5>
+                    <ul>
+                        <li><strong>Fix TypeScript 6</strong>: agregado <code>rootDir</code> en <code>tsconfig.app.json</code> para eliminar error de compilador.</li>
+                        <li>Nuevos scripts npm para ejecución separada y consolidada de pruebas de seguridad.</li>
+                    </ul>
+
+                    <h5 class="mt-1">📈 Resultado validado</h5>
+                    <ul>
+                        <li>Frontend Security Suite: <strong>14/14 PASS</strong>.</li>
+                        <li>Backend Security Suite: <strong>5/5 PASS</strong>.</li>
+                        <li>Security CI Summary: <strong>PASS frontend + PASS backend</strong>.</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Versión 1.1.0 - Marzo 2026</h4>
+
+                    <h5 class="mt-1">✨ Características Nuevas</h5>
+                    <ul>
+                        <li><strong>Chatbot NLP</strong>: Asistente virtual inteligente para búsqueda de activos y auditorías mediante lenguaje natural</li>
+                        <li><strong>Búsqueda multi-filtro</strong>: Código, marca, categoría, estado, ubicación, precio, pulgadas, calibre, litros, peso</li>
+                        <li><strong>Sistema de exportación de auditorías</strong>: PDF y XML con filtros personalizados</li>
+                        <li><strong>Botón "Ir al activo"</strong>: Navegación directa desde resultados del chatbot</li>
+                        <li><strong>Búsqueda de auditorías por usuario</strong>: Filtrar registros por nombre de usuario (admin)</li>
+                        <li><strong>Medidas específicas por categoría</strong>: Armas (calibre), líquidos (litros/ml), alimentos (peso)</li>
+                    </ul>
+
+                    <h5 class="mt-1">🔧 Mejoras de Funcionalidad</h5>
+                    <ul>
+                        <li><strong>Filtros siempre aplicados</strong>: Los filtros se aplican incluso cuando retornan 0 resultados</li>
+                        <li><strong>Detección de búsquedas vagas</strong>: Mínimo 4 caracteres, ignora stopwords comunes</li>
+                        <li><strong>Prioridad de código</strong>: Búsqueda por código tiene prioridad sobre otros filtros</li>
+                        <li><strong>Manejo de código inexistente</strong>: Mensaje específico cuando el código no existe</li>
+                        <li><strong>Prevención de falsos positivos</strong>: Word boundaries para detección de marca/categoría/estado</li>
+                        <li><strong>Exportación con filtros</strong>: Respeta filtros de usuario y acción en exportaciones completas</li>
+                    </ul>
+
+                    <h5 class="mt-1">🐛 Correcciones</h5>
+                    <ul>
+                        <li>Arreglado: "alguno" detectado como marca "LG" (word boundary fix)</li>
+                        <li>Arreglado: "2 kg" detectado como "2 g" (orden de extracción de peso)</li>
+                        <li>Arreglado: "menos de 10000" no detectaba precio_max (agregada keyword "menos")</li>
+                        <li>Arreglado: Filtros de ubicación y precio no aplicados cuando retornaban 0 resultados</li>
+                        <li>Arreglado: Exportación de auditorías solo exportaba 1 registro en lugar de todos</li>
+                    </ul>
+
+                    <h5 class="mt-1">📝 Archivos Modificados</h5>
+                    <ul>
+                        <li><code>src/app/services/chatbot.service.ts</code>: Motor NLP, extracción de filtros, lógica de búsqueda</li>
+                        <li><code>src/app/components/chatbot/chatbot.component.*</code>: UI del chatbot, exportación, navegación</li>
+                        <li><code>src/app/services/tauri.service.ts</code>: Métodos de conexión con backend Rust</li>
+                        <li><code>PROYECTO.md</code> y <code>PROYECTO.html</code>: Documentación actualizada con características del chatbot</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Versión 1.0.0 - Febrero 2026</h4>
+
+                    <h5 class="mt-1">✨ Características Nuevas</h5>
+                    <ul>
+                        <li>Rediseño completo de UI con tema militar elegante</li>
+                        <li>Modal de detalles de activos en dashboard</li>
+                        <li>Sistema de visualizaciones de activos con historial</li>
+                        <li>Control de acceso basado en roles (RBAC)</li>
+                        <li>Filtros avanzados en componente de activos</li>
+                        <li>Timeline visual de auditoría con agrupación por fechas</li>
+                    </ul>
+
+                    <h5 class="mt-1">🔒 Mejoras de Seguridad</h5>
+                    <ul>
+                        <li>Historial de visualizaciones solo visible para administradores</li>
+                        <li>Logs de LOGIN/LOGOUT restringidos a administradores</li>
+                        <li>Filtrado automático de eventos de autenticación para usuarios regulares</li>
+                        <li>Validación de permisos en frontend y backend</li>
+                    </ul>
+
+                    <h5 class="mt-1">🎨 Mejoras de UI/UX</h5>
+                    <ul>
+                        <li>Paleta de colores militar (verde oliva, khaki, arena)</li>
+                        <li>Tipografía elegante: Playfair Display + Lato</li>
+                        <li>Gradientes militares sutiles en componentes</li>
+                        <li>Efecto de camuflaje en pantalla de login</li>
+                        <li>Scrollbar personalizado con tema militar</li>
+                        <li>Badges diferenciados por tipo de acción</li>
+                        <li>Hover effects mejorados en cards y botones</li>
+                    </ul>
+
+                    <h5 class="mt-1">🐛 Correcciones</h5>
+                    <ul>
+                        <li>Arreglado error de sintaxis SCSS en login.component.scss</li>
+                        <li>Corregidos errores de lifetime en Rust</li>
+                        <li>Conversión de tokio::sync::Mutex a std::sync::Mutex</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="mt-2">📊 Estado del Proyecto</h3>
+            <div class="cards-grid">
+                <div class="card">
+                    <span class="badge badge-success">✓ Completado</span>
+                    <p class="mt-1">Backend Rust completamente funcional</p>
+                </div>
+                <div class="card">
+                    <span class="badge badge-success">✓ Completado</span>
+                    <p class="mt-1">Frontend Angular con todos los componentes</p>
+                </div>
+                <div class="card">
+                    <span class="badge badge-success">✓ Completado</span>
+                    <p class="mt-1">Sistema de autenticación y autorización</p>
+                </div>
+                <div class="card">
+                    <span class="badge badge-success">✓ Completado</span>
+                    <p class="mt-1">Base de datos cifrada con auditoría</p>
+                </div>
+                <div class="card">
+                    <span class="badge badge-success">✓ Completado</span>
+                    <p class="mt-1">Diseño UI consistente en toda la app</p>
+                </div>
+                <div class="card">
+                    <span class="badge badge-success">✓ Completado</span>
+                    <p class="mt-1">Sin errores de compilación - Listo para deploy</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== USO BÁSICO ===== -->
+        <section id="uso">
+            <h2><span class="icon">💻</span> Uso Básico desde Angular</h2>
+            <p>Ejemplo de cómo interactuar con el backend Rust desde el frontend Angular:</p>
+
+            <pre><code>import { TauriService } from './services/tauri.service';
+
+// Inyectar el servicio
+constructor(private tauriService: TauriService) {}
+
+// Obtener activos
+const activos = await this.tauriService.getActivos();
+
+// Login de usuario
+await this.tauriService.login(username, password);
+
+// Obtener detalles de un activo
+const detalles = await this.tauriService.getActivoDetalles(activoId);
+
+// Registrar visualización
+await this.tauriService.registerActivoVista(activoId, userId);</code></pre>
+        </section>
+
+        <!-- ===== NOTAS IMPORTANTES ===== -->
+        <section id="notas">
+            <h2><span class="icon">⚠️</span> Notas Importantes</h2>
+            <div class="cards-grid">
+                <div class="card">
+                    <h4>🔑 Clave de Cifrado</h4>
+                    <p>La clave de cifrado de la base de datos debe derivarse de credenciales válidas del usuario en producción. El ejemplo actual usa una clave temporal solo para desarrollo.</p>
+                </div>
+                <div class="card">
+                    <h4>🔐 Gestión de Claves</h4>
+                    <p>Se recomienda implementar un sistema de gestión de claves maestras para el entorno de producción.</p>
+                </div>
+                <div class="card">
+                    <h4>📂 Almacenamiento</h4>
+                    <p>La base de datos se almacena en el directorio de datos de la aplicación, protegida a nivel del sistema operativo.</p>
+                </div>
+                <div class="card">
+                    <h4>🦀 Requisitos Rust</h4>
+                    <p>Para compilar el backend, se requiere tener Rust instalado con las herramientas de compilación de Windows (MSVC).</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p><strong>SIGAT v1.5.0</strong></p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 22 de Julio 2026</p>
+    </footer>
+
+
+</body></html>
