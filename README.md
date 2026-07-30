@@ -99,3 +99,4 @@ Consulta el detalle funcional, técnico y changelog en:
 
 - `PROYECTO.html`
 - `PROYECTO.md`
+- `[PROYECTO.md](https://prior-coral-vzs8m2fjx5.edgeone.app)`
