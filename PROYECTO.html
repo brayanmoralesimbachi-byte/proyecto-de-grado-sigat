@@ -545,7 +545,7 @@
     <header>
         <h1>🛡️ SIGAT</h1>
         <p class="subtitle">Sistema de Gestión Inteligente de Activos — Centro de Investigación · Escuela de Telecomunicaciones de Facatativá</p>
-        <span class="version-badge">Versión 1.6.0 | Última actualización: 28 de Julio 2026</span>
+        <span class="version-badge">Versión 1.7.0 | Última actualización: 1 de Agosto 2026</span>
     </header>
 
     <!-- Navegación -->
@@ -573,12 +573,12 @@
             <div class="card mt-1" style="border-left: 4px solid var(--secondary); background: #fffef7;">
                 <h4>✅ Estado validado en esta versión</h4>
                 <ul>
-                    <li><strong>Frontend Security Suite:</strong> 76/76 PASS (12 archivos)</li>
+                    <li><strong>Frontend Security Suite:</strong> 81/81 PASS (13 archivos)</li>
                     <li><strong>Backend Security Suite:</strong> 5/5 PASS</li>
                     <li><strong>Angular ng build:</strong> 1/1 PASS</li>
                     <li><strong>Security CI:</strong> PASS frontend + PASS backend</li>
                     <li><strong>Cargo check:</strong> 0 warnings</li>
-                    <li><strong>Versión documentada:</strong> 1.6.0</li>
+                    <li><strong>Versión documentada:</strong> 1.7.0</li>
                 </ul>
             </div>
             
@@ -708,8 +708,9 @@
 │   │   └── <span class="file">login.guard.ts</span>  <span class="comment"># Redirección si ya logueado</span>
 │   │   └── <span class="folder">services/</span>
 │   │       ├── <span class="file">auth.service.ts</span>  <span class="comment"># Servicio de autenticación</span>
+│   │       ├── <span class="file">theme.service.ts</span> <span class="comment"># Sistema de temas (claro/militar)</span>
 │   │       └── <span class="file">tauri.service.ts</span> <span class="comment"># Comunicación con Rust</span>
-│   └── <span class="file">styles.scss</span>             <span class="comment"># Estilos globales</span>
+│   └── <span class="file">styles.scss</span>             <span class="comment"># Estilos globales + variables de tema</span>
 │
 ├── <span class="folder">src-tauri/</span>              <span class="comment"># Código Rust (backend)</span>
 │   ├── <span class="folder">src/</span>
@@ -721,7 +722,8 @@
 │
 ├── <span class="file">angular.json</span>            <span class="comment"># Configuración Angular</span>
 ├── <span class="file">package.json</span>            <span class="comment"># Dependencias Node.js</span>
-└── <span class="file">PROYECTO.md</span>             <span class="comment"># Documentación</span>
+├── <span class="file">PROYECTO.md</span>             <span class="comment"># Documentación</span>
+└── <span class="file">README.md</span>              <span class="comment"># Guía rápida</span>
             </div>
         </section>
 
@@ -1042,7 +1044,7 @@
                     <h4>Frontend Security Suite</h4>
                     <p><span class="badge badge-success">PASS</span></p>
                     <ul>
-                        <li><strong>76/76 tests</strong> aprobados (12 archivos)</li>
+                        <li><strong>81/81 tests</strong> aprobados (13 archivos)</li>
                         <li>Cobertura de login, guards, auth service, chatbot parser, subida, routing, performance, multi-imagen, rate limiting, XSS, CSP, inactividad</li>
                         <li>Ejecución estable en Vitest</li>
                     </ul>
@@ -1445,8 +1447,63 @@ if (!this.authService.hasRole('admin')) {
         <section id="diseno">
             <h2><span class="icon">🎨</span> Diseño de Interfaz</h2>
 
+            <h3 class="mt-2">Tema Claro Naranja (Primario)</h3>
+            <p>Tema claro activado por defecto al iniciar la aplicación. Fondo blanco/naranja, texto azul real y emblema con degradado naranja:</p>
+
+            <div class="color-palette">
+                <div class="color-swatch">
+                    <div class="swatch" style="background: linear-gradient(135deg, #ffc107, #e65100);"></div>
+                    <span>Naranja<br>#ffc107 → #e65100</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #ffffff;"></div>
+                    <span>Fondo claro<br>#ffffff</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #1e3a8a;"></div>
+                    <span>Texto azul real<br>#1e3a8a</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #ffa516;"></div>
+                    <span>Ámbar<br>#ffa516</span>
+                </div>
+            </div>
+
+            <h3 class="mt-2">Tema Verde Militar (Secundario)</h3>
+            <p>Tema oscuro táctico alternativo. Se activa con el botón flotante de cambio de tema:</p>
+
+            <div class="color-palette">
+                <div class="color-swatch">
+                    <div class="swatch" style="background: linear-gradient(135deg, #6b8e23, #3c3f2e);"></div>
+                    <span>Verde oliva<br>#6b8e23 → #3c3f2e</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #1e2614;"></div>
+                    <span>Fondo oscuro<br>#1e2614</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #e8e4d9;"></div>
+                    <span>Crema<br>#e8e4d9</span>
+                </div>
+                <div class="color-swatch">
+                    <div class="swatch" style="background: #c4a265;"></div>
+                    <span>Dorado (acento)<br>#c4a265</span>
+                </div>
+            </div>
+
+            <h3 class="mt-2">Cambio de Tema</h3>
+            <ul class="feature-list">
+                <li>Botón flotante redondo en la esquina inferior derecha (<code>bottom: 100px; right: 24px</code>) con el círculo del color del tema actual.</li>
+                <li>Alterna entre tema claro naranja y verde militar con un solo clic.</li>
+                <li>El tema se aplica vía atributo <code>data-theme</code> en <code>&lt;html&gt;</code> mediante <code>ThemeService</code>.</li>
+                <li>Siempre inicia en <strong>tema claro naranja</strong> en cada lanzamiento (no se persiste entre sesiones).</li>
+                <li>Intercambio automático de wallpaper (<code>sigat-wallpaper-background1.png</code> claro / <code>sigat-wallpaper-background2.png</code> militar) y emblema (<code>sigat-emblem1.jpeg</code> / <code>sigat-emblem2.png</code>) según el tema.</li>
+                <li>En el tema claro, el recuadro del emblema en Login/Register usa un degradado naranja a blanco (<code>#ffa516 → #ffffff → #e1951b</code>).</li>
+                <li>El Home en tema claro añade animaciones dinámicas: gradientes animados y pulso de emblema naranja.</li>
+            </ul>
+
             <h3>Tema Oscuro Militar</h3>
-            <p>Paleta de colores oscura premium inspirada en equipamiento táctico militar:</p>
+            <p>Paleta de colores oscura premium inspirada en equipamiento táctico militar (tema secundario):</p>
 
             <div class="color-palette">
                 <div class="color-swatch">
@@ -1550,6 +1607,35 @@ if (!this.authService.hasRole('admin')) {
             <h2><span class="icon">📝</span> Historial de Cambios</h2>
 
             <div class="timeline">
+                <div class="timeline-item">
+                    <h4>Versión 1.7.0 - 1 de Agosto 2026</h4>
+
+                    <h5 class="mt-1">🎨 Sistema de temas claro naranja / verde militar</h5>
+                    <ul>
+                        <li><strong>Nuevo <code>ThemeService</code></strong>: alterna el atributo <code>data-theme</code> en <code>&lt;html&gt;</code> entre <code>orange</code> y <code>military</code>. Siempre inicia en tema claro naranja en cada lanzamiento (sin persistencia entre sesiones).</li>
+                        <li><strong>Nuevo <code>ThemeToggleComponent</code></strong>: botón flotante redondo en la esquina inferior derecha que muestra solo el círculo de color del tema actual y alterna con un clic.</li>
+                        <li><strong>Variables de tema</strong> en <code>styles.scss</code>: tema militar definido en <code>:root</code> y tema naranja como override con <code>[data-theme='orange']</code> (variables <code>--military-*</code>, <code>--theme-*</code> y <code>--cb-*</code>).</li>
+                        <li><strong>Tema claro naranja</strong>: fondo blanco/naranja, texto azul real (<code>#1e3a8a</code>), acentos ámbar (<code>#ffa516</code>) y degradado del emblema <code>#ffc107 → #e65100</code>.</li>
+                        <li><strong>Tema verde militar</strong>: paleta táctica oscura existente con verdes oliva (<code>#6b8e23 → #3c3f2e</code>), cremas y dorados.</li>
+                        <li><strong>Wallpaper y emblema dinámicos</strong>: el Home usa <code>--theme-wallpaper</code> y <code>--theme-emblem-filter</code> para cambiar entre <code>sigat-wallpaper-background1.png</code> + <code>sigat-emblem1.jpeg</code> (claro) y <code>sigat-wallpaper-background2.png</code> + <code>sigat-emblem2.png</code> (militar). <code>emblemSrc()</code> calculado en <code>home.component.ts</code>.</li>
+                        <li><strong>Home dinámico en tema claro</strong>: overrides <code>[data-theme='orange']</code> con gradientes animados, pulso de emblema naranja, hero/top-bar/cards/footer rediseñados.</li>
+                        <li><strong>Login/Register</strong>: el recuadro del emblema usa degradado naranja (<code>#ffa516 → #ffffff → #e1951b</code>) en tema claro vía override en cada SCSS.</li>
+                        <li><strong><code>main.ts</code></strong>: fija <code>data-theme="orange"</code> antes del bootstrap para evitar parpadeo.</li>
+                    </ul>
+
+                    <h5 class="mt-1">📦 Instalador y empaquetado</h5>
+                    <ul>
+                        <li><strong>Icono de aplicación</strong>: bundle con un solo icono <code>icons/icon.ico</code> en <code>tauri.conf.json</code>.</li>
+                        <li><strong>Build completo</strong>: instalador generado <code>SIGAT_1.7.0_x64_en-US.msi</code>; <code>productName</code> SIGAT, <code>identifier</code> <code>com.sigat.desktop</code>.</li>
+                    </ul>
+
+                    <h5 class="mt-1">🧪 Tests: 81 tests (13 archivos)</h5>
+                    <ul>
+                        <li><code>tests/frontend/theme.service.spec.ts</code>: 5 tests — estado inicial <code>orange</code>, toggle entre temas, aplicación de <code>data-theme</code>, no-persistence (siempre arranca naranja).</li>
+                        <li>Total frontend: <strong>81 tests</strong> en 13 archivos, 0 warnings Rust, <code>ng build</code> limpio con presupuestos ajustados (<code>710kB</code>/<code>30kB</code>).</li>
+                    </ul>
+                </div>
+
                 <div class="timeline-item">
                     <h4>Versión 1.5.0 - Julio 2026</h4>
 
@@ -1951,8 +2037,8 @@ await this.tauriService.registerActivoVista(activoId, userId);</code></pre>
 
     <!-- Footer -->
     <footer>
-        <p><strong>SIGAT v1.6.0</strong></p>
-        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 22 de Julio 2026</p>
+        <p><strong>SIGAT v1.7.0</strong></p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Última actualización: 1 de Agosto 2026</p>
     </footer>
 
 </body>

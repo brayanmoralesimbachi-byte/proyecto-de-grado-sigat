@@ -218,6 +218,7 @@ const activos = await this.tauriService.getActivos();
 
 ## ⚠️ Notas Importantes
 
+- **Administrador por defecto**: Si no existe ningún administrador en el sistema, la aplicación crea uno automáticamente en el primer inicio con las credenciales `admin` / `admin123` (o las definidas en `APP_DEFAULT_ADMIN_USERNAME`/`APP_DEFAULT_ADMIN_PASSWORD` si están configuradas). Esto garantiza que siempre haya acceso administrativo en cualquier máquina (Windows, VM, otra PC y Android). **Se recomienda cambiar esta contraseña tras el primer inicio.**
 - La clave de cifrado de la base de datos debe derivarse de credenciales válidas del usuario en producción
 - El ejemplo actual usa una clave temporal solo para desarrollo
 - Se recomienda implementar un sistema de gestión de claves maestras para producción
